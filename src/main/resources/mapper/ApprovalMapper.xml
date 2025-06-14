@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.barogagi.approval.mapper.ApprovalMapper">
+    <update id="updateApprovalRecord" parameterType="com.barogagi.approval.vo.ApprovalVO">
+        <![CDATA[
+            UPDATE  APPROVAL_NUM_INFO
+            SET     COMPLETE_YN = "C",
+                    CANCEL_DATE = NOW()
+            WHERE   TEL = #{tel}
+            AND     TYPE = #{type}
+            AND     COMPLETE_YN = #{completeYn}
+        ]]>
+    </update>
+
+    <insert id="insertApprovalRecord" parameterType="com.barogagi.approval.vo.ApprovalVO">
+        <![CDATA[
+            INSERT APPROVAL_NUM_INFO(TEL, AUTH_CODE, COMPLETE_YN, TYPE, REG_DATE)
+                VALUES(#{tel}, #{authCode}, #{completeYn}, #{type}, NOW())
+        ]]>
+    </insert>
+
+    <update id="updateApprovalComplete" parameterType="com.barogagi.approval.vo.ApprovalVO">
+        <![CDATA[
+            UPDATE  APPROVAL_NUM_INFO
+            SET     COMPLETE_YN = "Y",
+                    COMPLETE_DATE = NOW()
+            WHERE   TEL = #{tel}
+            AND     TYPE = #{type}
+            AND     COMPLETE_YN = #{completeYn}
+            AND     AUTH_CODE = #{authCode}
+        ]]>
+    </update>
+</mapper>
