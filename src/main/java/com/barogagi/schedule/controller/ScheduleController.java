@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
-@RequestMapping("/terms")
+@RequestMapping("/schedule")
 public class ScheduleController {
 }
