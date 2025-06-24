@@ -1,4 +1,4 @@
-package com.barogagi.schedule.mapper;
+package com.barogagi.schedule.query.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
