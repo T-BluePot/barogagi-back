@@ -1,4 +1,4 @@
-package com.barogagi.plan.vo;
+package com.barogagi.schedule.query.vo;
 
 import lombok.Getter;
 import lombok.Setter;
