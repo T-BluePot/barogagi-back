@@ -19,7 +19,7 @@ public class Schedule {
     private int membershipNo;           // 회원 번호 (FK)
 
     @Column(name = "SCHEDULE_NM", nullable = false, length = 100)
-    private String scheduleNm;          // 일정 이름
+    private String scheduleNm;          // 일정명
 
     @Column(name = "START_DATE", nullable = false)
     private String startDate;           // 시작 날짜

@@ -1,4 +1,4 @@
-package com.barogagi.schedule.command.repository;
+package com.barogagi.plan.command.repository;
 
 import org.springframework.stereotype.Repository;
 

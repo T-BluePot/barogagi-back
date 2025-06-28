@@ -1,4 +1,4 @@
-package com.barogagi.schedule.query.service;
+package com.barogagi.plan.query.service;
 
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.barogagi.region.vo;
+package com.barogagi.region.query.vo;
 
 import lombok.Getter;
 import lombok.Setter;

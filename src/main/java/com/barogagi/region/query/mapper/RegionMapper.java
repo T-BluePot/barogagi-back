@@ -1,4 +1,4 @@
-package com.barogagi.region.mapper;
+package com.barogagi.region.query.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 
