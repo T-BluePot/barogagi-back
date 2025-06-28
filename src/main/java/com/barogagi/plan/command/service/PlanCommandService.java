@@ -1,4 +1,4 @@
-package com.barogagi.schedule.command.service;
+package com.barogagi.plan.command.service;
 
 import org.springframework.stereotype.Service;
 

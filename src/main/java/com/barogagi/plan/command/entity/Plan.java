@@ -1,0 +1,44 @@
+package com.barogagi.plan.command.entity;
+
+import com.barogagi.region.command.entity.Region;
+import com.barogagi.schedule.command.entity.Schedule;
+import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Getter;
+
+@Entity
+@Getter
+@Builder(toBuilder = true)
+@Table(name = "PLAN")
+public class Plan {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "PLAN_NUM")
+    private int planNum;                // 계획 번호 (PK)
+
+    @Column(name = "PLAN_NM", nullable = false, length = 100)
+    private String planNm;              // 계획명
+
+    @Column(name = "START_TIME")
+    private String startTime;           // 시작 시간
+
+    @Column(name = "END_TIME")
+    private String endTime;             // 종료 시간
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REGION_NUM", nullable = false)
+    private Region region;              // 지역 번호
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "SCHEDULE_NUM", nullable = false)
+    private Schedule schedule;          // 일정 번호
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "MEMBERSHIP_NO", nullable = false)
+    private PlanUserMemebershipInfo user;   // 회원 번호
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ITEM_NUM", nullable = false)
+    private Item item;                  // 아이템 번호
+}
