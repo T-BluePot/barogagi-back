@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.barogagi.region.query.mapper.RegionMapper">
+
+    <!-- resultMap -->
+
+    <!-- Select Query -->
+
+    <select id="selectRegionByPlanNum" parameterType="int" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        <![CDATA[
+            SELECT
+		            b.REGION_NUM as regionNum
+		          , b.REGION_LEVEL_1 as regionLevel1
+		          , b.REGION_LEVEL_2 as regionLevel2
+		          , b.REGION_LEVEL_3 as regionLevel3
+		          , b.REGION_LEVEL_4 as regionLevel4
+            FROM    PLAN_REGION a
+            JOIN    REGION b
+            ON      a.REGION_NUM = b.REGION_NUM
+            WHERE   a.PLAN_NUM = #{planNum};
+        ]]>
+    </select>
+</mapper>

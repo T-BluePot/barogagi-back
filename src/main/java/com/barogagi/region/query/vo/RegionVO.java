@@ -8,6 +8,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class RegionVO {
-    private int regionNum;      // 지역 번호 (PK)
-    private String regionNm;    // 지역명
+    public int regionNum;      // 지역 번호 (PK)
+    public String regionNm;    // 지역명
 }
