@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.barogagi.schedule.query.mapper.ScheduleMapper">
+
+    <!-- resultMap -->
+
+    <!-- Select Query -->
+
+    <select id="selectScheduleDetail" parameterType="int" resultType="com.barogagi.schedule.query.vo.ScheduleDetailVO">
+        <![CDATA[
+            SELECT
+                    SCHEDULE_NUM AS scheduleNum
+                  , SCHEDULE_NM AS scheduleNm
+                  , START_DATE AS startDate
+                  , END_DATE AS endDate
+                  , RADIUS AS radius
+            FROM 	SCHEDULE
+            WHERE   SCHEDULE_NUM = #{scheduleNum};
+        ]]>
+    </select>
+</mapper>
