@@ -1,6 +1,6 @@
 package com.barogagi.plan.command.entity;
 
-import com.barogagi.region.command.entity.Region;
+import com.barogagi.plan.command.ex_entity.PlanUserMemebershipInfo;
 import com.barogagi.schedule.command.entity.Schedule;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -15,7 +15,7 @@ public class Plan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "PLAN_NUM")
-    private int planNum;                // 계획 번호 (PK)
+    private Integer planNum;            // 계획 번호 (PK)
 
     @Column(name = "PLAN_NM", nullable = false, length = 100)
     private String planNm;              // 계획명
@@ -25,10 +25,6 @@ public class Plan {
 
     @Column(name = "END_TIME")
     private String endTime;             // 종료 시간
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REGION_NUM", nullable = false)
-    private Region region;              // 지역 번호
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCHEDULE_NUM", nullable = false)
