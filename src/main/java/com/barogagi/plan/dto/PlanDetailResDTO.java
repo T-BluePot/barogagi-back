@@ -1,3 +1,4 @@
+/*
 package com.barogagi.plan.dto;
 
 public class PlanDetailResDTO {
@@ -16,3 +17,4 @@ public class PlanDetailResDTO {
     // Figma에 표시되어 있지 않은 값
     // - 태그
 }
+*/

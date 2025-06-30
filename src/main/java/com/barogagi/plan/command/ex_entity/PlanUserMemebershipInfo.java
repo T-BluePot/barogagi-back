@@ -1,4 +1,4 @@
-package com.barogagi.plan.command.entity;
+package com.barogagi.plan.command.ex_entity;
 
 import jakarta.persistence.*;
 import lombok.Builder;
