@@ -187,7 +187,7 @@ public class JoinController {
 
             if(nickNameDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
-                // 필수 입력값(아이디, 비밀번호, 휴대전화번호 값이 빈 값이 아닌지 확인)
+                // 필수 입력값
                 if(inputValidate.isEmpty(nickNameDTO.getNickName())){
 
                     // 필수 입력값 중 빈 값이 존재. insert 중지
