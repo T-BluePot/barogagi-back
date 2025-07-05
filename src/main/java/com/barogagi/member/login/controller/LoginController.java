@@ -1,7 +1,6 @@
 package com.barogagi.member.login.controller;
 
 import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.vo.LoginVO;
 import com.barogagi.member.login.vo.LoginDTO;
 import com.barogagi.member.login.vo.SearchUserIdDTO;
 import com.barogagi.member.login.vo.UserIdDTO;
@@ -19,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "일반 로그인", description = "일반 로그인 관련 API")
 @RestController

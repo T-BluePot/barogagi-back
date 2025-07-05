@@ -1,6 +1,6 @@
 package com.barogagi.terms.vo;
 
-import com.barogagi.config.vo.DefaultVO;
+
 import lombok.Getter;
 import lombok.Setter;
 
