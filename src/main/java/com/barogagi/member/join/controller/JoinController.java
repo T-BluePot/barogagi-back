@@ -1,11 +1,13 @@
 package com.barogagi.member.join.controller;
 
+import com.barogagi.member.join.dto.NickNameDTO;
 import com.barogagi.member.join.service.JoinService;
-import com.barogagi.member.join.vo.JoinVO;
-import com.barogagi.member.join.vo.UserIdCheckVO;
+import com.barogagi.member.join.dto.JoinDTO;
+import com.barogagi.member.join.dto.UserIdCheckDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
+import com.barogagi.util.Validator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ public class JoinController {
     private final JoinService joinService;
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
+    private final Validator validator;
 
     private final String API_SECRET_KEY;
 
@@ -30,19 +33,21 @@ public class JoinController {
     public JoinController(Environment environment,
                           JoinService joinService,
                           InputValidate inputValidate,
-                          EncryptUtil encryptUtil){
+                          EncryptUtil encryptUtil,
+                          Validator validator){
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.joinService = joinService;
         this.inputValidate = inputValidate;
         this.encryptUtil = encryptUtil;
+        this.validator = validator;
     }
 
     @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.")
     @PostMapping("/basic/membership/userId/check")
-    public ApiResponse checkUserId(@RequestBody UserIdCheckVO userIdCheckVO) {
+    public ApiResponse checkUserId(@RequestBody UserIdCheckDTO userIdCheckDTO) {
 
         logger.info("CALL /membership/join/userId/check");
-        logger.info("[input] API_SECRET_KEY={}", userIdCheckVO.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", userIdCheckDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -50,25 +55,31 @@ public class JoinController {
 
         try {
 
-            if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(userIdCheckDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
-                if(inputValidate.isEmpty(userIdCheckVO.getUserId())) {
+                if(inputValidate.isEmpty(userIdCheckDTO.getUserId())) {
                     resultCode = "101";
                     message = "아이디를 입력해주세요.";
                 } else{
-                    JoinVO joinVO = new JoinVO();
-                    joinVO.setUserId(userIdCheckVO.getUserId());
 
-                    int checkUserId = joinService.checkUserId(joinVO);
-                    logger.info("@@ checkUserId={}", checkUserId);
+                    if(!validator.isValidId(userIdCheckDTO.getUserId())) {
+                        resultCode = "102";
+                        message = "적합한 아이디가 아닙니다.";
+                    } else {
+                        JoinDTO joinDTO = new JoinDTO();
+                        joinDTO.setUserId(userIdCheckDTO.getUserId());
 
-                    if(checkUserId > 0){
-                        resultCode = "300";
-                        message = "해당 아이디 사용이 불가능합니다.";
+                        int checkUserId = joinService.checkUserId(joinDTO);
+                        logger.info("@@ checkUserId={}", checkUserId);
 
-                    } else{
-                        resultCode = "200";
-                        message = "해당 아이디 사용이 가능합니다.";
+                        if(checkUserId > 0){
+                            resultCode = "300";
+                            message = "해당 아이디 사용이 불가능합니다.";
+
+                        } else{
+                            resultCode = "200";
+                            message = "해당 아이디 사용이 가능합니다.";
+                        }
                     }
                 }
 
@@ -91,10 +102,10 @@ public class JoinController {
 
     @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.")
     @PostMapping("/basic/membership/insert")
-    public ApiResponse membershipJoinInsert(@RequestBody JoinVO joinVO){
+    public ApiResponse membershipJoinInsert(@RequestBody JoinDTO joinDTO){
 
-        logger.info("CALL /membership/join/insert");
-        logger.info("[input] API_SECRET_KEY={}", joinVO.getApiSecretKey());
+        logger.info("CALL /basic/membership/insert");
+        logger.info("[input] API_SECRET_KEY={}", joinDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -102,38 +113,102 @@ public class JoinController {
 
         try {
 
-            if(joinVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(joinDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
                 // 필수 입력값(아이디, 비밀번호, 휴대전화번호 값이 빈 값이 아닌지 확인)
-                // 선택 입력값(이메일, 생년월일, 성별)
-                if(inputValidate.isEmpty(joinVO.getUserId()) || inputValidate.isEmpty(joinVO.getPassword()) || inputValidate.isEmpty(joinVO.getTel())){
+                // 선택 입력값(이메일, 생년월일, 성별, 닉네임)
+                if(inputValidate.isEmpty(joinDTO.getUserId()) || inputValidate.isEmpty(joinDTO.getPassword()) || inputValidate.isEmpty(joinDTO.getTel())){
 
                     // 필수 입력값 중 빈 값이 존재. insert 중지
                     resultCode = "101";
                     message = "회원가입에 필요한 정보를 입력해주세요.";
 
                 } else{
-                    // 입력값 암호화 & 값 세팅
-                    // 휴대전화번호, 비밀번호 암호화
-                    joinVO.setTel(encryptUtil.encrypt(joinVO.getTel()));
 
-                    // 이메일 값이 넘어오면 암호화
-                    if(!inputValidate.isEmpty(joinVO.getEmail())){
-                        joinVO.setEmail(encryptUtil.encrypt(joinVO.getEmail()));
+                    // 아이디, 비밀번호, 닉네임 적합성 검사
+                    if(!(validator.isValidId(joinDTO.getUserId()) && validator.isValidPassword(joinDTO.getPassword()) && validator.isValidNickname(joinDTO.getNickName()))){
+                        resultCode = "102";
+                        message = "적합한 아이디, 비밀번호, 닉네임이 아닙니다.";
+                    } else {
+                        // 입력값 암호화 & 값 세팅
+                        // 휴대전화번호, 비밀번호 암호화
+                        joinDTO.setTel(encryptUtil.encrypt(joinDTO.getTel()));
+
+                        // 이메일 값이 넘어오면 암호화
+                        if(!inputValidate.isEmpty(joinDTO.getEmail())){
+                            joinDTO.setEmail(encryptUtil.encrypt(joinDTO.getEmail()));
+                        }
+
+                        joinDTO.setPassword(encryptUtil.hashEncodeString(joinDTO.getPassword()));
+
+                        // 회원 정보 저장(회원가입)
+                        int insertResult = joinService.insertMemberInfo(joinDTO);
+                        logger.info("@@ insertResult={}", insertResult);
+
+                        if(insertResult > 0){
+                            resultCode = "200";
+                            message = "회원가입에 성공하였습니다.";
+                        } else{
+                            resultCode = "300";
+                            message = "회원가입에 실패하였습니다.";
+                        }
                     }
+                }
 
-                    joinVO.setPassword(encryptUtil.hashEncodeString(joinVO.getPassword()));
+            } else {
+                resultCode = "100";
+                message = "잘못된 접근입니다.";
+            }
 
-                    // 회원 정보 저장(회원가입)
-                    int insertResult = joinService.insertMemberInfo(joinVO);
-                    logger.info("@@ insertResult={}", insertResult);
+        } catch (Exception e) {
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+            throw new RuntimeException(e);
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
+        }
 
-                    if(insertResult > 0){
-                        resultCode = "200";
-                        message = "회원가입에 성공하였습니다.";
-                    } else{
-                        resultCode = "300";
-                        message = "회원가입에 실패하였습니다.";
+        return apiResponse;
+    }
+
+    @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API입니다.")
+    @PostMapping("check/duplicate/nickname")
+    public ApiResponse checkDuplicateNickname(@RequestBody NickNameDTO nickNameDTO){
+
+        logger.info("CALL /membership/join/check/duplicate/nickname");
+        logger.info("[input] API_SECRET_KEY={}", nickNameDTO.getApiSecretKey());
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            if(nickNameDTO.getApiSecretKey().equals(API_SECRET_KEY)){
+
+                // 필수 입력값(아이디, 비밀번호, 휴대전화번호 값이 빈 값이 아닌지 확인)
+                if(inputValidate.isEmpty(nickNameDTO.getNickName())){
+
+                    // 필수 입력값 중 빈 값이 존재. insert 중지
+                    resultCode = "101";
+                    message = "닉네임 정보를 입력해주세요.";
+
+                } else{
+
+                    if(!validator.isValidNickname(nickNameDTO.getNickName())) {
+                        resultCode = "102";
+                        message = "적합하지 않는 닉네임입니다.";
+                    } else {
+                        int nickNameCnt = joinService.checkNickName(nickNameDTO);
+                        logger.info("nickNameCnt={}", nickNameCnt);
+                        if(nickNameCnt > 0) {
+                            resultCode = "103";
+                            message = "이미 존재하는 닉네임입니다.";
+                        } else {
+                            resultCode = "200";
+                            message = "이용 가능한 닉네임입니다.";
+                        }
                     }
                 }
 
