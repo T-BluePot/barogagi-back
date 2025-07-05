@@ -1,12 +1,12 @@
-package com.barogagi.member.join.vo;
+package com.barogagi.member.join.dto;
 
-import com.barogagi.config.vo.DefailtVO;
+import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class JoinVO extends DefailtVO {
+public class JoinDTO extends DefaultVO {
 
     // 아이디
     private String userId = "";
@@ -25,4 +25,7 @@ public class JoinVO extends DefailtVO {
 
     // 성별 (M : 남 / W : 여)
     private String gender = "";
+
+    // 닉네임
+    private String nickName = "";
 }
