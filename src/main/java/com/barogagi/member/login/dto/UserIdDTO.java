@@ -1,4 +1,4 @@
-package com.barogagi.member.login.vo;
+package com.barogagi.member.login.dto;
 
 import lombok.Getter;
 import lombok.Setter;

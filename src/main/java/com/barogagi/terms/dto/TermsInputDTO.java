@@ -1,4 +1,4 @@
-package com.barogagi.terms.vo;
+package com.barogagi.terms.dto;
 
 import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
