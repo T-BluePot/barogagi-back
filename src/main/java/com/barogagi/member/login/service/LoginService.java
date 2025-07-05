@@ -4,6 +4,7 @@ import com.barogagi.member.login.mapper.LoginMapper;
 import com.barogagi.member.login.vo.LoginVO;
 import com.barogagi.member.login.vo.LoginDTO;
 import com.barogagi.member.login.vo.SearchUserIdDTO;
+import com.barogagi.member.login.vo.UserIdDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class LoginService {
         return loginMapper.selectMemberCnt(loginDTO);
     }
 
-    public List<LoginVO> myUserIdList(SearchUserIdDTO searchUserIdDTO){
+    public List<UserIdDTO> myUserIdList(SearchUserIdDTO searchUserIdDTO){
         return loginMapper.myUserIdList(searchUserIdDTO);
     }
 

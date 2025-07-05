@@ -10,7 +10,7 @@
         ]]>
     </select>
 
-    <select id="myUserIdList" parameterType="com.barogagi.member.login.vo.SearchUserIdDTO" resultType="com.barogagi.member.login.vo.LoginVO">
+    <select id="myUserIdList" parameterType="com.barogagi.member.login.vo.SearchUserIdDTO" resultType="com.barogagi.member.login.vo.UserIdDTO">
         <![CDATA[
             SELECT  USER_ID     userId
             FROM    USER_MEMBERSHIP_INFO

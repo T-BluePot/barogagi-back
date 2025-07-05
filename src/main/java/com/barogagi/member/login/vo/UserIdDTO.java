@@ -1,12 +1,10 @@
 package com.barogagi.member.login.vo;
 
-import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginDTO extends DefaultVO {
+public class UserIdDTO {
     private String userId = "";
-    private String password = "";
 }

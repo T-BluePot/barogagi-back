@@ -4,6 +4,7 @@ import com.barogagi.member.login.service.LoginService;
 import com.barogagi.member.login.vo.LoginVO;
 import com.barogagi.member.login.vo.LoginDTO;
 import com.barogagi.member.login.vo.SearchUserIdDTO;
+import com.barogagi.member.login.vo.UserIdDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
@@ -119,20 +120,13 @@ public class LoginController {
 
                     searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
                     logger.info("tel={}", searchUserIdDTO.getTel());
-                    List<LoginVO> myUserIdList = loginService.myUserIdList(searchUserIdDTO);
+                    List<UserIdDTO> myUserIdList = loginService.myUserIdList(searchUserIdDTO);
 
                     int userIdCnt = myUserIdList.size();
                     if(userIdCnt > 0){
                         resultCode = "200";
                         message = "해당 전화번호로 가입된 아이디입니다.";
-
-                        List<Map<String, Object>> userIdList = new ArrayList<>();
-                        for(LoginVO vo : myUserIdList){
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("userId", vo.getUserId());
-                            userIdList.add(map);
-                        }
-                        apiResponse.setData(userIdList);
+                        apiResponse.setData(myUserIdList);
 
                     } else {
                         resultCode = "201";
