@@ -48,7 +48,7 @@ public class ApprovalController {
     @PostMapping("/authCode/send")
     public ApiResponse approvalTelSend(@RequestBody ApprovalSendVO approvalSendVO) {
 
-        logger.info("CALL /approval/tel/authCode/send");
+        logger.info("CALL /approval/tel/authCode/send!");
         logger.info("[input] API_SECRET_KEY={}", approvalSendVO.getApiSecretKey());
 
         ApprovalVO approvalVO = new ApprovalVO();

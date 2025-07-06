@@ -1,12 +1,12 @@
 package com.barogagi.member.join.vo;
 
-import com.barogagi.config.vo.DefailtVO;
+import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class JoinVO extends DefailtVO {
+public class JoinVO extends DefaultVO {
 
     // 아이디
     private String userId = "";
