@@ -1,12 +1,12 @@
 package com.barogagi.approval.vo;
 
-import com.barogagi.config.vo.DefailtVO;
+import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ApprovalVO extends DefailtVO {
+public class ApprovalVO extends DefaultVO {
 
     // 전화번호
     private String tel = "";

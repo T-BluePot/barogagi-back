@@ -6,11 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginVO extends DefaultVO {
-
+public class LoginDTO extends DefaultVO {
     private String userId = "";
     private String password = "";
-    private String tel = "";
-
-    private String membershipNo = "";
 }

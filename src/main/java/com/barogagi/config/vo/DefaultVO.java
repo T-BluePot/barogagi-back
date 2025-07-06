@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DefailtVO {
+public class DefaultVO {
     private String apiSecretKey = "";
 }
