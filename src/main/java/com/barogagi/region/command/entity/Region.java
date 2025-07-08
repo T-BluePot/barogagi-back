@@ -3,12 +3,12 @@ package com.barogagi.region.command.entity;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 방지
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "REGION")
 public class Region {

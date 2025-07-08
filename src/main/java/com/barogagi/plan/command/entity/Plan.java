@@ -3,11 +3,12 @@ package com.barogagi.plan.command.entity;
 import com.barogagi.plan.command.ex_entity.PlanUserMemebershipInfo;
 import com.barogagi.schedule.command.entity.Schedule;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 방지
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "PLAN")
 public class Plan {
