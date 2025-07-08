@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "USER_MEMBERSHIP_INFO")
-public class PlanUserMemebershipInfo {
+public class PlanUserMembershipInfo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
