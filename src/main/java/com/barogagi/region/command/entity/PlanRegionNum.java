@@ -18,5 +18,5 @@ public class PlanRegionNum {
     private Integer regionNum;      // 지역 번호
 
     @Column(name="PLAN_NUM")
-    private Integer PlanNum;        // 계획 변호
+    private Integer planNum;        // 계획 변호
 }
