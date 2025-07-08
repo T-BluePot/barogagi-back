@@ -10,20 +10,20 @@ import java.util.List;
 @Getter
 @ToString
 public class PlanDetailVO {
-    public int planNum;            // 계획 번호 (PK)
-    public String planNm;          // 계획명
-    public String startTime;       // 시작시간
-    public String endTime;         // 종료시간
+    private int planNum;            // 계획 번호 (PK)
+    private String planNm;          // 계획명
+    private String startTime;       // 시작시간
+    private String endTime;         // 종료시간
 
-    public int itemNum;            // 아이템 번호
-    public String itemNm;          // 아이템명
+    private int itemNum;            // 아이템 번호
+    private String itemNm;          // 아이템명
 
-    public int categoryNum;        // 카테고리 번호
-    public String categoryNm;      // 카테고리명
+    private int categoryNum;        // 카테고리 번호
+    private String categoryNm;      // 카테고리명
 
     // 지역 리스트
-    public List<RegionDetailVO> regionVOList;
+    private List<RegionDetailVO> regionVOList;
 
     // 태그 리스트
-    public List<TagDetailVO> tagDetailVOList;
+    private List<TagDetailVO> tagDetailVOList;
 }
