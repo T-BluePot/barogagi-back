@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 public class PlanQueryService {
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private static final Logger logger = LoggerFactory.getLogger(PlanQueryService.class);
 
     private final PlanMapper planMapper;
     @Autowired

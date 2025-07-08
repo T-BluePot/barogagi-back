@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 public class ScheduleQueryService {
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleQueryService.class);
 
     private final ScheduleMapper scheduleMapper;
 

@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/schedule")
 public class ScheduleController {
-    private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
 
     private final InputValidate inputValidate;
 
