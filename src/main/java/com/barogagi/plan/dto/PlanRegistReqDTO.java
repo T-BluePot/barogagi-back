@@ -1,16 +1,12 @@
 package com.barogagi.plan.dto;
 
 import com.barogagi.region.dto.RegionRegistReqDTO;
-import com.barogagi.region.query.vo.RegionDetailVO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
-import com.barogagi.tag.query.vo.TagDetailVO;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import lombok.Getter;
 import lombok.ToString;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.ToString;
 
 import java.util.List;
 

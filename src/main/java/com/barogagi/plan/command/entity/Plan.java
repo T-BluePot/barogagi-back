@@ -1,6 +1,6 @@
 package com.barogagi.plan.command.entity;
 
-import com.barogagi.plan.command.ex_entity.PlanUserMemebershipInfo;
+import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
 import com.barogagi.schedule.command.entity.Schedule;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,7 +33,7 @@ public class Plan {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "MEMBERSHIP_NO", nullable = false)
-    private PlanUserMemebershipInfo user;   // 회원 번호
+    private PlanUserMembershipInfo user;   // 회원 번호
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ITEM_NUM", nullable = false)
