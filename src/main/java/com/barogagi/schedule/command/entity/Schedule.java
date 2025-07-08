@@ -1,11 +1,12 @@
 package com.barogagi.schedule.command.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 방지
+@AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "SCHEDULE")
 public class Schedule {
