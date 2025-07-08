@@ -6,12 +6,16 @@ import com.barogagi.member.login.controller.LoginController;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
+import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.schedule.query.vo.ScheduleDetailVO;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.env.Environment;
@@ -30,6 +34,7 @@ public class ScheduleController {
     private final InputValidate inputValidate;
 
     private final ScheduleQueryService scheduleQueryService;
+    private final ScheduleCommandService scheduleCommandService;
     private final PlanQueryService planQueryService;
 
     private final String API_SECRET_KEY;
@@ -37,10 +42,12 @@ public class ScheduleController {
     public ScheduleController(Environment environment,
                               InputValidate inputValidate,
                               ScheduleQueryService scheduleQueryService,
+                              ScheduleCommandService scheduleCommandService,
                               PlanQueryService planQueryService) {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.inputValidate = inputValidate;
         this.scheduleQueryService = scheduleQueryService;
+        this.scheduleCommandService = scheduleCommandService;
         this.planQueryService = planQueryService;
     }
 
@@ -95,8 +102,106 @@ public class ScheduleController {
         } finally {
             apiResponse.setResultCode(resultCode);
             apiResponse.setMessage(message);
-            logger.info("#$# 22 resultCode={}", resultCode);
-            logger.info("#$# 22 apiResponse.getResultCode()={}", apiResponse.getResultCode());
+        }
+        return apiResponse;
+    }
+
+
+    @Operation(summary = "일정 등록 기능", description = "일정을 등록하는 기능입니다.")
+    @PostMapping("")
+    public ApiResponse registSchedule(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "일정 등록 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "일정 등록 요청 예시",
+                                    value = "{\n" +
+                                            "  \"scheduleNm\": \"서울 맛집 투어 일정\",\n" +
+                                            "  \"startDate\": \"2025-07-01\",\n" +
+                                            "  \"endDate\": \"2025-07-01\",\n" +
+                                            "  \"radius\": 3,\n" +
+                                            "  \"planDetailVOList\": [\n" +
+                                            "    {\n" +
+                                            "      \"startTime\": \"08:00\",\n" +
+                                            "      \"endTime\": \"09:00\",\n" +
+                                            "      \"itemNum\": 1,\n" +
+                                            "      \"categoryNum\": 1,\n" +
+                                            "      \"comment\": \"한식맛집\",\n" +
+                                            "      \"regionRegistReqDTOList\": [\n" +
+                                            "        {\n" +
+                                            "          \"regionNum\": 1,\n" +
+                                            "          \"regionLevel1\": \"서울특별시\",\n" +
+                                            "          \"regionLevel2\": \"강남구\",\n" +
+                                            "          \"x\": \"127.04892851392\",\n" +
+                                            "          \"y\": \"37.5091105328378\"\n" +
+                                            "        },\n" +
+                                            "        {\n" +
+                                            "          \"regionNum\": 2,\n" +
+                                            "          \"regionLevel1\": \"서울특별시\",\n" +
+                                            "          \"regionLevel2\": \"송파구\",\n" +
+                                            "          \"x\": \"127.09811980036908\",\n" +
+                                            "          \"y\": \"37.51113059993883\"\n" +
+                                            "        }\n" +
+                                            "      ],\n" +
+                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNum\": 1, \"tagNm\": \"디저트\" },\n" +
+                                            "        { \"tagNum\": 2, \"tagNm\": \"야경\" }\n" +
+                                            "      ]\n" +
+                                            "    }\n" +
+                                            "  ]\n" +
+                                            "}"
+                            )
+                    )
+            )
+            @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO) {
+
+        logger.info("CALL /schedule");
+        logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO.toString());
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if (true) {
+                boolean isVaildReq = true; // TODO. DTO 검증 로직 추가 필요
+                if (isVaildReq) {
+                    resultCode = "101";
+                    message = "입력값이 올바르지 않습니다.";
+                } else {
+                    scheduleCommandService.registSchedule(scheduleRegistReqDTO);
+                    // ScheduleDetailResDTO result = scheduleQueryService.getScheduleDetail(scheduleNum);
+                    // logger.info("result={}", result.toString());
+
+                    /*if (result == null) {
+                        resultCode = "300";
+                        message = "조회할 일정이 존재하지 않습니다."; // TODO. 에러 메시지 정의하기
+
+                    } else {
+                        resultCode = "200";
+                        message = "일정 상세 조회 성공";
+                        apiResponse.setData(result);
+                        logger.info("#$# result={}", result.toString());
+                    }*/
+                }
+
+            } else {
+                resultCode = "100";
+                message = "잘못된 접근입니다.";
+            }
+            logger.info("#$# 11 resultCode={}", resultCode);
+        } catch (Exception e) {
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+            throw new RuntimeException(e);
+
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
         }
         return apiResponse;
     }
