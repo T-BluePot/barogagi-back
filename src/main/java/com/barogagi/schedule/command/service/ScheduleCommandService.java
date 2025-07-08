@@ -1,10 +1,10 @@
 package com.barogagi.schedule.command.service;
 
 import com.barogagi.approval.mapper.ApprovalMapper;
-import com.barogagi.kakaoplace.client.KakaoPlaceClient;
-import com.barogagi.plan.dto.PlanRegistReqDTO;
-import com.barogagi.plan.query.mapper.CategoryMapper;
-import com.barogagi.schedule.dto.KakaoPlaceReqDTO;
+//import com.barogagi.kakaoplace.client.KakaoPlaceClient;
+//import com.barogagi.plan.dto.PlanRegistReqDTO;
+//import com.barogagi.plan.query.mapper.CategoryMapper;
+//import com.barogagi.schedule.dto.KakaoPlaceReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
