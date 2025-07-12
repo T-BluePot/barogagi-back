@@ -24,9 +24,11 @@ jobs:
           if [[ "${GITHUB_REF##*/}" == "refs/heads/release" ]]; then
             echo "HOST=${{ secrets.PROD_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.PROD_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "${{ secrets.APP_PROPS_RELEASE }}" > ./src/main/resources/application.properties
           else
             echo "HOST=${{ secrets.TEST_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.TEST_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "${{ secrets.APP_PROPS_MAIN  }}" > ./src/main/resources/application.properties
           fi
 
       - name: Build jar file
