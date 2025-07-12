@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup SSH key
         run: |
@@ -21,7 +21,7 @@ jobs:
 
       - name: Set Environment Variables [main/release]
         run: |
-          if [[ "${GITHUB_REF##*/}" == "refs/heads/release" ]]; then
+          if [[ "${GITHUB_REF##*/}" == "release" ]]; then
             echo "HOST=${{ secrets.PROD_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.PROD_TARGET_DIR }}" >> $GITHUB_ENV
             echo "${{ secrets.APP_PROPS_RELEASE }}" > ./src/main/resources/application.properties
