@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.barogagi.member.login.mapper.LoginMapper">
-    <select id="selectMemberCnt" parameterType="com.barogagi.member.login.vo.LoginVO" resultType="int">
+    <select id="selectMemberCnt" parameterType="com.barogagi.member.login.vo.LoginDTO" resultType="int">
         <![CDATA[
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO
@@ -10,7 +10,7 @@
         ]]>
     </select>
 
-    <select id="myUserIdList" parameterType="com.barogagi.member.login.vo.LoginVO" resultType="com.barogagi.member.login.vo.LoginVO">
+    <select id="myUserIdList" parameterType="com.barogagi.member.login.vo.SearchUserIdDTO" resultType="com.barogagi.member.login.vo.UserIdDTO">
         <![CDATA[
             SELECT  USER_ID     userId
             FROM    USER_MEMBERSHIP_INFO
@@ -18,7 +18,7 @@
         ]]>
     </select>
 
-    <update id="updatePassword" parameterType="com.barogagi.member.login.vo.LoginVO">
+    <update id="updatePassword" parameterType="com.barogagi.member.login.vo.LoginDTO">
         <![CDATA[
             UPDATE  USER_MEMBERSHIP_INFO
             SET     PASSWORD = #{password},

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.barogagi.plan.query.mapper.PlanMapper">
+
+
+    <!-- resultMap -->
+
+    <resultMap id="PlanDetailMap" type="com.barogagi.plan.query.vo.PlanDetailVO">
+        <id property="planNum" column="planNum" />
+        <result property="planNm" column="planNm" />
+        <result property="startTime" column="startTime" />
+        <result property="endTime" column="endTime" />
+
+        <result property="itemNum" column="itemNum" />
+        <result property="itemNm" column="itemNm" />
+
+        <result property="categoryNum" column="categoryNum" />
+        <result property="categoryNm" column="categoryNm" />
+
+        <!-- 지역 리스트 -->
+        <collection property="regionVOList" ofType="com.barogagi.region.query.vo.RegionDetailVO"
+                    column="planNum" javaType="java.util.List"
+                    select="com.barogagi.region.query.mapper.RegionMapper.selectRegionByPlanNum"/>
+
+        <!-- 태그 리스트 -->
+        <collection property="tagDetailVOList" ofType="com.barogagi.tag.query.vo.TagDetailVO"
+                    column="planNum" javaType="java.util.List"
+                    select="com.barogagi.tag.query.mapper.TagMapper.selectTagByPlanNum"/>
+    </resultMap>
+
+
+    <!-- Select Query -->
+
+    <select id="selectPlanDetailByScheduleNum" parameterType="int" resultMap="PlanDetailMap">
+        <![CDATA[
+            SELECT
+			        a.PLAN_NUM AS planNum
+		          , a.PLAN_NM AS planNm
+		          , a.START_TIME AS startTime
+		          , a.END_TIME AS endTime
+		          , b.ITEM_NUM AS itemNum
+		          , b.ITEM_NM AS itemNm
+		          , c.CATEGORY_NUM AS categoryNum
+		          , c.CATEGORY_NM AS categoryNm
+            FROM 	PLAN a
+            JOIN    ITEM b ON a.ITEM_NUM = b.ITEM_NUM
+            JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
+            WHERE   a.SCHEDULE_NUM = #{scheduleNum};
+        ]]>
+    </select>
+</mapper>

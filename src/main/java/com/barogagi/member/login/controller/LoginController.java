@@ -1,7 +1,9 @@
 package com.barogagi.member.login.controller;
 
 import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.vo.LoginVO;
+import com.barogagi.member.login.vo.LoginDTO;
+import com.barogagi.member.login.vo.SearchUserIdDTO;
+import com.barogagi.member.login.vo.UserIdDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
@@ -16,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Tag(name = "일반 로그인", description = "일반 로그인 관련 API")
 @RestController
@@ -45,29 +44,29 @@ public class LoginController {
         this.loginService = loginService;
     }
 
-    @Operation(summary = "로그인", description = "로그인 기능입니다. apiSecretKey, userId와 password 값만 보내주세요.")
+    @Operation(summary = "로그인", description = "로그인 기능입니다.")
     @PostMapping("/basic/membership/login")
-    public ApiResponse basicMemberLogin(@RequestBody LoginVO loginVO){
+    public ApiResponse basicMemberLogin(@RequestBody LoginDTO loginDTO){
 
         logger.info("CALL /login/basic/membership/login");
-        logger.info("[input] API_SECRET_KEY={}", loginVO.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", loginDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(loginVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(loginDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
-                if(inputValidate.isEmpty(loginVO.getUserId()) || inputValidate.isEmpty(loginVO.getPassword())){
+                if(inputValidate.isEmpty(loginDTO.getUserId()) || inputValidate.isEmpty(loginDTO.getPassword())){
                     resultCode = "101";
                     message = "로그인이 불가능합니다.";
                 } else {
                     // 비밀번호 암호화
-                    loginVO.setPassword(encryptUtil.hashEncodeString(loginVO.getPassword()));
+                    loginDTO.setPassword(encryptUtil.hashEncodeString(loginDTO.getPassword()));
 
                     // 동일한 아이디와 비밀번호가 있는지 확인(로그인)
-                    int membershipInfoCnt = loginService.selectMemberCnt(loginVO);
+                    int membershipInfoCnt = loginService.selectMemberCnt(loginDTO);
 
                     logger.info("@@ membershipInfoCnt={}", membershipInfoCnt);
                     if(membershipInfoCnt > 0) {
@@ -95,42 +94,35 @@ public class LoginController {
         return  apiResponse;
     }
 
-    @Operation(summary = "아이디 찾기 기능", description = "아이디 찾기 기능입니다. apiSecretKey, tel 값만 보내주시면 됩니다.")
+    @Operation(summary = "아이디 찾기 기능", description = "아이디 찾기 기능입니다.")
     @PostMapping("/basic/membership/userId/search")
-    public ApiResponse searchUserId(@RequestBody LoginVO loginVO){
+    public ApiResponse searchUserId(@RequestBody SearchUserIdDTO searchUserIdDTO){
 
         logger.info("CALL /login/basic/membership/userId/search");
-        logger.info("[input] API_SECRET_KEY={}", loginVO.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", searchUserIdDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(loginVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(searchUserIdDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
-                if(inputValidate.isEmpty(loginVO.getTel())){
+                if(inputValidate.isEmpty(searchUserIdDTO.getTel())){
                     resultCode = "101";
                     message = "전화번호가 존재하지 않습니다.";
 
                 } else {
 
-                    loginVO.setTel(encryptUtil.encrypt(loginVO.getTel()));
-                    logger.info("tel={}", loginVO.getTel());
-                    List<LoginVO> myUserIdList = loginService.myUserIdList(loginVO);
+                    searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
+                    logger.info("tel={}", searchUserIdDTO.getTel());
+                    List<UserIdDTO> myUserIdList = loginService.myUserIdList(searchUserIdDTO);
 
                     int userIdCnt = myUserIdList.size();
                     if(userIdCnt > 0){
                         resultCode = "200";
                         message = "해당 전화번호로 가입된 아이디입니다.";
-
-                        List<Map<String, Object>> userIdList = new ArrayList<>();
-                        for(LoginVO vo : myUserIdList){
-                            Map<String, Object> map = new HashMap<>();
-                            map.put("userId", vo.getUserId());
-                            userIdList.add(map);
-                        }
-                        apiResponse.setData(userIdList);
+                        apiResponse.setData(myUserIdList);
 
                     } else {
                         resultCode = "201";
@@ -154,30 +146,30 @@ public class LoginController {
         return  apiResponse;
     }
 
-    @Operation(summary = "비밀번호 재설정 기능", description = "비밀번호 재설정 기능입니다. apiSecretKey, userId, password값만 보내주시면 됩니다.")
+    @Operation(summary = "비밀번호 재설정 기능", description = "비밀번호 재설정 기능입니다.")
     @PostMapping("/basic/membership/password/update")
-    public ApiResponse updatePassword(@RequestBody LoginVO loginVO){
+    public ApiResponse updatePassword(@RequestBody LoginDTO passwordResertDTO){
 
         logger.info("CALL /login/basic/membership/password/update");
-        logger.info("[input] API_SECRET_KEY={}", loginVO.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", passwordResertDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(loginVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(passwordResertDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
-                if(inputValidate.isEmpty(loginVO.getUserId()) || inputValidate.isEmpty(loginVO.getPassword())){
+                if(inputValidate.isEmpty(passwordResertDTO.getUserId()) || inputValidate.isEmpty(passwordResertDTO.getPassword())){
                     resultCode = "101";
                     message = "아이디, 비밀번호 값이 없습니다.";
 
                 } else {
                     // 비밀번호 암호화
-                    loginVO.setPassword(encryptUtil.hashEncodeString(loginVO.getPassword()));
+                    passwordResertDTO.setPassword(encryptUtil.hashEncodeString(passwordResertDTO.getPassword()));
 
                     // 비밀번호 update
-                    int updatePassword = loginService.updatePassword(loginVO);
+                    int updatePassword = loginService.updatePassword(passwordResertDTO);
                     logger.info("@@ updatePassword={}", updatePassword);
 
                     if(updatePassword > 0){
