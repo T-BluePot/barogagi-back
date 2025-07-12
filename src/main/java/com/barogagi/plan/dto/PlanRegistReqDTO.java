@@ -15,8 +15,8 @@ import java.util.List;
 @Schema(description = "계획 등록 요청 DTO")
 public class PlanRegistReqDTO {
 
-    @Schema(description = "계획 이름", example = "프랜차이즈카페")
-    public String planNm;
+    //@Schema(description = "계획 이름", example = "프랜차이즈카페")
+    //public String planNm;
 
     @Schema(description = "시작 시간", example = "08:00")
     public String startTime;
@@ -30,15 +30,12 @@ public class PlanRegistReqDTO {
     @Schema(description = "카테고리 번호", example = "1")
     public int categoryNum;
 
-    @Schema(description = "추가 고려사항", example = "한식맛집")
-    private String comment;         // 추가 고려사항
 
 
     @Schema(description = "지역 정보 DTO")
-    public RegionRegistReqDTO regionRegistReqDTO;
+    public List<RegionRegistReqDTO> regionRegistReqDTOList;
 
-    @ArraySchema(schema = @Schema(implementation = TagRegistReqDTO.class),
-            arraySchema = @Schema(description = "태그 리스트", example = "[{\"tagNum\":1,\"tagNm\":\"이색카페\"},{\"tagNum\":2,\"tagNm\":\"맛집투어\"}]"))
-    public List<TagRegistReqDTO> tagRegistReqDTOList;
+    @Schema(description = "태그 목록")
+    public List<Integer> tagList;
 }
 

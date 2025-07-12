@@ -3,8 +3,10 @@ package com.barogagi.schedule.controller;
 import com.barogagi.member.join.vo.JoinVO;
 import com.barogagi.member.join.vo.UserIdCheckVO;
 import com.barogagi.member.login.controller.LoginController;
+import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
+import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
@@ -118,37 +120,56 @@ public class ScheduleController {
                             examples = @ExampleObject(
                                     name = "일정 등록 요청 예시",
                                     value = "{\n" +
-                                            "  \"scheduleNm\": \"서울 맛집 투어 일정\",\n" +
+                                            "  \"scheduleNm\": \"서울 데이트 코스\",\n" +
                                             "  \"startDate\": \"2025-07-01\",\n" +
                                             "  \"endDate\": \"2025-07-01\",\n" +
-                                            "  \"radius\": 3,\n" +
-                                            "  \"planDetailVOList\": [\n" +
+                                            "  \"radius\": 3000,\n" +
+                                            "  \"comment\": \"분위기 좋은 카페 추천해주세요\",\n" +
+                                            "  \"planRegistReqDTOList\": [\n" +
                                             "    {\n" +
                                             "      \"startTime\": \"08:00\",\n" +
                                             "      \"endTime\": \"09:00\",\n" +
-                                            "      \"itemNum\": 1,\n" +
-                                            "      \"categoryNum\": 1,\n" +
-                                            "      \"comment\": \"한식맛집\",\n" +
+                                            "      \"itemNum\": 10,\n" +
+                                            "      \"categoryNum\": 2,\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        {\n" +
-                                            "          \"regionNum\": 1,\n" +
-                                            "          \"regionLevel1\": \"서울특별시\",\n" +
-                                            "          \"regionLevel2\": \"강남구\",\n" +
+                                            "          \"regionNm1\": \"서울특별시\",\n" +
+                                            "          \"regionNm2\": \"강남구\",\n" +
                                             "          \"x\": \"127.04892851392\",\n" +
                                             "          \"y\": \"37.5091105328378\"\n" +
-                                            "        },\n" +
-                                            "        {\n" +
-                                            "          \"regionNum\": 2,\n" +
-                                            "          \"regionLevel1\": \"서울특별시\",\n" +
-                                            "          \"regionLevel2\": \"송파구\",\n" +
-                                            "          \"x\": \"127.09811980036908\",\n" +
-                                            "          \"y\": \"37.51113059993883\"\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagRegistReqDTOList\": [\n" +
-                                            "        { \"tagNum\": 1, \"tagNm\": \"디저트\" },\n" +
-                                            "        { \"tagNum\": 2, \"tagNm\": \"야경\" }\n" +
-                                            "      ]\n" +
+                                            "      \"tagList\": [1, 2]\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"startTime\": \"14:00\",\n" +
+                                            "      \"endTime\": \"15:00\",\n" +
+                                            "      \"itemNum\": 2,\n" +
+                                            "      \"categoryNum\": 1,\n" +
+                                            "      \"regionRegistReqDTOList\": [\n" +
+                                            "        {\n" +
+                                            "          \"regionNm1\": \"서울특별시\",\n" +
+                                            "          \"regionNm2\": \"강남구\",\n" +
+                                            "          \"x\": \"127.046634887695\",\n" +
+                                            "          \"y\": \"37.500690460205\"\n" +
+                                            "        }\n" +
+                                            "      ],\n" +
+                                            "      \"tagList\": [2]\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"startTime\": \"15:30\",\n" +
+                                            "      \"endTime\": \"19:00\",\n" +
+                                            "      \"itemNum\": 15,\n" +
+                                            "      \"categoryNum\": 4,\n" +
+                                            "      \"regionRegistReqDTOList\": [\n" +
+                                            "        {\n" +
+                                            "          \"regionNm1\": \"서울특별시\",\n" +
+                                            "          \"regionNm2\": \"종로구\",\n" +
+                                            "          \"x\": \"126.996652\",\n" +
+                                            "          \"y\": \"37.579617\"\n" +
+                                            "        }\n" +
+                                            "      ],\n" +
+                                            "      \"tagList\": [2]\n" +
                                             "    }\n" +
                                             "  ]\n" +
                                             "}"
@@ -159,6 +180,32 @@ public class ScheduleController {
 
         logger.info("CALL /schedule");
         logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO.toString());
+        for (int i = 0; i < scheduleRegistReqDTO.getPlanRegistReqDTOList().size(); i++) {
+            PlanRegistReqDTO plan = scheduleRegistReqDTO.getPlanRegistReqDTOList().get(i);
+            System.out.println("===== [Plan " + (i + 1) + "] =====");
+            System.out.println("Start Time: " + plan.getStartTime());
+            System.out.println("End Time  : " + plan.getEndTime());
+            System.out.println("Item Num  : " + plan.getItemNum());
+            System.out.println("Category  : " + plan.getCategoryNum());
+
+            // 지역 정보
+            if (plan.getRegionRegistReqDTOList() != null) {
+                for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
+                    System.out.println("  → Region: " + region.getRegionNm1() + " " + region.getRegionNm2() +
+                            " (" + region.getX() + ", " + region.getY() + ")");
+                }
+            }
+
+            // 태그 번호 리스트
+            if (plan.getTagList() != null) {
+                System.out.print("Tags     : ");
+                for (int tagNum : plan.getTagList()) {
+                    System.out.print(tagNum + " ");
+                }
+                System.out.println(); // 줄 바꿈
+            }
+            System.out.println(); // Plan 구분용 빈 줄
+        }
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -169,7 +216,7 @@ public class ScheduleController {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             if (true) {
                 boolean isVaildReq = true; // TODO. DTO 검증 로직 추가 필요
-                if (isVaildReq) {
+                if (!isVaildReq) {
                     resultCode = "101";
                     message = "입력값이 올바르지 않습니다.";
                 } else {
