@@ -1,9 +1,9 @@
 package com.barogagi.member.login.controller;
 
 import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.vo.LoginDTO;
-import com.barogagi.member.login.vo.SearchUserIdDTO;
-import com.barogagi.member.login.vo.UserIdDTO;
+import com.barogagi.member.login.dto.LoginDTO;
+import com.barogagi.member.login.dto.SearchUserIdDTO;
+import com.barogagi.member.login.dto.UserIdDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
