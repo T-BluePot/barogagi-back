@@ -2,18 +2,22 @@ package com.barogagi.approval.service;
 
 import com.barogagi.approval.mapper.ApprovalMapper;
 import com.barogagi.approval.vo.ApprovalVO;
+import com.barogagi.sendSms.service.SendSmsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ApprovalService {
 
-    private final ApprovalMapper approvalMapper;
+    private static final Logger logger = LoggerFactory.getLogger(ApprovalService.class);
 
     @Autowired
-    public ApprovalService(ApprovalMapper approvalMapper){
-        this.approvalMapper = approvalMapper;
-    }
+    private ApprovalMapper approvalMapper;
+
+    @Autowired
+    private SendSmsService sendSmsService;
 
     public int updateApprovalRecord(ApprovalVO vo){
         return approvalMapper.updateApprovalRecord(vo);

@@ -6,10 +6,13 @@ import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.approval.vo.ApprovalVO;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.sendSms.dto.SendSmsVO;
+import com.barogagi.sendSms.service.SendSmsService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,26 +25,26 @@ import org.springframework.web.bind.annotation.*;
 public class ApprovalController {
     private static final Logger logger = LoggerFactory.getLogger(ApprovalController.class);
 
-    private final InputValidate inputValidate;
-    private final EncryptUtil encryptUtil;
-    private final AuthCodeService authCodeService;
-    private final ApprovalService approvalService;
+    @Autowired
+    private InputValidate inputValidate;
+
+    @Autowired
+    private EncryptUtil encryptUtil;
+
+    @Autowired
+    private AuthCodeService authCodeService;
+
+    @Autowired
+    private ApprovalService approvalService;
+
+    @Autowired
+    private SendSmsService sendSmsService;
 
     private final String API_SECRET_KEY;
 
     @Autowired
-    public ApprovalController(Environment environment,
-                              InputValidate inputValidate,
-                              EncryptUtil encryptUtil,
-                              AuthCodeService authCodeService,
-                              ApprovalService approvalService){
-
+    public ApprovalController(Environment environment){
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
-
-        this.inputValidate = inputValidate;
-        this.encryptUtil = encryptUtil;
-        this.authCodeService = authCodeService;
-        this.approvalService = approvalService;
     }
 
     @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다.")
@@ -66,12 +69,16 @@ public class ApprovalController {
                     message = "인증번호를 발송할 전화번호를 입력해주세요.";
 
                 } else{
+
+                    // 전화번호
+                    String recipientTel = approvalSendVO.getTel();
+
                     // 인증번호를 DB에 INSERT 전에, 전에 발송된 기록들은 flag UPDATE 처리
                     approvalVO.setCompleteYn("N");
                     approvalVO.setType(approvalSendVO.getType());
 
                     // 전화번호 암호화
-                    approvalVO.setTel(encryptUtil.hashEncodeString(approvalSendVO.getTel()));
+                    approvalVO.setTel(encryptUtil.hashEncodeString(recipientTel));
 
                     int updateResult = approvalService.updateApprovalRecord(approvalVO);
                     logger.info("@@ updateResult={}", updateResult);
@@ -80,20 +87,35 @@ public class ApprovalController {
                     String authCode = authCodeService.generateAuthCode();
                     logger.info("@@ authCode={}", authCode);
 
+                    // 인증번호 메시지 발송
+                    SendSmsVO sendSmsVO = new SendSmsVO();
+                    sendSmsVO.setRecipientTel(recipientTel);
+                    String messageContent = "인증번호는 [" + authCode + "] 입니다.";
+                    sendSmsVO.setMessageContent(messageContent);
+                    boolean sendMessageResult = sendSmsService.sendSms(sendSmsVO);
+                    logger.info("@@ sendMessageResult={}", sendMessageResult);
+
                     // 인증번호 암호화
                     approvalVO.setAuthCode(encryptUtil.hashEncodeString(authCode));
 
                     // 인증번호를 DB에 insert
-                    int insertResult = approvalService.insertApprovalRecord(approvalVO);
-                    logger.info("@@ insertResult={}", insertResult);
-                    if(insertResult > 0) {
-                        // 인증번호 발송 로직
-                        resultCode = "200";
-                        message = "인증번호가 발송되었습니다.";
 
-                    } else{
-                        resultCode = "102";
-                        message = "오류가 발생하였습니다.";
+                    if(sendMessageResult){
+                        approvalVO.setMessageContent(sendSmsVO.getMessageContent());
+                        int insertResult = approvalService.insertApprovalRecord(approvalVO);
+                        logger.info("@@ insertResult={}", insertResult);
+                        if(insertResult > 0) {
+                            // 인증번호 발송 로직
+                            resultCode = "200";
+                            message = "인증번호 발송에 성공하었습니다.";
+
+                        } else{
+                            resultCode = "102";
+                            message = "오류가 발생하였습니다.";
+                        }
+                    } else {
+                        resultCode = "103";
+                        message = "인증번호 발송에 실패하였습니다.";
                     }
                 }
             } else {

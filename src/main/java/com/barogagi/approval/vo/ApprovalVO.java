@@ -19,4 +19,7 @@ public class ApprovalVO extends DefailtVO {
 
     // 타입
     private String type = "";
+
+    // 메시지 내용
+    private String messageContent = "";
 }

@@ -14,8 +14,8 @@
 
     <insert id="insertApprovalRecord" parameterType="com.barogagi.approval.vo.ApprovalVO">
         <![CDATA[
-            INSERT APPROVAL_NUM_INFO(TEL, AUTH_CODE, COMPLETE_YN, TYPE, REG_DATE)
-                VALUES(#{tel}, #{authCode}, #{completeYn}, #{type}, NOW())
+            INSERT APPROVAL_NUM_INFO(TEL, AUTH_CODE, COMPLETE_YN, MESSAGE_CONTENT, TYPE, REG_DATE)
+                VALUES(#{tel}, #{authCode}, #{completeYn}, #{messageContent}, #{type}, NOW())
         ]]>
     </insert>
 
