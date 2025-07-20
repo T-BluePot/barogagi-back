@@ -1,0 +1,55 @@
+name: Deploy Backend to EC2 [main/release]
+
+on:
+  push:
+    branches:
+      - main
+      - release
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          echo "${{ secrets.PRIVATE_KEY }}" > key.pem
+          chmod 600 key.pem
+
+      - name: Set Environment Variables [main/release]
+        run: |
+          if [[ "${GITHUB_REF##*/}" == "release" ]]; then
+            echo "HOST=${{ secrets.PROD_HOST }}" >> $GITHUB_ENV
+            echo "TARGET_DIR=${{ secrets.PROD_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "${{ secrets.APP_PROPS_RELEASE }}" > ./src/main/resources/application.properties
+          else
+            echo "HOST=${{ secrets.TEST_HOST }}" >> $GITHUB_ENV
+            echo "TARGET_DIR=${{ secrets.TEST_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "${{ secrets.APP_PROPS_MAIN  }}" > ./src/main/resources/application.properties
+          fi
+
+      - name: Build jar file
+        working-directory: ./
+        run: |
+          mvn clean package -DskipTests
+
+      - name: SCP jar and Dockerfile to EC2
+        run: |
+          set -e
+          scp -i key.pem -o StrictHostKeyChecking=no \
+            ./target/*.jar \
+            ./Dockerfile \
+            ${{ secrets.USERNAME }}@${{ env.HOST }}:${{ env.TARGET_DIR }}
+
+      - name: SSH into EC2 and run Docker
+        run: |
+          ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ env.HOST }} << EOF
+            cd $TARGET_DIR
+            sudo docker stop backend || true
+            sudo docker rm backend || true
+            sudo docker build -t backend .
+            sudo docker run -d -p 8080:8080 --name backend backend
+          EOF
