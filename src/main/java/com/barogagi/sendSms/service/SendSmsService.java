@@ -14,7 +14,7 @@ public class SendSmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SendSmsService.class);
 
-    private final String SEND_TEL = "010-2258-1349";
+    private final String SEND_TEL = "";
     private final String API_KEY = "";
     private final String API_SECRET_KEY = "";
 
