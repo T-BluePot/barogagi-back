@@ -1,10 +1,10 @@
-package com.barogagi.member.join.controller;
+package com.barogagi.member.basic.join.controller;
 
-import com.barogagi.member.join.dto.JoinRequestDTO;
-import com.barogagi.member.join.dto.NickNameDTO;
-import com.barogagi.member.join.service.JoinService;
-import com.barogagi.member.join.dto.JoinDTO;
-import com.barogagi.member.join.dto.UserIdCheckDTO;
+import com.barogagi.member.basic.join.dto.JoinRequestDTO;
+import com.barogagi.member.basic.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.NickNameDTO;
+import com.barogagi.member.basic.join.dto.UserIdCheckDTO;
+import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;

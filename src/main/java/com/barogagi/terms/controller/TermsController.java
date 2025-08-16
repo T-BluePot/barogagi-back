@@ -1,7 +1,7 @@
 package com.barogagi.terms.controller;
 
-import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.dto.LoginVO;
+import com.barogagi.member.basic.login.service.LoginService;
+import com.barogagi.member.basic.login.dto.LoginVO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.service.TermsService;
 import com.barogagi.terms.dto.TermsInputDTO;

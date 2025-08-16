@@ -1,4 +1,4 @@
-package com.barogagi.member.join.dto;
+package com.barogagi.member.basic.join.dto;
 
 import com.barogagi.config.vo.DefaultVO;
 import jakarta.validation.constraints.NotBlank;

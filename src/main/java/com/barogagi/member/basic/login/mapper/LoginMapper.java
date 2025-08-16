@@ -1,9 +1,9 @@
-package com.barogagi.member.login.mapper;
+package com.barogagi.member.basic.login.mapper;
 
-import com.barogagi.member.login.dto.LoginVO;
-import com.barogagi.member.login.dto.LoginDTO;
-import com.barogagi.member.login.dto.SearchUserIdDTO;
-import com.barogagi.member.login.dto.UserIdDTO;
+import com.barogagi.member.basic.login.dto.LoginVO;
+import com.barogagi.member.basic.login.dto.LoginDTO;
+import com.barogagi.member.basic.login.dto.SearchUserIdDTO;
+import com.barogagi.member.basic.login.dto.UserIdDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
