@@ -26,23 +26,22 @@ public class KakaoPlaceClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public List<KakaoPlaceResDTO> searchKakaoPlace(String query, String x, String y, int radius, int limitPlace) {
-        String url = UriComponentsBuilder
+        String url = String.valueOf(UriComponentsBuilder
                 .fromHttpUrl("https://dapi.kakao.com/v2/local/search/keyword.json")
                 .queryParam("query", query)
                 .queryParam("x", x)
                 .queryParam("y", y)
                 .queryParam("radius", radius)
                 .queryParam("size", limitPlace)
-                .toUriString();
+                .build(false));
+
         logger.info("#$# url={}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
-        headers.set("Content-Type", "application/json;charset=UTF-8 ");
         logger.info("#$# Request Headers: {}", headers);
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
-
         ResponseEntity<KakaoPlaceSearchResDTO> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -50,8 +49,8 @@ public class KakaoPlaceClient {
                 KakaoPlaceSearchResDTO.class
         );
         logger.info("#$# response={}", response);
-        logger.info("#$# response={}", response.getBody());
-        logger.info("#$# response={}", response.getBody().getDocuments());
+        logger.info("#$# response.getDocuments={}", response.getBody().getDocuments());
+
         List<KakaoPlaceResDTO> body = response.getBody().getDocuments();
         return body;
     }
