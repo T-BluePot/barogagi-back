@@ -179,33 +179,6 @@ public class ScheduleController {
             @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO) {
 
         logger.info("CALL /schedule");
-        logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO.toString());
-        for (int i = 0; i < scheduleRegistReqDTO.getPlanRegistReqDTOList().size(); i++) {
-            PlanRegistReqDTO plan = scheduleRegistReqDTO.getPlanRegistReqDTOList().get(i);
-            System.out.println("===== [Plan " + (i + 1) + "] =====");
-            System.out.println("Start Time: " + plan.getStartTime());
-            System.out.println("End Time  : " + plan.getEndTime());
-            System.out.println("Item Num  : " + plan.getItemNum());
-            System.out.println("Category  : " + plan.getCategoryNum());
-
-            // 지역 정보
-            if (plan.getRegionRegistReqDTOList() != null) {
-                for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
-                    System.out.println("  → Region: " + region.getRegionNm1() + " " + region.getRegionNm2() +
-                            " (" + region.getX() + ", " + region.getY() + ")");
-                }
-            }
-
-            // 태그 번호 리스트
-            if (plan.getTagList() != null) {
-                System.out.print("Tags     : ");
-                for (int tagNum : plan.getTagList()) {
-                    System.out.print(tagNum + " ");
-                }
-                System.out.println(); // 줄 바꿈
-            }
-            System.out.println(); // Plan 구분용 빈 줄
-        }
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
