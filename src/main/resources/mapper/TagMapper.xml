@@ -16,4 +16,14 @@
             WHERE   a.PLAN_NUM = #{planNum};
         ]]>
     </select>
+
+    <select id="selectTagByTagNum" parameterType="int" resultType="com.barogagi.tag.query.vo.TagDetailVO">
+        <![CDATA[
+            SELECT
+                    TAG_NUM as tagNum
+		          , TAG_NM as tagNm
+            FROM    TAG
+            WHERE   TAG_NUM = #{tagNum};
+        ]]>
+    </select>
 </mapper>
