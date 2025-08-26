@@ -37,13 +37,12 @@ public class NaverBlogClient {
                 .queryParam("query", query)
                 .queryParam("display", display)
                 .build(false));
-        logger.info("#$# url={}", url);
+//        logger.info("#$# url={}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-Naver-Client-Id", xNaverClientId);
         headers.set("X-Naver-Client-Secret", xNaverClientSecret);
-        //headers.set("Content-Type", "application/json;charset=UTF-8 ");
-        logger.info("#$# Request Headers: {}", headers);
+//        logger.info("#$# Request Headers: {}", headers);
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
         ResponseEntity<NaverBlogSearchResDTO> response = restTemplate.exchange(
@@ -52,8 +51,8 @@ public class NaverBlogClient {
                 entity,
                 NaverBlogSearchResDTO.class
         );
-        logger.info("#$# response.getBody()={}", response.getBody());
-        logger.info("#$# response.getBody().getItems()={}", response.getBody().getItems());
+//        logger.info("#$# response.getBody()={}", response.getBody());
+//        logger.info("#$# response.getBody().getItems()={}", response.getBody().getItems());
         List<NaverBlogResDTO> body = response.getBody().getItems();
 
         return body;

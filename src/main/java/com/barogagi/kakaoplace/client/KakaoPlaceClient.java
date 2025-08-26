@@ -35,11 +35,11 @@ public class KakaoPlaceClient {
                 .queryParam("size", limitPlace)
                 .build(false));
 
-        logger.info("#$# url={}", url);
+//        logger.info("#$# url={}", url);
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "KakaoAK " + kakaoApiKey);
-        logger.info("#$# Request Headers: {}", headers);
+//        logger.info("#$# Request Headers: {}", headers);
 
         HttpEntity<?> entity = new HttpEntity<>(headers);
         ResponseEntity<KakaoPlaceSearchResDTO> response = restTemplate.exchange(
@@ -48,8 +48,8 @@ public class KakaoPlaceClient {
                 entity,
                 KakaoPlaceSearchResDTO.class
         );
-        logger.info("#$# response={}", response);
-        logger.info("#$# response.getDocuments={}", response.getBody().getDocuments());
+//        logger.info("#$# response={}", response);
+//        logger.info("#$# response.getDocuments={}", response.getBody().getDocuments());
 
         List<KakaoPlaceResDTO> body = response.getBody().getDocuments();
         return body;
