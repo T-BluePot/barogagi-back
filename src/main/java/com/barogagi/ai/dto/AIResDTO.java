@@ -8,9 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class AIResDTO {
-//    private String requestId;
-//    private String model;
-//    private String content;
-    private Integer recommandPlaceNum;
+    private Integer recommandPlaceIndex;
     private String aiDescription;
 }
