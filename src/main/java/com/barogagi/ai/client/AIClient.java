@@ -80,43 +80,6 @@ public class AIClient {
         }
     }
 
-//        String url = aiBaseUrl + aiPath;
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setBearerAuth(aiApiKey);
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-//
-//        ChatRequest chatRequest = buildChatRequest(aiReqWrapper);
-//        HttpEntity<ChatRequest> entity = new HttpEntity<>(chatRequest, headers);
-//
-//        // --- 최소 요청 로그 ---
-//        logger.info("#$# AI url={}", url);
-//        logger.info("#$# AI req: tags={}, commentLen={}, placeList={}",
-//                aiReqWrapper.getTags() == null ? 0 : aiReqWrapper.getTags().size(),
-//                aiReqWrapper.getComment() == null ? 0 : aiReqWrapper.getComment().length(),
-//                aiReqWrapper.getPlaceList() == null ? 0 : aiReqWrapper.getPlaceList().size());
-//
-//        // --- 응답 원문(String)으로 1회 호출 → 로그 찍고 → DTO로 매핑 ---
-//        ResponseEntity<String> resp = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-//        logger.info("#$# AI resp status={}", resp.getStatusCode());
-//        String raw = resp.getBody();
-//        logger.info("#$# AI resp raw (preview): {}", raw == null
-//                ? "null"
-//                : (raw.length() <= 1000 ? raw : raw.substring(0, 1000) + "...(truncated)"));
-//
-//        // --- DTO 매핑 (실패해도 예외만 로그) ---
-//        try {
-//            AIResDTO dto = OM.readValue(raw, AIResDTO.class);
-//            logger.info("#$# AI resp DTO: recommandPlaceNum={}, aiDescription='{}'",
-//                    dto.getRecommandPlaceNum(), dto.getAiDescription());
-//            return dto;
-//        } catch (Exception e) {
-//            logger.warn("#$# parse to AIResDTO failed: {}", e.getMessage());
-//            return null;
-//        }
-//    }
-
     // ai에게 요청 가능한 형태로 변경
     private ChatRequest buildChatRequest(AIReqWrapper wrapper) {
         // system 메시지
