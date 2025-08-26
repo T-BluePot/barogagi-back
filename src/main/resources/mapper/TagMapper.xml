@@ -11,8 +11,8 @@
             SELECT
                     b.TAG_NUM as tagNum
 		          , b.TAG_NM as tagNm
-            FROM    plan_tag a
-            JOIN    tag b ON a.TAG_NUM = b.TAG_NUM
+            FROM    PLAN_TAG a
+            JOIN    TAG b ON a.TAG_NUM = b.TAG_NUM
             WHERE   a.PLAN_NUM = #{planNum};
         ]]>
     </select>
