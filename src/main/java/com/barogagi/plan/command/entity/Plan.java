@@ -2,6 +2,7 @@ package com.barogagi.plan.command.entity;
 
 import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
 import com.barogagi.schedule.command.entity.Schedule;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,15 @@ public class Plan {
 
     @Column(name = "END_TIME")
     private String endTime;             // 종료 시간
+
+    @Column(name = "PLAN_LINK")
+    public String planLink;             // 장소 링크 (이미지 불러오기용)
+
+    @Column(name = "PLAN_DESCRIPTION")
+    private String planDescription;     // 장소 한줄 설명(AI 생성)
+
+    @Column(name = "PLAN_ADDRESS")
+    private String planAddress;         // 장소 주소
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "SCHEDULE_NUM", nullable = false)

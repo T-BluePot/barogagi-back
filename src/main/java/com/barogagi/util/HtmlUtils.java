@@ -19,4 +19,19 @@ public class HtmlUtils {
         // 3) 공백 정리
         return t.replaceAll("\\s+", " ").trim();
     }
+
+
+    /** ```json ... ``` 형태 코드펜스/공백 제거 */
+    public static String stripCodeFence(String s) {
+        if (s == null) return null;
+        // 앞쪽 ``` 또는 ```json, 뒤쪽 ``` 제거
+        String t = s.trim();
+        if (t.startsWith("```")) {
+            t = t.replaceFirst("^```(?:json)?\\s*", "");
+        }
+        if (t.endsWith("```")) {
+            t = t.replaceFirst("```\\s*$", "");
+        }
+        return t.trim();
+    }
 }
