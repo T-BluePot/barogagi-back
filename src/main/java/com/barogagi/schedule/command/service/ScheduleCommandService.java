@@ -9,16 +9,20 @@ import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
 import com.barogagi.naverbolg.client.NaverBlogClient;
 import com.barogagi.naverbolg.dto.NaverBlogResDTO;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
+import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.query.mapper.CategoryMapper;
 import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
+import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,94 +59,148 @@ public class ScheduleCommandService {
         this.tagQueryService = tagQueryService;
     }
 
-    public void registSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO) {
+    @Transactional
+    public ScheduleRegistResDTO registSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO) {
 
-        List<PlanRegistReqDTO> planRegistReqDTOList = scheduleRegistReqDTO.getPlanRegistReqDTOList();
-        List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
+        List<PlanRegistResDTO> planResList = new ArrayList<>();
 
-        List<List<NaverBlogResDTO>> allNaverBlogResults = new ArrayList<>();
+        // 스케줄 공통 정보
+        String scheduleNm = scheduleRegistReqDTO.getScheduleNm();
+        String startDate  = scheduleRegistReqDTO.getStartDate();
+        String endDate    = scheduleRegistReqDTO.getEndDate();
 
+        for (PlanRegistReqDTO plan : scheduleRegistReqDTO.getPlanRegistReqDTOList()) {
+            int radius = scheduleRegistReqDTO.getRadius();
 
-        int radius = scheduleRegistReqDTO.getRadius();
+            // ---------- 1) Kakao 후보장소 수집(평탄화) ----------
+            List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
+            String queryString = categoryMapper.selectCategoryNmBy(plan.getCategoryNum()); // 검색어
 
+            if (plan.getRegionRegistReqDTOList() == null || plan.getRegionRegistReqDTOList().isEmpty()) {
+                // 지역이 없으면 스킵
+                logger.info("#$# skip: plan has no regions. plan={}", plan);
+                continue;
+            }
 
-        for (PlanRegistReqDTO plan : planRegistReqDTOList) {
-            // 1. 카카오 API로 추천 장소 리스트 조회
-            String queryString = categoryMapper.selectCategoryNmBy(plan.getCategoryNum()); // TODO. 검색 쿼리 고려 필요
-            List<KakaoPlaceResDTO> kakaoPlaceResDTOList = new ArrayList<>();
+            int limitPlace = calLimitPlace(plan.getRegionRegistReqDTOList().size());
+            for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
+                List<KakaoPlaceResDTO> oneRegionPlaces =
+                        kakaoPlaceClient.searchKakaoPlace(queryString, region.getX(), region.getY(), radius, limitPlace);
+                allKakaoPlaceResults.add(oneRegionPlaces);
+            }
+            logger.info("allKakaoPlaceResults: {}", allKakaoPlaceResults);
 
-            if (plan.getRegionRegistReqDTOList() != null && !plan.getRegionRegistReqDTOList().isEmpty()) {
+            // Kakao 평탄화(이 순서를 기준으로 이후 Naver/AI도 동일하게 맞춤)
+            List<KakaoPlaceResDTO> flatKakao = allKakaoPlaceResults.stream()
+                    .filter(Objects::nonNull)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
 
-                // 후보지역 수에 따라 각 지역의 후보장소 수를 조정
-                int limitPlace = calLimitPlace(plan.getRegionRegistReqDTOList().size());
+            if (flatKakao.isEmpty()) {
+                logger.info("#$# no kakao results. plan={}", plan);
+                continue;
+            }
 
-                for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
-                    String x = region.getX();
-                    String y = region.getY();
-                    kakaoPlaceResDTOList = kakaoPlaceClient.searchKakaoPlace(queryString, x, y, radius, limitPlace);
-                    logger.info("kakaoPlaceResDTOList: {}", kakaoPlaceResDTOList);
+            // ---------- 2) Naver 블로그로 title/description 만들기 ----------
+            List<NaverBlogResDTO> allBlogsFlat = new ArrayList<>();
+            for (KakaoPlaceResDTO k : flatKakao) {
+                String query = k.getPlaceName() + " " + k.getRoadAddressName();
+                List<NaverBlogResDTO> blogs = naverBlogClient.searchNaverBlog(query, naverBlogDisplay);
+                if (blogs != null) {
+                    allBlogsFlat.addAll(blogs);
                 }
             }
-            // 2. 네이버 블로그 API로 추천 장소에 대한 정보 조회
-            List<NaverBlogResDTO> naverBlogResDTO = new ArrayList<>();
-            for(KakaoPlaceResDTO kakaoPlace : kakaoPlaceResDTOList) {
-                String query = kakaoPlace.getPlaceName() + " " + kakaoPlace.getRoadAddressName();  // TODO. 검색 쿼리 고려 필요
-                naverBlogResDTO = naverBlogClient.searchNaverBlog(query, naverBlogDisplay);
-                logger.info("naverBlogResDTO: {}", naverBlogResDTO);
-                allNaverBlogResults.add(naverBlogResDTO);
+            logger.info("allNaverBlogResults.size={}", allBlogsFlat.size());
+
+            // AI placeList: Kakao 후보 1:1이 가장 안전하지만 현재는 blog기반으로 작성
+            // 블로그가 없을 때를 대비해서 Kakao 기본 설명을 fallback으로 변경
+            List<AIReqDTO> placeList = new ArrayList<>();
+            for (int i = 0; i < flatKakao.size(); i++) {
+                KakaoPlaceResDTO k = flatKakao.get(i);
+
+                // 대응되는 블로그가 없다면 간단한 설명을 생성(fallback)
+                String title = k.getPlaceName();
+                String desc  = Optional.ofNullable(k.getCategoryGroupName()).orElse("카테고리 정보 없음")
+                        + " · " + Optional.ofNullable(k.getRoadAddressName()).orElse(k.getAddressName());
+
+                // 블로그 결과가 있다면 맨 앞 하나만 사용(원한다면 점수화/요약 로직 확장)
+                if (i < allBlogsFlat.size()) {
+                    NaverBlogResDTO b = allBlogsFlat.get(i);
+                    title = stripHtml(b.getTitle());
+                    desc  = stripHtml(b.getDescription());
+                }
+
+                placeList.add(AIReqDTO.builder()
+                        .title(title)
+                        .description(desc)
+                        .build());
             }
 
-            // 3. AI API로 최종 추천 장소 조회
-
-            // 3-1. 태그 이름 조회
-            List<Integer> tagNums = scheduleRegistReqDTO.getPlanRegistReqDTOList().stream()
-                    .filter(Objects::nonNull)
-                    .flatMap(p -> p.getTagList().stream())
-                    .collect(Collectors.toList());
-            logger.info("#$# tagNums size={}, values={}", tagNums.size(), tagNums);
+            // ---------- 3) AI 호출 ----------
+            List<Integer> tagNums = Optional.ofNullable(plan.getTagList()).orElseGet(List::of);
             List<String> tagNames = tagQueryService.findTagNmByTagNum(tagNums);
-            logger.info("#$# tagNames size={}, values={}", tagNames.size(), tagNames);
 
-            // 3-2. 네이버 블로그 결과를 title/description으로 변환
-            List<AIReqDTO> placeList = allNaverBlogResults.stream()
-                    .flatMap(List::stream)
-                    .map(b -> AIReqDTO.builder()
-                            .title(stripHtml(b.getTitle()))
-                            .description(stripHtml(b.getDescription()))
-                            .build())
-                    .collect(Collectors.toList());
-            logger.info("#$# placeList size={}, sample={}", placeList.size(),
-                    placeList.stream().limit(3).collect(Collectors.toList()));
-
-            // 3-3. AI 요청 래퍼 구성
             AIReqWrapper aiReqWrapper = AIReqWrapper.builder()
                     .tags(tagNames)
                     .comment(Optional.ofNullable(scheduleRegistReqDTO.getComment()).orElse(""))
                     .placeList(placeList)
                     .build();
 
-            logger.info("#$# AIReqWrapper ready: tags={}, comment.len={}, placeList.size={}",
-                    aiReqWrapper.getTags(),
-                    aiReqWrapper.getComment() == null ? 0 : aiReqWrapper.getComment().length(),
-                    aiReqWrapper.getPlaceList().size());
-
-            // 4) AI 호출
             AIResDTO aiRes = aiClient.recommandPlace(aiReqWrapper);
             logger.info("#$# AI Recommendation result obj={}", aiRes);
-            if (aiRes != null) {
-                logger.info("#$# AI result fields: recommandPlaceNum={}, aiDescription={}",
-                        aiRes.getRecommandPlaceNum(), aiRes.getAiDescription());
+
+            // ---------- 4) AI가 고른 index → Kakao place 선택 ----------
+            Integer idx = (aiRes != null) ? aiRes.getRecommandPlaceIndex() : null;
+            if (idx == null || idx < 0 || idx >= flatKakao.size()) {
+                logger.warn("#$# invalid recommandPlaceNum={}, fallback to 0", idx);
+                idx = 0; // fallback
             }
+            KakaoPlaceResDTO chosen = flatKakao.get(idx);
 
+            // ---------- 5) DB insert (예시) ----------
+            // Plan 엔티티는 프로젝트 엔티티에 맞게 매핑 필요
+            // Plan planEntity = Plan.builder()
+            //         .planNm(chosen.getPlaceName())
+            //         .planLink(chosen.getPlaceUrl())
+            //         .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
+            //         .planAddress(Optional.ofNullable(chosen.getRoadAddressName()).orElse(chosen.getAddressName()))
+            //         .itemNum(plan.getItemNum())
+            //         .categoryNum(plan.getCategoryNum())
+            //         .startTime(plan.getStartTime())
+            //         .endTime(plan.getEndTime())
+            //         .build();
+            // planRepository.save(planEntity);
 
+            // ---------- 6) PlanRegistResDTO 구성 ----------
+            PlanRegistResDTO planRes = PlanRegistResDTO.builder()
+                    .planNum(null) // TODO. DB 저장 후 세팅
+                    .startTime(plan.getStartTime())
+                    .endTime(plan.getEndTime())
+                    .itemNum(plan.getItemNum())
+                    .itemNm(null) // TODO. itemNm(plan.getItemNm())
+                    .categoryNum(plan.getCategoryNum())
+                    .categoryNm(null)// TODO. categoryNm(plan.getCategoryNm())
+                    .planNm(chosen.getPlaceName())
+                    .planLink(chosen.getPlaceUrl())
+                    .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
+                    .planAddress(Optional.ofNullable(chosen.getRoadAddressName()).orElse(chosen.getAddressName()))
+                    .regionName(null) // TODO. 지역 세팅 - firstRegionName(plan.getRegionRegistReqDTOList())
+                    .tagList(plan.getTagList())
+                    .build();
+
+            planResList.add(planRes);
 
         }
-        logger.info("allNaverBlogResults: {}", allNaverBlogResults);
 
-
-
-
+        // ---------- 7) ScheduleRegistResDTO 묶어서 리턴 ----------
+        return ScheduleRegistResDTO.builder()
+                .scheduleNm(scheduleNm)
+                .startDate(startDate)
+                .endDate(endDate)
+                .planRegistResDTOList(planResList)
+                .build();
     }
+
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴
     // 후보장소 수만큼 네이버 블로그 API를 호출해야 하기 때문에 제한 필요
@@ -157,4 +215,11 @@ public class ScheduleCommandService {
         }
         return perRegionLimit;
     }
+
+//    private String firstRegionName(List<RegionRegistReqDTO> regions) {
+//        if (regions == null || regions.isEmpty()) return null;
+//        // RegionRegistReqDTO에 regionName 같은 필드가 있다면 그걸 반환
+//        // 예시로 cityName+district 조합 등을 사용
+//        return Optional.ofNullable(regions.get(0).getRegionName()).orElse(null);
+//    }
 }

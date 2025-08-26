@@ -11,6 +11,7 @@ import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
+import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.schedule.query.vo.ScheduleDetailVO;
 import com.barogagi.util.InputValidate;
@@ -184,6 +185,7 @@ public class ScheduleController {
         String resultCode = "";
         String message = "";
 
+        ScheduleRegistResDTO scheduleRegistResDTO;
         try {
 
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
@@ -193,9 +195,8 @@ public class ScheduleController {
                     resultCode = "101";
                     message = "입력값이 올바르지 않습니다.";
                 } else {
-                    scheduleCommandService.registSchedule(scheduleRegistReqDTO);
-                    // ScheduleDetailResDTO result = scheduleQueryService.getScheduleDetail(scheduleNum);
-                    // logger.info("result={}", result.toString());
+                    scheduleRegistResDTO = scheduleCommandService.registSchedule(scheduleRegistReqDTO);
+                    apiResponse.setData(scheduleRegistResDTO);
 
                     /*if (result == null) {
                         resultCode = "300";

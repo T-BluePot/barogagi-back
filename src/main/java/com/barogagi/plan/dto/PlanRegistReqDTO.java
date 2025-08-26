@@ -30,8 +30,6 @@ public class PlanRegistReqDTO {
     @Schema(description = "카테고리 번호", example = "1")
     public int categoryNum;
 
-
-
     @Schema(description = "지역 정보 DTO")
     public List<RegionRegistReqDTO> regionRegistReqDTOList;
 
