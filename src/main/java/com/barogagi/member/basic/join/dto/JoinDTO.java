@@ -34,4 +34,7 @@ public class JoinDTO extends DefaultVO {
 
     // 회원가입 종류(BASIC : 기본 / GOOGLE : 구글 / KAKAO : 카카오톡 / NAVER : 네이버)
     private String joinType = "";
+
+    // 프로필 이미지
+    private String profileImg = "";
 }
