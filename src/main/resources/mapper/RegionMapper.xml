@@ -21,4 +21,19 @@
             WHERE   a.PLAN_NUM = #{planNum};
         ]]>
     </select>
+
+    <select id="selectRegionByRegionNum" parameterType="int" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        <![CDATA[
+            SELECT
+		            REGION_NUM as regionNum
+		          , REGION_LEVEL_1 as regionLevel1
+		          , REGION_LEVEL_2 as regionLevel2
+		          , REGION_LEVEL_3 as regionLevel3
+		          , REGION_LEVEL_4 as regionLevel4
+            FROM    REGION
+            WHERE   REGION_NUM = #{regionNum};
+        ]]>
+    </select>
+
+
 </mapper>
