@@ -1,6 +1,5 @@
-package com.barogagi.naverbolg.dto;
+package com.barogagi.naverblog.dto;
 
-import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

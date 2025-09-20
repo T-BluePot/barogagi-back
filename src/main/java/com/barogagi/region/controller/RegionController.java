@@ -47,7 +47,7 @@ public class RegionController {
         this.regionGeoCodeService = regionGeoCodeService;
         this.regionQueryService = regionQueryService;
     }
-    @Operation(summary = "주소를 x,y 좌표로 변환하는 기능", description = "법정동/행정동 주소를 받아서 x,y 좌표로 변환하는 기능입니다")
+    @Operation(summary = "주소를 x,y 좌표로 변환하는 기능", description = "주소 번호를 받아서 x,y 좌표로 변환하는 기능입니다")
     @GetMapping("/geocode")
     public ApiResponse getGeocode(@Parameter(description = "법정동/행정동의 주소 번호", example = "1") @RequestParam Integer regionNum) {
 

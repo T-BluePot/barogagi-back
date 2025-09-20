@@ -1,16 +1,10 @@
 package com.barogagi.region.query.service;
 
-import com.barogagi.ai.client.AIClient;
 import com.barogagi.kakaoplace.client.KakaoGeoCodeClient;
-import com.barogagi.kakaoplace.client.KakaoPlaceClient;
 import com.barogagi.kakaoplace.dto.KakaoGeoCodeResDTO;
-import com.barogagi.naverbolg.client.NaverBlogClient;
-import com.barogagi.plan.query.mapper.CategoryMapper;
-import com.barogagi.region.controller.RegionController;
 import com.barogagi.region.dto.RegionGeoCodeResDTO;
 import com.barogagi.region.query.mapper.RegionMapper;
 import com.barogagi.region.query.vo.RegionDetailVO;
-import com.barogagi.tag.query.service.TagQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
