@@ -1,10 +1,7 @@
-package com.barogagi.naverbolg.client;
+package com.barogagi.naverblog.client;
 
-import com.barogagi.kakaoplace.client.KakaoPlaceClient;
-import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
-import com.barogagi.kakaoplace.dto.KakaoPlaceSearchResDTO;
-import com.barogagi.naverbolg.dto.NaverBlogResDTO;
-import com.barogagi.naverbolg.dto.NaverBlogSearchResDTO;
+import com.barogagi.naverblog.dto.NaverBlogResDTO;
+import com.barogagi.naverblog.dto.NaverBlogSearchResDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

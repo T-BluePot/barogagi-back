@@ -6,8 +6,8 @@ import com.barogagi.ai.dto.AIReqWrapper;
 import com.barogagi.ai.dto.AIResDTO;
 import com.barogagi.kakaoplace.client.KakaoPlaceClient;
 import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
-import com.barogagi.naverbolg.client.NaverBlogClient;
-import com.barogagi.naverbolg.dto.NaverBlogResDTO;
+import com.barogagi.naverblog.client.NaverBlogClient;
+import com.barogagi.naverblog.dto.NaverBlogResDTO;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.query.mapper.CategoryMapper;
@@ -22,13 +22,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.regex.Pattern;
 
 import static com.barogagi.util.HtmlUtils.stripHtml;
 
