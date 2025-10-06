@@ -19,11 +19,39 @@
 
     <select id="selectTagByTagNum" parameterType="int" resultType="com.barogagi.tag.query.vo.TagDetailVO">
         <![CDATA[
+        SELECT
+            TAG_NUM as tagNum
+             , TAG_NM as tagNm
+        FROM    TAG
+        WHERE   TAG_NUM = #{tagNum};
+        ]]>
+    </select>
+
+    <select id="selectTagByTagType" parameterType="String" resultType="com.barogagi.tag.query.vo.TagDetailVO">
+        <![CDATA[
             SELECT
                     TAG_NUM as tagNum
 		          , TAG_NM as tagNm
+		          , TAG_TYPE as tagType
+                  , CATEGORY_NUM as categoryNum
             FROM    TAG
-            WHERE   TAG_NUM = #{tagNum};
+            WHERE   TAG_TYPE = #{tagType}
+            LIMIT   10
         ]]>
     </select>
+
+    <select id="selectTagByTagTypeAndCategoryNum" parameterType="com.barogagi.tag.dto.TagSearchReqDTO" resultType="com.barogagi.tag.dto.TagSearchResDTO">
+        SELECT
+                TAG_NM        AS tagNm
+              , TAG_NUM       AS tagNum
+        FROM    TAG
+        WHERE   TAG_TYPE = #{tagType}
+        <if test="categoryNum != null">
+        AND     CATEGORY_NUM = #{categoryNum}
+        </if>
+        LIMIT 10
+    </select>
+
+
+
 </mapper>

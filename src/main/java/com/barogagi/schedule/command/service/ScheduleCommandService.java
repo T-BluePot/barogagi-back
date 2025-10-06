@@ -11,9 +11,14 @@ import com.barogagi.naverblog.dto.NaverBlogResDTO;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.query.mapper.CategoryMapper;
+import com.barogagi.region.dto.RegionGeoCodeResDTO;
 import com.barogagi.region.dto.RegionRegistReqDTO;
+import com.barogagi.region.query.service.RegionGeoCodeService;
+import com.barogagi.region.query.service.RegionQueryService;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
+import com.barogagi.tag.dto.TagRegistReqDTO;
+import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,10 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.barogagi.util.HtmlUtils.stripHtml;
@@ -40,8 +42,11 @@ public class ScheduleCommandService {
     private final AIClient aiClient;
 
     private final TagQueryService tagQueryService;
+    private final RegionGeoCodeService regionGeoCodeService;
 
 
+    @Value("${kakao.radius}")
+    private int radius;
 
     @Value("${naver.display}")
     private int naverBlogDisplay;
@@ -49,12 +54,13 @@ public class ScheduleCommandService {
     @Autowired
     public ScheduleCommandService(CategoryMapper categoryMapper,
                                   KakaoPlaceClient kakaoPlaceClient, NaverBlogClient naverBlogClient,
-                                  AIClient aiClient, TagQueryService tagQueryService) {
+                                  AIClient aiClient, TagQueryService tagQueryService, RegionGeoCodeService regionGeoCodeService) {
         this.categoryMapper = categoryMapper;
         this.kakaoPlaceClient = kakaoPlaceClient;
         this.naverBlogClient = naverBlogClient;
         this.aiClient = aiClient;
         this.tagQueryService = tagQueryService;
+        this.regionGeoCodeService = regionGeoCodeService;
     }
 
     @Transactional
@@ -67,26 +73,70 @@ public class ScheduleCommandService {
         String startDate  = scheduleRegistReqDTO.getStartDate();
         String endDate    = scheduleRegistReqDTO.getEndDate();
 
+
+        scheduleRegistReqDTO.getPlanRegistReqDTOList().forEach(plan -> {
+            if (plan.getTagRegistReqDTOList() != null) {
+                plan.getTagRegistReqDTOList().forEach(tag -> {
+                    logger.info("tagNum={}, tagNm={}", tag.getTagNum(), tag.getTagNm());
+                });
+            } else {
+                logger.info("태그 없음");
+            }
+        });
+
         for (PlanRegistReqDTO plan : scheduleRegistReqDTO.getPlanRegistReqDTOList()) {
-            int radius = scheduleRegistReqDTO.getRadius();
+            // int radius = // scheduleRegistReqDTO.getRadius();
 
-            // ---------- 1) Kakao 후보장소 수집(평탄화) ----------
-            List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
-            String queryString = categoryMapper.selectCategoryNmBy(plan.getCategoryNum()); // 검색어
-
+            // ---------- 1) 지역 번호로 x, y 좌표 검색 & Kakao 후보장소 수집(평탄화) ----------
             if (plan.getRegionRegistReqDTOList() == null || plan.getRegionRegistReqDTOList().isEmpty()) {
-                // 지역이 없으면 스킵
                 logger.info("#$# skip: plan has no regions. plan={}", plan);
                 continue;
             }
 
             int limitPlace = calLimitPlace(plan.getRegionRegistReqDTOList().size());
+
+            List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
+            String queryString = categoryMapper.selectCategoryNmBy(plan.getCategoryNum()); // 검색어
+
             for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
+                // regionNum으로 좌표 가져오기
+                RegionGeoCodeResDTO geo = regionGeoCodeService.getGeocode(region.getRegionNum());
+                if (geo == null) {
+                    logger.warn("#$# regionNum={} not found in DB, skip.", region.getRegionNum());
+                    continue;
+                }
+
+                RegionRegistReqDTO updatedRegion = region.toBuilder()
+                        .regionLevel1(geo.getRegionLevel1())
+                        .regionLevel2(geo.getRegionLevel2())
+                        .regionLevel3(geo.getRegionLevel3())
+                        .regionLevel4(geo.getRegionLevel4())
+                        .build();
+
+                // 리스트 교체
+                int idx = plan.getRegionRegistReqDTOList().indexOf(region);
+                plan.getRegionRegistReqDTOList().set(idx, updatedRegion);
+
+                // 지역명 결정 (레벨2/3 우선순위 적용)
+                String regionName = null;
+                if (updatedRegion.getRegionLevel3() != null && !updatedRegion.getRegionLevel3().isEmpty()) {
+                    regionName = updatedRegion.getRegionLevel3();
+                } else if (updatedRegion.getRegionLevel2() != null && !updatedRegion.getRegionLevel2().isEmpty()) {
+                    regionName = updatedRegion.getRegionLevel2();
+                }
+
                 List<KakaoPlaceResDTO> oneRegionPlaces =
-                        kakaoPlaceClient.searchKakaoPlace(queryString, region.getX(), region.getY(), radius, limitPlace);
+                        kakaoPlaceClient.searchKakaoPlace(queryString, geo.getX(), geo.getY(), radius, limitPlace);
                 allKakaoPlaceResults.add(oneRegionPlaces);
+
+                logger.info("#$# resolved regionName={} for regionNum={}", regionName, updatedRegion.getRegionNum());
+
             }
+
             logger.info("allKakaoPlaceResults: {}", allKakaoPlaceResults);
+
+
+
 
             // Kakao 평탄화(이 순서를 기준으로 이후 Naver/AI도 동일하게 맞춤)
             List<KakaoPlaceResDTO> flatKakao = allKakaoPlaceResults.stream()
@@ -115,7 +165,6 @@ public class ScheduleCommandService {
             List<AIReqDTO> placeList = new ArrayList<>();
             for (int i = 0; i < flatKakao.size(); i++) {
                 KakaoPlaceResDTO k = flatKakao.get(i);
-
                 // 대응되는 블로그가 없다면 간단한 설명을 생성(fallback)
                 String title = k.getPlaceName();
                 String desc  = Optional.ofNullable(k.getCategoryGroupName()).orElse("카테고리 정보 없음")
@@ -135,8 +184,16 @@ public class ScheduleCommandService {
             }
 
             // ---------- 3) AI 호출 ----------
-            List<Integer> tagNums = Optional.ofNullable(plan.getTagList()).orElseGet(List::of);
+            List<Integer> tagNums = Optional.ofNullable(plan.getTagRegistReqDTOList())
+                    .orElseGet(List::of)
+                    .stream()
+                    .map(TagRegistReqDTO::getTagNum)
+                    .collect(Collectors.toList());
+
+            logger.info("#$# 1 Before AI request");
+
             List<String> tagNames = tagQueryService.findTagNmByTagNum(tagNums);
+            logger.info("#$# 2 Before AI request");
 
             AIReqWrapper aiReqWrapper = AIReqWrapper.builder()
                     .tags(tagNames)
@@ -156,6 +213,20 @@ public class ScheduleCommandService {
             KakaoPlaceResDTO chosen = flatKakao.get(idx);
 
             // ---------- 5) DB insert (예시) ----------
+            // (1) Schedule
+
+            // (2) Schedule_tag
+
+            // (3) Plan
+
+            // (4) Plan_tag
+
+            // (5) Plan_region
+
+            // (6) Place
+
+
+
             // Plan 엔티티는 프로젝트 엔티티에 맞게 매핑 필요
             // Plan planEntity = Plan.builder()
             //         .planNm(chosen.getPlaceName())
@@ -183,7 +254,17 @@ public class ScheduleCommandService {
                     .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
                     .planAddress(Optional.ofNullable(chosen.getRoadAddressName()).orElse(chosen.getAddressName()))
                     .regionName(null) // TODO. 지역 세팅 - firstRegionName(plan.getRegionRegistReqDTOList())
-                    .tagList(plan.getTagList())
+                    .tagRegistResDTOList(
+                            Optional.ofNullable(plan.getTagRegistReqDTOList())
+                                    .orElseGet(java.util.Collections::emptyList)
+                                    .stream()
+                                    .map(req -> TagRegistResDTO.builder()
+                                            .tagNum(req.getTagNum())
+                                            .tagNm(req.getTagNm())
+                                            .build()
+                                    )
+                                    .collect(java.util.stream.Collectors.toList())
+                    )
                     .build();
 
             planResList.add(planRes);

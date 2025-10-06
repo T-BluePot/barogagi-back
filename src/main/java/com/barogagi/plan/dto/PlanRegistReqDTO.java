@@ -34,6 +34,6 @@ public class PlanRegistReqDTO {
     public List<RegionRegistReqDTO> regionRegistReqDTOList;
 
     @Schema(description = "태그 목록")
-    public List<Integer> tagList;
+    public List<TagRegistReqDTO> tagRegistReqDTOList;
 }
 

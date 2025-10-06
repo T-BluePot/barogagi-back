@@ -1,6 +1,8 @@
 package com.barogagi.plan.dto;
 
 import com.barogagi.region.dto.RegionRegistReqDTO;
+import com.barogagi.tag.dto.TagRegistReqDTO;
+import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,6 +53,6 @@ public class PlanRegistResDTO {
     public String regionName;
 
     @Schema(description = "태그 목록")
-    public List<Integer> tagList;
+    public List<TagRegistResDTO> tagRegistResDTOList;
 }
 

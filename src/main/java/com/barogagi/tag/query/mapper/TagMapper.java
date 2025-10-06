@@ -1,5 +1,7 @@
 package com.barogagi.tag.query.mapper;
 
+import com.barogagi.tag.dto.TagSearchReqDTO;
+import com.barogagi.tag.dto.TagSearchResDTO;
 import com.barogagi.tag.query.vo.TagDetailVO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,4 +15,7 @@ public interface TagMapper {
 
     // 일정 생성 - 태그 번호로 태그명 조회
     TagDetailVO selectTagByTagNum (int tagNum);
+
+    // 태그 리스트 조회
+    List<TagSearchResDTO> selectTagByTagTypeAndCategoryNum(TagSearchReqDTO tagSearchReqDTO);
 }

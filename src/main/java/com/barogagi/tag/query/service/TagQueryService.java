@@ -1,7 +1,13 @@
 package com.barogagi.tag.query.service;
 
+import com.barogagi.schedule.command.service.ScheduleCommandService;
+import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
+import com.barogagi.tag.dto.TagSearchReqDTO;
+import com.barogagi.tag.dto.TagSearchResDTO;
 import com.barogagi.tag.query.mapper.TagMapper;
 import com.barogagi.tag.query.vo.TagDetailVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
@@ -10,6 +16,7 @@ import java.util.List;
 
 @Service
 public class TagQueryService {
+    private static final Logger logger = LoggerFactory.getLogger(TagQueryService.class);
 
     private final TagMapper tagMapper;
 
@@ -29,5 +36,9 @@ public class TagQueryService {
                 .map(tagMapper::selectTagByTagNum)
                 .map(TagDetailVO::getTagNm)
                 .collect(Collectors.toList());
+    }
+
+    public List<TagSearchResDTO> searchList(TagSearchReqDTO tagSearchReqDTO) {
+        return tagMapper.selectTagByTagTypeAndCategoryNum(tagSearchReqDTO);
     }
 }
