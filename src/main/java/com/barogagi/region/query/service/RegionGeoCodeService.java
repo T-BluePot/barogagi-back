@@ -68,6 +68,11 @@ public class RegionGeoCodeService {
         return RegionGeoCodeResDTO.builder()
                 .x(first.getX())
                 .y(first.getY())
+                .regionNum(region.getRegionNum())
+                .regionLevel1(region.getRegionLevel1())
+                .regionLevel2(region.getRegionLevel2())
+                .regionLevel3(region.getRegionLevel3())
+                .regionLevel4(region.getRegionLevel4())
                 .build();
     }
 }

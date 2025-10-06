@@ -14,4 +14,14 @@ public class RegionGeoCodeResDTO {
 
     @Schema(description = "y 좌표", example = "37.5091105328378")
     public String y;
+
+    public int regionNum;
+
+    public String regionLevel1;
+
+    public String regionLevel2;
+
+    public String regionLevel3;
+
+    public String regionLevel4;
 }

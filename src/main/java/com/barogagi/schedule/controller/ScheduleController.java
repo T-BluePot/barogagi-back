@@ -7,6 +7,7 @@ import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.region.dto.RegionRegistReqDTO;
+import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
@@ -124,7 +125,6 @@ public class ScheduleController {
                                             "  \"scheduleNm\": \"서울 데이트 코스\",\n" +
                                             "  \"startDate\": \"2025-07-01\",\n" +
                                             "  \"endDate\": \"2025-07-01\",\n" +
-                                            "  \"radius\": 3000,\n" +
                                             "  \"comment\": \"분위기 좋은 카페 추천해주세요\",\n" +
                                             "  \"planRegistReqDTOList\": [\n" +
                                             "    {\n" +
@@ -134,13 +134,13 @@ public class ScheduleController {
                                             "      \"categoryNum\": 2,\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        {\n" +
-                                            "          \"regionNm1\": \"서울특별시\",\n" +
-                                            "          \"regionNm2\": \"강남구\",\n" +
-                                            "          \"x\": \"127.04892851392\",\n" +
-                                            "          \"y\": \"37.5091105328378\"\n" +
+                                            "          \"regionNum\": 1\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagList\": [1, 2]\n" +
+                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"디저트맛집\", \"tagNum\": 14 },\n" +
+                                            "        { \"tagNm\": \"인스타핫플\", \"tagNum\": 15 }\n" +
+                                            "      ]\n" +
                                             "    },\n" +
                                             "    {\n" +
                                             "      \"startTime\": \"14:00\",\n" +
@@ -149,13 +149,12 @@ public class ScheduleController {
                                             "      \"categoryNum\": 1,\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        {\n" +
-                                            "          \"regionNm1\": \"서울특별시\",\n" +
-                                            "          \"regionNm2\": \"강남구\",\n" +
-                                            "          \"x\": \"127.046634887695\",\n" +
-                                            "          \"y\": \"37.500690460205\"\n" +
+                                            "          \"regionNum\": 1\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagList\": [2]\n" +
+                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"조용한\", \"tagNum\": 17 }\n" +
+                                            "      ]\n" +
                                             "    },\n" +
                                             "    {\n" +
                                             "      \"startTime\": \"15:30\",\n" +
@@ -164,66 +163,37 @@ public class ScheduleController {
                                             "      \"categoryNum\": 4,\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        {\n" +
-                                            "          \"regionNm1\": \"서울특별시\",\n" +
-                                            "          \"regionNm2\": \"종로구\",\n" +
-                                            "          \"x\": \"126.996652\",\n" +
-                                            "          \"y\": \"37.579617\"\n" +
+                                            "          \"regionNum\": 1\n" +
+                                            "        },\n" +
+                                            "        {\n" +
+                                            "          \"regionNum\": 2\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagList\": [2]\n" +
+                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"테마파크\", \"tagNum\": 4 }\n" +
+                                            "      ]\n" +
                                             "    }\n" +
                                             "  ]\n" +
                                             "}"
                             )
                     )
             )
-            @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO) {
+            @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO
+    ) {
 
-        logger.info("CALL /schedule");
+        logger.info("CALL /region/searchList");
+        logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO);
 
-        ApiResponse apiResponse = new ApiResponse();
-        String resultCode = "";
-        String message = "";
-
-        ScheduleRegistResDTO scheduleRegistResDTO;
+        ScheduleRegistResDTO result;
         try {
-
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            if (true) {
-                boolean isVaildReq = true; // TODO. DTO 검증 로직 추가 필요
-                if (!isVaildReq) {
-                    resultCode = "101";
-                    message = "입력값이 올바르지 않습니다.";
-                } else {
-                    scheduleRegistResDTO = scheduleCommandService.registSchedule(scheduleRegistReqDTO);
-                    apiResponse.setData(scheduleRegistResDTO);
+            result = scheduleCommandService.registSchedule(scheduleRegistReqDTO);
 
-                    /*if (result == null) {
-                        resultCode = "300";
-                        message = "조회할 일정이 존재하지 않습니다."; // TODO. 에러 메시지 정의하기
-
-                    } else {
-                        resultCode = "200";
-                        message = "일정 상세 조회 성공";
-                        apiResponse.setData(result);
-                        logger.info("#$# result={}", result.toString());
-                    }*/
-                }
-
-            } else {
-                resultCode = "100";
-                message = "잘못된 접근입니다.";
-            }
-            logger.info("#$# 11 resultCode={}", resultCode);
         } catch (Exception e) {
-            resultCode = "400";
-            message = "오류가 발생하였습니다.";
-            throw new RuntimeException(e);
-
-        } finally {
-            apiResponse.setResultCode(resultCode);
-            apiResponse.setMessage(message);
+            return ApiResponse.error("404", "일정 생성 실패");
         }
-        return apiResponse;
+
+
+        return ApiResponse.success(result, "일정 생성 성공");
     }
 }

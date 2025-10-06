@@ -16,11 +16,7 @@ public class ScheduleRegistReqDTO {
     private String scheduleNm;      // 일정명
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
-    private int radius;             // 반경
     private String comment;         // 추가 고려사항
-
-    // 지역 리스트
-    // private List<RegionRegistReqDTO> regionRegistReqDTOList;
 
     // 계획 리스트
     private List<PlanRegistReqDTO> planRegistReqDTOList;
