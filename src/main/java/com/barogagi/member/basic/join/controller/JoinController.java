@@ -1,5 +1,6 @@
 package com.barogagi.member.basic.join.controller;
 
+import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.basic.join.dto.JoinDTO;
@@ -27,6 +28,7 @@ public class JoinController {
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
     private final Validator validator;
+    private final PasswordConfig passwordConfig;
 
     private final String API_SECRET_KEY;
 
@@ -35,12 +37,14 @@ public class JoinController {
                           JoinService joinService,
                           InputValidate inputValidate,
                           EncryptUtil encryptUtil,
-                          Validator validator){
+                          Validator validator,
+                          PasswordConfig passwordConfig) {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.joinService = joinService;
         this.inputValidate = inputValidate;
         this.encryptUtil = encryptUtil;
         this.validator = validator;
+        this.passwordConfig = passwordConfig;
     }
 
     @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.")
@@ -140,7 +144,8 @@ public class JoinController {
                             joinRequestDTO.setEmail(encryptUtil.encrypt(joinRequestDTO.getEmail()));
                         }
 
-                        joinRequestDTO.setPassword(encryptUtil.hashEncodeString(joinRequestDTO.getPassword()));
+                        String encodedPassword = passwordConfig.passwordEncoder().encode(joinRequestDTO.getPassword());
+                        joinRequestDTO.setPassword(encodedPassword);
 
                         // 회원 정보 저장(회원가입)
                         JoinDTO joinDTO = new JoinDTO();

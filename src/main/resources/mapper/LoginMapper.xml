@@ -10,6 +10,16 @@
         ]]>
     </select>
 
+    <select id="findByUserId" parameterType="com.barogagi.member.basic.login.dto.LoginDTO" resultType="com.barogagi.member.basic.login.dto.LoginVO">
+        <![CDATA[
+            SELECT  User_ID     userId,
+                    MEMBERSHIP_NO membershipNo,
+                    PASSWORD    password
+            FROM    USER_MEMBERSHIP_INFO
+            WHERE   USER_ID = #{userId}
+        ]]>
+    </select>
+
     <select id="myUserIdList" parameterType="com.barogagi.member.basic.login.dto.SearchUserIdDTO" resultType="com.barogagi.member.basic.login.dto.UserIdDTO">
         <![CDATA[
             SELECT  USER_ID     userId

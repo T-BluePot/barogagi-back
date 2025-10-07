@@ -18,4 +18,6 @@ public interface LoginMapper {
     int updatePassword(LoginDTO loginDTO);
 
     LoginVO findMembershipNo(LoginVO vo);
+
+    LoginVO findByUserId(LoginDTO vo);
 }

@@ -35,4 +35,8 @@ public class LoginService {
     public LoginVO findMembershipNo(LoginVO vo) {
         return loginMapper.findMembershipNo(vo);
     }
+
+    public LoginVO findByUserId(LoginDTO vo) {
+        return loginMapper.findByUserId(vo);
+    }
 }

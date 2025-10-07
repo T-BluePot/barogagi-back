@@ -1,5 +1,6 @@
 package com.barogagi.config;
 
+import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,11 +10,27 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+    }
 
     private static final String[] PERMIT_URL_ARRAY = {
             "/v3/api-docs/**",
@@ -23,7 +40,9 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/auth/**"
+            "/auth/**",
+            "/login/**",
+            "/membership/join/**"
     };
 
     @Bean
@@ -48,30 +67,11 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(u -> u
                                 .oidcUserService(customOidcUserService)   // Google
-                                .userService(delegatingOAuth2UserService)      // Naver
+                                .userService(delegatingOAuth2UserService)      // Naver, Kakao
                         )
-                        .successHandler((request, response, authentication) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-
-                            var token = (org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken) authentication;
-                            var principal = token.getPrincipal();
-                            var attrs = principal.getAttributes(); // Google: OIDC claims / Naver: 언래핑된 response
-
-                            var body = new java.util.HashMap<String, Object>();
-                            body.put("provider", token.getAuthorizedClientRegistrationId());
-                            body.put("sub_or_id", attrs.getOrDefault("sub", attrs.get("id")));
-                            body.put("email", attrs.get("email"));
-                            body.put("name", attrs.get("name"));
-                            body.put("picture", attrs.getOrDefault("picture", attrs.get("profile_image")));
-
-                            objectMapper.writeValue(response.getWriter(), body);
-                        })
-                        .failureHandler((request, response, ex) -> {
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("{\"error\":\"oauth_login_failed\",\"message\":\"" + ex.getMessage() + "\"}");
-                        })
+                        .successHandler(oAuth2LoginSuccessHandler)  // 로그인 성공 핸들러 (토큰 발급 등)
                 )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
