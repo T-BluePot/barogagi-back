@@ -5,6 +5,7 @@ import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -13,6 +14,17 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final String[] PERMIT_URL_ARRAY = {
+            "/v3/api-docs/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/login/oauth2/**",
+            "/oauth2/**",
+            "/auth/**"
+    };
 
     @Bean
     SecurityFilterChain filterChain(
@@ -24,10 +36,13 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // OAuth 로그인은 세션 필요
+                // API 서버 권장: 무상태
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
-                        .requestMatchers("/auth/**", "/actuator/health").permitAll()
+                        // CORS preflight 허용
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(PERMIT_URL_ARRAY).permitAll()
+                        // 그 외는 인증 필요
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
@@ -56,7 +71,13 @@ public class SecurityConfig {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.getWriter().write("{\"error\":\"oauth_login_failed\",\"message\":\"" + ex.getMessage() + "\"}");
                         })
-                );
+                )
+                // 브라우저 리다이렉트 대신 401 JSON
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    res.setContentType("application/json;charset=UTF-8");
+                    res.getWriter().write("{\"error\":\"unauthorized\"}");
+                }));
 
         return http.build();
     }
