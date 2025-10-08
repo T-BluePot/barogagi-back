@@ -19,17 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Tag(name = "일반 로그인", description = "일반 로그인 관련 API")
 @RestController
@@ -114,21 +111,13 @@ public class LoginController {
                         rt.setExpiresAt(LocalDateTime.now().plusSeconds(jwtUtil.getRefreshExpSeconds()));
                         refreshTokenRepository.save(rt); // MyBatis면 insert 호출
 
-                        // 5) 응답: 권장 — refresh는 HttpOnly 쿠키, access는 바디
-                        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
-                                .httpOnly(true)
-                                .secure(false)            // 운영 HTTPS면 true
-                                .sameSite("Lax")
-                                .path("/")
-                                .maxAge(Duration.ofSeconds(jwtUtil.getRefreshExpSeconds()))
-                                .build();
-                        response.addHeader("Set-Cookie", refreshCookie.toString());
-
                         Map<String, Object> data = Map.of(
                                 "accessToken", accessToken,
                                 "accessTokenExpiresIn", jwtUtil.getAccessExpSeconds(),
                                 "userId", user.getUserId(),
-                                "membershipNo", user.getMembershipNo()
+                                "membershipNo", user.getMembershipNo(),
+                                "refreshToken", refreshToken,
+                                "refreshTokenExpiresIn", jwtUtil.getRefreshExpSeconds()
                         );
                         apiResponse.setData(data);
 

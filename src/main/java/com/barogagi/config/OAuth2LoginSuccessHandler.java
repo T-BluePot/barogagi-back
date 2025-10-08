@@ -1,5 +1,6 @@
 package com.barogagi.config;
 
+import com.barogagi.member.basic.login.dto.LoginVO;
 import com.barogagi.member.login.dto.LoginResponse;
 import com.barogagi.member.login.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         objectMapper.writeValue(res.getWriter(), Map.of(
                 "accessToken", login.tokens().accessToken(),
                 "accessTokenExpiresIn", login.tokens().accessTokenExpiresIn(),
-                "userId", userId
+                "userId", userId,
+                "membershipNo", login.membershipNo(),
+                "refreshToken", login.tokens().refreshToken(),
+                "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn()
         ));
 
     }
