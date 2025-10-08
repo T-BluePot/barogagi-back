@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 
@@ -19,12 +21,18 @@ public class JwtUtil {
     private final long accessExpSeconds;
     private final long refreshExpSeconds;
 
+    private final Key accessKey;   // HS256: Keys.hmacShaKeyFor(...)
+    private final long clockSkewSeconds = 30; // 시계 오차 허용(선택)
+
     public JwtUtil(
             @Value("${jwt.secret}") String base64Secret,
             @Value("${jwt.issuer:barogagi}") String issuer,
             @Value("${jwt.access-exp-seconds}") long accessExpSeconds,
-            @Value("${jwt.refresh-exp-seconds}") long refreshExpSeconds
+            @Value("${jwt.refresh-exp-seconds}") long refreshExpSeconds,
+            String secret
     ) {
+        this.accessKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
         if (base64Secret == null || base64Secret.isBlank()) {
             throw new IllegalArgumentException("jwt.secret(Base64)가 비어있습니다.");
         }
@@ -122,7 +130,33 @@ public class JwtUtil {
     }
 
     public Long getMembershipNo(String token) {
-        String sub = parse(token).getBody().getSubject();
-        return Long.parseLong(sub);
+        var claims = Jwts.parserBuilder()
+                .setSigningKey(accessKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        // 예: sub = membershipNo (문자열)로 저장했다고 가정
+        return Long.valueOf(claims.getSubject());
+    }
+
+    public boolean isAccessTokenValid(String token) {
+        try {
+            var claims = Jwts.parserBuilder()
+                    .requireIssuer(issuer)
+                    .setAllowedClockSkewSeconds(clockSkewSeconds)
+                    .setSigningKey(accessKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            // typ 체크
+            String typ = (String) claims.get("typ");
+            if (!"ACCESS".equals(typ)) return false;
+
+            // 만료 체크 (jjwt가 exp 자동 검증)
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }

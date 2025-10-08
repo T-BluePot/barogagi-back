@@ -8,6 +8,7 @@ import jakarta.servlet.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
@@ -29,26 +30,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws ServletException, IOException {
 
-        String header = req.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            try {
-                if (!jwt.isExpired(token)) {
-                    Long membershipNo = jwt.getMembershipNo(token);
-                    Optional<UserMembership> opt = userRepo.findById(membershipNo);
-                    if (opt.isPresent()) {
-                        // roles 컬럼이 없으므로 기본 USER 권한 가정
-                        var authorities = List.of(new SimpleGrantedAuthority("USER"));
-                        // principal username 자리에 membershipNo 문자열을 넣어두면 나중에 바로 파싱 가능
-                        var principal = new org.springframework.security.core.userdetails.User(
-                                String.valueOf(membershipNo), "", authorities);
+        String auth = req.getHeader("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            String token = auth.substring("Bearer ".length());
+            if (jwt.isAccessTokenValid(token)) {
+                Long membershipNo = jwt.getMembershipNo(token);
 
-                        var auth = new UsernamePasswordAuthenticationToken(principal, null, authorities);
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    }
-                }
-            } catch (Exception ignored) {}
+                // 필요 시 UserDetails 로드(선택: DB hit 줄이려면 Minimal Principal 사용)
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                membershipNo, // principal (또는 UserDetails)
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                        );
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
+
         chain.doFilter(req, res);
     }
 
