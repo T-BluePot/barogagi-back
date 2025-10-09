@@ -1,4 +1,4 @@
-package com.barogagi.region.command.entity;
+package com.barogagi.tag.command.entity;
 
 import com.barogagi.plan.command.entity.Plan;
 import jakarta.persistence.*;
@@ -9,11 +9,11 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 무분별한 객체 생성 방지
 @AllArgsConstructor
 @Builder(toBuilder = true)
-@Table(name = "PLAN_REGION")
-public class PlanRegion {
+@Table(name = "PLAN_TAG")
+public class PlanTag {
 
     @EmbeddedId
-    private PlanRegionId id;
+    private PlanTagId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("planNum")
@@ -21,7 +21,8 @@ public class PlanRegion {
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("regionNum")
-    @JoinColumn(name = "REGION_NUM")
-    private Region region;
+    @MapsId("tagNum")
+    @JoinColumn(name = "TAG_NUM")
+    private Tag tag;
 }
+

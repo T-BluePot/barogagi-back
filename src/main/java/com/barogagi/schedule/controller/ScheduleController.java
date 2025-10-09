@@ -111,9 +111,9 @@ public class ScheduleController {
     }
 
 
-    @Operation(summary = "일정 등록 기능", description = "일정을 등록하는 기능입니다.")
+    @Operation(summary = "일정 생성 기능", description = "일정을 생성하는 기능입니다.")
     @PostMapping("")
-    public ApiResponse registSchedule(
+    public ApiResponse createSchedule(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "일정 등록 요청",
                     required = true,
@@ -126,6 +126,10 @@ public class ScheduleController {
                                             "  \"startDate\": \"2025-07-01\",\n" +
                                             "  \"endDate\": \"2025-07-01\",\n" +
                                             "  \"comment\": \"분위기 좋은 카페 추천해주세요\",\n" +
+                                            "  \"scheduleTagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"핫플\", \"tagNum\": 5 },\n" +
+                                            "        { \"tagNm\": \"활동적인\", \"tagNum\": 8 }\n" +
+                                            "    ],\n" +
                                             "  \"planRegistReqDTOList\": [\n" +
                                             "    {\n" +
                                             "      \"startTime\": \"08:00\",\n" +
@@ -137,7 +141,7 @@ public class ScheduleController {
                                             "          \"regionNum\": 1\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"디저트맛집\", \"tagNum\": 14 },\n" +
                                             "        { \"tagNm\": \"인스타핫플\", \"tagNum\": 15 }\n" +
                                             "      ]\n" +
@@ -152,7 +156,7 @@ public class ScheduleController {
                                             "          \"regionNum\": 1\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"조용한\", \"tagNum\": 17 }\n" +
                                             "      ]\n" +
                                             "    },\n" +
@@ -169,7 +173,7 @@ public class ScheduleController {
                                             "          \"regionNum\": 2\n" +
                                             "        }\n" +
                                             "      ],\n" +
-                                            "      \"tagRegistReqDTOList\": [\n" +
+                                            "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"테마파크\", \"tagNum\": 4 }\n" +
                                             "      ]\n" +
                                             "    }\n" +
@@ -181,13 +185,13 @@ public class ScheduleController {
             @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO
     ) {
 
-        logger.info("CALL /region/searchList");
+        logger.info("CALL /schedule");
         logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO);
 
         ScheduleRegistResDTO result;
         try {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleCommandService.registSchedule(scheduleRegistReqDTO);
+            result = scheduleCommandService.createSchedule(scheduleRegistReqDTO);
 
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 생성 실패");

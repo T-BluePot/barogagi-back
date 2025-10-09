@@ -33,7 +33,7 @@ public class PlanRegistReqDTO {
     @Schema(description = "지역 정보 DTO")
     public List<RegionRegistReqDTO> regionRegistReqDTOList;
 
-    @Schema(description = "태그 목록")
-    public List<TagRegistReqDTO> tagRegistReqDTOList;
+    @Schema(description = "계획 태그 목록")
+    public List<TagRegistReqDTO> planTagRegistReqDTOList;
 }
 

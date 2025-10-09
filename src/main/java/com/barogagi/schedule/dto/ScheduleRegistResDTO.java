@@ -14,6 +14,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Schema(description = "일정 등록 응답 DTO")
 public class ScheduleRegistResDTO {
+    private Integer scheduleNum;    // 일정 번호
     private String scheduleNm;      // 일정명
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
