@@ -1,5 +1,6 @@
 package com.barogagi.plan.dto;
 
+import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
 import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
@@ -35,7 +36,7 @@ public class PlanRegistResDTO {
     public String categoryNm;
 
     @Schema(description = "장소 번호")
-    public String planNum;
+    public Integer planNum;
 
     @Schema(description = "장소명")
     public String planNm;
@@ -50,9 +51,14 @@ public class PlanRegistResDTO {
     public String planAddress;
 
     @Schema(description = "지역 정보 DTO")
-    public String regionName;
+    public String regionNm;
+
+    @Schema(description = "지역 번호")
+    public Integer regionNum;
 
     @Schema(description = "태그 목록")
     public List<TagRegistResDTO> tagRegistResDTOList;
+
+    // private KakaoPlaceResDTO aiChosen;
 }
 

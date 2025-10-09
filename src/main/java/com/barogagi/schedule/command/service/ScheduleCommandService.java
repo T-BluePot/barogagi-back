@@ -8,15 +8,33 @@ import com.barogagi.kakaoplace.client.KakaoPlaceClient;
 import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
 import com.barogagi.naverblog.client.NaverBlogClient;
 import com.barogagi.naverblog.dto.NaverBlogResDTO;
+import com.barogagi.plan.command.entity.Item;
+import com.barogagi.plan.command.entity.Plan;
+import com.barogagi.plan.command.repository.ItemRepository;
+import com.barogagi.plan.command.repository.PlanRepository;
+import com.barogagi.plan.command.repository.PlanTagRepository;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.query.mapper.CategoryMapper;
+import com.barogagi.plan.query.mapper.ItemMapper;
+import com.barogagi.region.command.entity.Place;
+import com.barogagi.region.command.entity.PlanRegion;
+import com.barogagi.region.command.entity.PlanRegionId;
+import com.barogagi.region.command.entity.Region;
+import com.barogagi.region.command.repository.PlaceRepository;
+import com.barogagi.region.command.repository.PlanRegionRepository;
+import com.barogagi.region.command.repository.RegionRepository;
 import com.barogagi.region.dto.RegionGeoCodeResDTO;
 import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.region.query.service.RegionGeoCodeService;
 import com.barogagi.region.query.service.RegionQueryService;
+import com.barogagi.schedule.command.entity.Schedule;
+import com.barogagi.schedule.command.repository.ScheduleRepository;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
+import com.barogagi.tag.command.entity.*;
+import com.barogagi.tag.command.repository.ScheduleTagRepository;
+import com.barogagi.tag.command.repository.TagRepository;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
@@ -25,8 +43,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,12 +57,23 @@ public class ScheduleCommandService {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleCommandService.class);
 
     private final CategoryMapper categoryMapper;
+    private final ItemMapper itemMapper;
     private final KakaoPlaceClient kakaoPlaceClient;
     private final NaverBlogClient naverBlogClient;
     private final AIClient aiClient;
 
     private final TagQueryService tagQueryService;
     private final RegionGeoCodeService regionGeoCodeService;
+
+    private final ScheduleRepository scheduleRepository;
+    private final ScheduleTagRepository scheduleTagRepository;
+    private final TagRepository tagRepository;
+    private final ItemRepository itemRepository;
+    private final PlanRepository planRepository;
+    private final PlanTagRepository planTagRepository;
+    private final RegionRepository regionRepository;
+    private final PlanRegionRepository planRegionRepository;
+    private final PlaceRepository placeRepository;
 
 
     @Value("${kakao.radius}")
@@ -52,19 +83,33 @@ public class ScheduleCommandService {
     private int naverBlogDisplay;
 
     @Autowired
-    public ScheduleCommandService(CategoryMapper categoryMapper,
+    public ScheduleCommandService(CategoryMapper categoryMapper, ItemMapper itemMapper,
                                   KakaoPlaceClient kakaoPlaceClient, NaverBlogClient naverBlogClient,
-                                  AIClient aiClient, TagQueryService tagQueryService, RegionGeoCodeService regionGeoCodeService) {
+                                  AIClient aiClient, TagQueryService tagQueryService, RegionGeoCodeService regionGeoCodeService,
+                                  ScheduleRepository scheduleRepository, ScheduleTagRepository scheduleTagRepository,
+                                  TagRepository tagRepository, ItemRepository itemRepository,
+                                  PlanRepository planRepository, PlanTagRepository planTagRepository,
+                                  RegionRepository regionRepository, PlanRegionRepository planRegionRepository,
+                                  PlaceRepository placeRepository) {
+        this.itemMapper = itemMapper;
         this.categoryMapper = categoryMapper;
         this.kakaoPlaceClient = kakaoPlaceClient;
         this.naverBlogClient = naverBlogClient;
         this.aiClient = aiClient;
         this.tagQueryService = tagQueryService;
         this.regionGeoCodeService = regionGeoCodeService;
+        this.scheduleRepository = scheduleRepository;
+        this.scheduleTagRepository = scheduleTagRepository;
+        this.tagRepository = tagRepository;
+        this.itemRepository = itemRepository;
+        this.planRepository = planRepository;
+        this.planTagRepository = planTagRepository;
+        this.regionRepository = regionRepository;
+        this.planRegionRepository = planRegionRepository;
+        this.placeRepository = placeRepository;
     }
 
-    @Transactional
-    public ScheduleRegistResDTO registSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO) {
+    public ScheduleRegistResDTO createSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO) {
 
         List<PlanRegistResDTO> planResList = new ArrayList<>();
 
@@ -75,8 +120,8 @@ public class ScheduleCommandService {
 
 
         scheduleRegistReqDTO.getPlanRegistReqDTOList().forEach(plan -> {
-            if (plan.getTagRegistReqDTOList() != null) {
-                plan.getTagRegistReqDTOList().forEach(tag -> {
+            if (plan.getPlanTagRegistReqDTOList() != null) {
+                plan.getPlanTagRegistReqDTOList().forEach(tag -> {
                     logger.info("tagNum={}, tagNm={}", tag.getTagNum(), tag.getTagNm());
                 });
             } else {
@@ -96,7 +141,11 @@ public class ScheduleCommandService {
             int limitPlace = calLimitPlace(plan.getRegionRegistReqDTOList().size());
 
             List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
-            String queryString = categoryMapper.selectCategoryNmBy(plan.getCategoryNum()); // 검색어
+
+            String categoryNm = categoryMapper.selectCategoryNmBy(plan.getCategoryNum());
+            String queryString = categoryNm;  // 검색어
+
+            String itemNm = itemMapper.selectItemNmBy(plan.getItemNum()); // todo. itemNm을 검색어로 쓸지 고려하기
 
             for (RegionRegistReqDTO region : plan.getRegionRegistReqDTOList()) {
                 // regionNum으로 좌표 가져오기
@@ -128,6 +177,11 @@ public class ScheduleCommandService {
                 List<KakaoPlaceResDTO> oneRegionPlaces =
                         kakaoPlaceClient.searchKakaoPlace(queryString, geo.getX(), geo.getY(), radius, limitPlace);
                 allKakaoPlaceResults.add(oneRegionPlaces);
+
+                // 각 장소에 regionNum 세팅
+                if (oneRegionPlaces != null) {
+                    oneRegionPlaces.forEach(k -> k.setRegionNum(region.getRegionNum()));
+                }
 
                 logger.info("#$# resolved regionName={} for regionNum={}", regionName, updatedRegion.getRegionNum());
 
@@ -184,16 +238,14 @@ public class ScheduleCommandService {
             }
 
             // ---------- 3) AI 호출 ----------
-            List<Integer> tagNums = Optional.ofNullable(plan.getTagRegistReqDTOList())
+            // todo. 일정 전체에 대한 태그(schedulePlanTagRegistReqDTOList)도 참고하도록 수정해야 함
+            List<Integer> tagNums = Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
                     .orElseGet(List::of)
                     .stream()
                     .map(TagRegistReqDTO::getTagNum)
                     .collect(Collectors.toList());
 
-            logger.info("#$# 1 Before AI request");
-
             List<String> tagNames = tagQueryService.findTagNmByTagNum(tagNums);
-            logger.info("#$# 2 Before AI request");
 
             AIReqWrapper aiReqWrapper = AIReqWrapper.builder()
                     .tags(tagNames)
@@ -202,74 +254,60 @@ public class ScheduleCommandService {
                     .build();
 
             AIResDTO aiRes = aiClient.recommandPlace(aiReqWrapper);
-            logger.info("#$# AI Recommendation result obj={}", aiRes);
 
             // ---------- 4) AI가 고른 index → Kakao place 선택 ----------
             Integer idx = (aiRes != null) ? aiRes.getRecommandPlaceIndex() : null;
             if (idx == null || idx < 0 || idx >= flatKakao.size()) {
-                logger.warn("#$# invalid recommandPlaceNum={}, fallback to 0", idx);
                 idx = 0; // fallback
             }
-            KakaoPlaceResDTO chosen = flatKakao.get(idx);
+            KakaoPlaceResDTO aiChosen = flatKakao.get(idx);
 
-            // ---------- 5) DB insert (예시) ----------
-            // (1) Schedule
+            // ---------- 5) 응답 DTO 생성 ----------
+            String regionNm = null;
+            if (aiChosen.getRegionNum() != null) {
+                regionNm = regionRepository.findById(aiChosen.getRegionNum())
+                        .map(region -> {
+                            // 지역명은 보통 3레벨 > 2레벨 순으로 선택
+                            if (region.getRegionLevel3() != null && !region.getRegionLevel3().isEmpty())
+                                return region.getRegionLevel3();
+                            else if (region.getRegionLevel2() != null && !region.getRegionLevel2().isEmpty())
+                                return region.getRegionLevel2();
+                            else
+                                return region.getRegionLevel1();
+                        })
+                        .orElse(null);
+            }
 
-            // (2) Schedule_tag
-
-            // (3) Plan
-
-            // (4) Plan_tag
-
-            // (5) Plan_region
-
-            // (6) Place
-
-
-
-            // Plan 엔티티는 프로젝트 엔티티에 맞게 매핑 필요
-            // Plan planEntity = Plan.builder()
-            //         .planNm(chosen.getPlaceName())
-            //         .planLink(chosen.getPlaceUrl())
-            //         .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
-            //         .planAddress(Optional.ofNullable(chosen.getRoadAddressName()).orElse(chosen.getAddressName()))
-            //         .itemNum(plan.getItemNum())
-            //         .categoryNum(plan.getCategoryNum())
-            //         .startTime(plan.getStartTime())
-            //         .endTime(plan.getEndTime())
-            //         .build();
-            // planRepository.save(planEntity);
-
-            // ---------- 6) PlanRegistResDTO 구성 ----------
             PlanRegistResDTO planRes = PlanRegistResDTO.builder()
-                    .planNum(null) // TODO. DB 저장 후 세팅
-                    .startTime(plan.getStartTime())
-                    .endTime(plan.getEndTime())
-                    .itemNum(plan.getItemNum())
-                    .itemNm(null) // TODO. itemNm(plan.getItemNm())
-                    .categoryNum(plan.getCategoryNum())
-                    .categoryNm(null)// TODO. categoryNm(plan.getCategoryNm())
-                    .planNm(chosen.getPlaceName())
-                    .planLink(chosen.getPlaceUrl())
+                    .planNm(aiChosen.getPlaceName())
+                    .planLink(aiChosen.getPlaceUrl())
                     .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
-                    .planAddress(Optional.ofNullable(chosen.getRoadAddressName()).orElse(chosen.getAddressName()))
-                    .regionName(null) // TODO. 지역 세팅 - firstRegionName(plan.getRegionRegistReqDTOList())
+                    .planAddress(Optional.ofNullable(aiChosen.getRoadAddressName()).orElse(aiChosen.getAddressName()))
+                    .regionNm(regionNm)
+                    .regionNum(aiChosen.getRegionNum())
+                    .categoryNm(categoryNm)
+                    .categoryNum(plan.getCategoryNum())
+                    .itemNm(itemNm)
+                    .itemNum(plan.getItemNum())
                     .tagRegistResDTOList(
-                            Optional.ofNullable(plan.getTagRegistReqDTOList())
-                                    .orElseGet(java.util.Collections::emptyList)
+                            Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
+                                    .orElseGet(List::of)
                                     .stream()
-                                    .map(req -> TagRegistResDTO.builder()
-                                            .tagNum(req.getTagNum())
-                                            .tagNm(req.getTagNm())
-                                            .build()
-                                    )
-                                    .collect(java.util.stream.Collectors.toList())
+                                    .map(tagReq -> TagRegistResDTO.builder()
+                                            .tagNum(tagReq.getTagNum())
+                                            .tagNm(tagReq.getTagNm())
+                                            .build())
+                                    .collect(Collectors.toList())
                     )
+                    // .aiChosen(aiChosen)
                     .build();
 
             planResList.add(planRes);
 
         }
+
+        // ---------- 6) DB insert ----------
+//        Schedule savedSchedule = registScheduleInfo(scheduleRegistReqDTO, planResList);
 
         // ---------- 7) ScheduleRegistResDTO 묶어서 리턴 ----------
         return ScheduleRegistResDTO.builder()
@@ -279,6 +317,118 @@ public class ScheduleCommandService {
                 .planRegistResDTOList(planResList)
                 .build();
     }
+
+//    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Schedule registScheduleInfo(ScheduleRegistReqDTO scheduleRegistReqDTO, List<PlanRegistResDTO> planResList) {
+        logger.info("#$# START DB SAVE!");
+
+        // (1) Schedule
+        Schedule schedule = Schedule.builder()
+                .membershipNo(1)
+                .scheduleNm(scheduleRegistReqDTO.getScheduleNm())
+                .startDate(scheduleRegistReqDTO.getStartDate())
+                .endDate(scheduleRegistReqDTO.getEndDate())
+                .radius(radius)
+                .build();
+
+        scheduleRepository.save(schedule);
+        logger.info("#$# schedule Save! scheduleNum={}", schedule.getScheduleNum());
+
+        // (2) Schedule_tag
+        if (scheduleRegistReqDTO.getScheduleTagRegistReqDTOList() != null) {
+            for (TagRegistReqDTO tagReq : scheduleRegistReqDTO.getScheduleTagRegistReqDTOList()) {
+                Tag tag = tagRepository.findById(tagReq.getTagNum())
+                        .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagReq.getTagNum()));
+
+                scheduleTagRepository.save(
+                        ScheduleTag.builder()
+                                .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
+                                .schedule(schedule)
+                                .tag(tag)
+                                .build()
+                );
+            }
+        }
+        logger.info("#$# scheduleTag Save! scheduleNum={}", schedule.getScheduleNum());
+
+        // (3) Plan + Plan_tag + Plan_region + Place
+        for (int i = 0; i < scheduleRegistReqDTO.getPlanRegistReqDTOList().size(); i++) {
+
+            PlanRegistReqDTO planReq = scheduleRegistReqDTO.getPlanRegistReqDTOList().get(i);
+            PlanRegistResDTO planRes = planResList.get(i); // AI 결과 매칭
+            logger.info("#$# planRes={}", planRes);
+
+            Item item = itemRepository.findById(planReq.getItemNum())
+                    .orElseThrow(() -> new IllegalArgumentException("Item not found: " + planReq.getItemNum()));
+            logger.info("#$# item={}", item);
+
+            // ① Plan 저장
+            Plan plan = Plan.builder()
+                    .startTime(planReq.getStartTime())
+                    .endTime(planReq.getEndTime())
+                    .schedule(schedule)
+                    .item(item)
+                    .build();
+
+            planRepository.saveAndFlush(plan);
+            logger.info("✅ Plan saved: planNum={}", plan.getPlanNum());
+
+
+            // ② Plan_tag
+            if (planReq.getPlanTagRegistReqDTOList() != null) {
+                for (TagRegistReqDTO tagReq : planReq.getPlanTagRegistReqDTOList()) {
+                    Tag tag = tagRepository.findById(tagReq.getTagNum())
+                            .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagReq.getTagNum()));
+
+                    planTagRepository.save(
+                            PlanTag.builder()
+                                    .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
+                                    .plan(plan)
+                                    .tag(tag)
+                                    .build()
+                    );
+                }
+            }
+
+            // ③ Plan_region
+            if (planReq.getRegionRegistReqDTOList() != null) {
+                for (RegionRegistReqDTO regionReq : planReq.getRegionRegistReqDTOList()) {
+                    Region region = regionRepository.findById(regionReq.getRegionNum())
+                            .orElseThrow(() -> new IllegalArgumentException("Region not found: " + regionReq.getRegionNum()));
+
+                    planRegionRepository.save(
+                            PlanRegion.builder()
+                                    .id(new PlanRegionId(region.getRegionNum(), plan.getPlanNum()))
+                                    .plan(plan)
+                                    .region(region)
+                                    .build()
+                    );
+                }
+            }
+
+            // ④ Place
+            if (planRes.getRegionNum() != null) {
+                Region region = regionRepository.findById(planRes.getRegionNum())
+                        .orElseThrow(() -> new IllegalArgumentException("Region not found: " + planRes.getRegionNum()));
+
+                Place place = Place.builder()
+                        .region(region)
+                        .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
+                        .address(planRes.getPlanAddress())
+                        .planLink(planRes.getPlanLink())
+                        .placeDescription(planRes.getPlanDescription())
+                        .plan(plan)
+                        .build();
+
+                placeRepository.save(place);
+                logger.info("✅ Place saved for planNum={}, regionNum={}", plan.getPlanNum(), planRes.getRegionNum());
+            }
+        }
+
+        return schedule;
+    }
+
 
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴

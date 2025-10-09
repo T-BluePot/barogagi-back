@@ -1,7 +1,11 @@
 package com.barogagi.schedule.command.entity;
 
+import com.barogagi.plan.command.entity.Plan;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -30,4 +34,7 @@ public class Schedule {
 
     @Column(name = "RADIUS", nullable = false)
     private int radius;                 // 추천 반경 (미터 단위)
+
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Plan> plans = new ArrayList<>();
 }

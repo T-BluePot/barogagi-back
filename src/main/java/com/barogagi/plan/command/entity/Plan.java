@@ -1,6 +1,7 @@
 package com.barogagi.plan.command.entity;
 
 import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
+import com.barogagi.region.command.entity.Place;
 import com.barogagi.schedule.command.entity.Schedule;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -48,4 +49,9 @@ public class Plan {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ITEM_NUM", nullable = false)
     private Item item;                  // 아이템 번호
+
+    // PLACE와 1:1 mapping
+    @OneToOne(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Place place;
+
 }
