@@ -2,6 +2,8 @@ package com.barogagi.schedule.dto;
 
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
+import com.barogagi.tag.dto.TagRegistReqDTO;
+import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +20,9 @@ public class ScheduleRegistResDTO {
     private String scheduleNm;      // 일정명
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
+
+    // 일정 태그 목록 (스케쥴 태그)
+    public List<TagRegistResDTO> scheduleTagRegistResDTOList;
 
     // 계획 리스트
     private List<PlanRegistResDTO> planRegistResDTOList;

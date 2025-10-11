@@ -50,15 +50,13 @@ public class PlanRegistResDTO {
     @Schema(description = "장소 주소")
     public String planAddress;
 
-    @Schema(description = "지역 정보 DTO")
+    @Schema(description = "지역명")
     public String regionNm;
 
     @Schema(description = "지역 번호")
     public Integer regionNum;
 
-    @Schema(description = "태그 목록")
-    public List<TagRegistResDTO> tagRegistResDTOList;
-
-    // private KakaoPlaceResDTO aiChosen;
+    @Schema(description = "계획 태그 목록")
+    public List<TagRegistResDTO> planTagRegistResDTOList;
 }
 

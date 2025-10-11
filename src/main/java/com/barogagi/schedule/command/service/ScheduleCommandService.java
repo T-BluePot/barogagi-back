@@ -10,6 +10,7 @@ import com.barogagi.naverblog.client.NaverBlogClient;
 import com.barogagi.naverblog.dto.NaverBlogResDTO;
 import com.barogagi.plan.command.entity.Item;
 import com.barogagi.plan.command.entity.Plan;
+import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
 import com.barogagi.plan.command.repository.ItemRepository;
 import com.barogagi.plan.command.repository.PlanRepository;
 import com.barogagi.plan.command.repository.PlanTagRepository;
@@ -279,6 +280,8 @@ public class ScheduleCommandService {
             }
 
             PlanRegistResDTO planRes = PlanRegistResDTO.builder()
+                    .startTime(plan.getStartTime())
+                    .endTime(plan.getEndTime())
                     .planNm(aiChosen.getPlaceName())
                     .planLink(aiChosen.getPlaceUrl())
                     .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
@@ -289,7 +292,7 @@ public class ScheduleCommandService {
                     .categoryNum(plan.getCategoryNum())
                     .itemNm(itemNm)
                     .itemNum(plan.getItemNum())
-                    .tagRegistResDTOList(
+                    .planTagRegistResDTOList(
                             Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
                                     .orElseGet(List::of)
                                     .stream()
@@ -318,115 +321,147 @@ public class ScheduleCommandService {
                 .build();
     }
 
+
+
+    // 등록완료된 스케쥴의 num을 리턴
+    public Integer registSchedule(ScheduleRegistResDTO scheduleRegistResDTO) {
+        return registScheduleInfo(scheduleRegistResDTO);
+    }
+
+
+
 //    @Transactional
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Schedule registScheduleInfo(ScheduleRegistReqDTO scheduleRegistReqDTO, List<PlanRegistResDTO> planResList) {
-        logger.info("#$# START DB SAVE!");
+    public Integer registScheduleInfo(ScheduleRegistResDTO scheduleRegistResDTO){
+        logger.info("START DB SAVE!");
+        try {
 
-        // (1) Schedule
-        Schedule schedule = Schedule.builder()
-                .membershipNo(1)
-                .scheduleNm(scheduleRegistReqDTO.getScheduleNm())
-                .startDate(scheduleRegistReqDTO.getStartDate())
-                .endDate(scheduleRegistReqDTO.getEndDate())
-                .radius(radius)
-                .build();
-
-        scheduleRepository.save(schedule);
-        logger.info("#$# schedule Save! scheduleNum={}", schedule.getScheduleNum());
-
-        // (2) Schedule_tag
-        if (scheduleRegistReqDTO.getScheduleTagRegistReqDTOList() != null) {
-            for (TagRegistReqDTO tagReq : scheduleRegistReqDTO.getScheduleTagRegistReqDTOList()) {
-                Tag tag = tagRepository.findById(tagReq.getTagNum())
-                        .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagReq.getTagNum()));
-
-                scheduleTagRepository.save(
-                        ScheduleTag.builder()
-                                .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
-                                .schedule(schedule)
-                                .tag(tag)
-                                .build()
-                );
-            }
-        }
-        logger.info("#$# scheduleTag Save! scheduleNum={}", schedule.getScheduleNum());
-
-        // (3) Plan + Plan_tag + Plan_region + Place
-        for (int i = 0; i < scheduleRegistReqDTO.getPlanRegistReqDTOList().size(); i++) {
-
-            PlanRegistReqDTO planReq = scheduleRegistReqDTO.getPlanRegistReqDTOList().get(i);
-            PlanRegistResDTO planRes = planResList.get(i); // AI 결과 매칭
-            logger.info("#$# planRes={}", planRes);
-
-            Item item = itemRepository.findById(planReq.getItemNum())
-                    .orElseThrow(() -> new IllegalArgumentException("Item not found: " + planReq.getItemNum()));
-            logger.info("#$# item={}", item);
-
-            // ① Plan 저장
-            Plan plan = Plan.builder()
-                    .startTime(planReq.getStartTime())
-                    .endTime(planReq.getEndTime())
-                    .schedule(schedule)
-                    .item(item)
+            // 1. Schedule
+            Schedule schedule = Schedule.builder()
+                    .membershipNo(1) // todo. token에서 정보 가져오는 방식으로 수정 필요
+                    .scheduleNm(scheduleRegistResDTO.getScheduleNm())
+                    .startDate(scheduleRegistResDTO.getStartDate())
+                    .endDate(scheduleRegistResDTO.getEndDate())
+                    .radius(radius)
                     .build();
 
-            planRepository.saveAndFlush(plan);
-            logger.info("✅ Plan saved: planNum={}", plan.getPlanNum());
+            scheduleRepository.save(schedule);
+            logger.info("schedule Save! scheduleNum={}", schedule.getScheduleNum());
 
-
-            // ② Plan_tag
-            if (planReq.getPlanTagRegistReqDTOList() != null) {
-                for (TagRegistReqDTO tagReq : planReq.getPlanTagRegistReqDTOList()) {
+            // 2. Schedule_tag
+            if (scheduleRegistResDTO.getScheduleTagRegistResDTOList() != null) {
+                for (TagRegistResDTO tagReq : scheduleRegistResDTO.getScheduleTagRegistResDTOList()) {
                     Tag tag = tagRepository.findById(tagReq.getTagNum())
                             .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagReq.getTagNum()));
 
-                    planTagRepository.save(
-                            PlanTag.builder()
-                                    .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
-                                    .plan(plan)
+                    scheduleTagRepository.save(
+                            ScheduleTag.builder()
+                                    .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
+                                    .schedule(schedule)
                                     .tag(tag)
                                     .build()
                     );
                 }
             }
+            logger.info("scheduleTag Save! scheduleNum={}", schedule.getScheduleNum());
 
-            // ③ Plan_region
-            if (planReq.getRegionRegistReqDTOList() != null) {
-                for (RegionRegistReqDTO regionReq : planReq.getRegionRegistReqDTOList()) {
-                    Region region = regionRepository.findById(regionReq.getRegionNum())
-                            .orElseThrow(() -> new IllegalArgumentException("Region not found: " + regionReq.getRegionNum()));
+            // 3. Plan + Plan_tag + Plan_region + Place
+            for (int i = 0; i < scheduleRegistResDTO.getPlanRegistResDTOList().size(); i++) {
 
-                    planRegionRepository.save(
-                            PlanRegion.builder()
-                                    .id(new PlanRegionId(region.getRegionNum(), plan.getPlanNum()))
-                                    .plan(plan)
-                                    .region(region)
-                                    .build()
-                    );
-                }
-            }
+                PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
 
-            // ④ Place
-            if (planRes.getRegionNum() != null) {
-                Region region = regionRepository.findById(planRes.getRegionNum())
-                        .orElseThrow(() -> new IllegalArgumentException("Region not found: " + planRes.getRegionNum()));
+                Item item = itemRepository.findById(planRes.getItemNum())
+                        .orElseThrow(() -> new IllegalArgumentException("Item not found: " + planRes.getItemNum()));
 
-                Place place = Place.builder()
-                        .region(region)
-                        .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                        .address(planRes.getPlanAddress())
-                        .planLink(planRes.getPlanLink())
-                        .placeDescription(planRes.getPlanDescription())
-                        .plan(plan)
+                PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
+                        .membershipNo(1) // todo. token에서 정보 가져오는 방식으로 수정 필요
                         .build();
 
-                placeRepository.save(place);
-                logger.info("✅ Place saved for planNum={}, regionNum={}", plan.getPlanNum(), planRes.getRegionNum());
+                // 3-1. Plan
+                Plan plan = Plan.builder()
+                        .planNum(planRes.getPlanNum())
+                        .planNm(planRes.getPlanNm())
+                        .startTime(planRes.getStartTime())
+                        .endTime(planRes.getEndTime())
+                        .planLink(planRes.getPlanLink())
+                        .planDescription(planRes.getPlanDescription())
+                        .planAddress(planRes.getPlanAddress())
+                        .schedule(schedule)
+                        .user(user)
+                        .item(item)
+                        .build();
+
+                planRepository.saveAndFlush(plan);
+                logger.info("Plan save! planNum={}", plan.getPlanNum());
+
+
+                // 3-2. Plan_tag
+                if (planRes.getPlanTagRegistResDTOList() != null) {
+
+                    for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
+                        Tag tag = tagRepository.findById(tagRes.getTagNum())
+                                .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagRes.getTagNum()));
+
+                        PlanTag planTag = PlanTag.builder()
+                                .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
+                                .plan(plan)
+                                .tag(tag)
+                                .build();
+
+                        planTagRepository.save(planTag);
+                    }
+                }
+
+                // 3-3. Plan_region
+                if (planRes.getRegionNum() != null) {
+                    Region region = regionRepository.findById(planRes.getRegionNum())
+                            .orElseThrow(() -> new IllegalArgumentException("Region not found: " + planRes.getRegionNum()));
+
+                    PlanRegionId planRegionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
+
+                    PlanRegion planRegion = PlanRegion.builder()
+                            .id(planRegionId)
+                            .region(region)
+                            .plan(plan)
+                            .build();
+
+                    planRegionRepository.save(planRegion);
+                    logger.info("PlanRegion save! regionNum={}, planNum={}", region.getRegionNum(), plan.getPlanNum());
+
+                }
+
+                // 3-4. Place
+                if (planRes.getRegionNum() != null) {
+                    Region region = regionRepository.findById(planRes.getRegionNum())
+                            .orElseThrow(() -> new IllegalArgumentException("Region not found: " + planRes.getRegionNum()));
+
+                    Place place = Place.builder()
+                            .region(region)
+                            .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
+                            .address(planRes.getPlanAddress())
+                            .planLink(planRes.getPlanLink())
+                            .placeDescription(planRes.getPlanDescription())
+                            .plan(plan)
+                            .build();
+
+                    placeRepository.save(place);
+                    logger.info("Place save! planNum={}, regionNum={}", plan.getPlanNum(), planRes.getRegionNum());
+
+                    // 3-5. plan-place 동기화
+                    plan.toBuilder().place(place).build();
+                }
+
             }
+            logger.info("END DB SAVE!");
+
+            return schedule.getScheduleNum();
+
+        } catch (Exception e) {
+            logger.error(e.getMessage());
         }
 
-        return schedule;
+        return null;
+
     }
 
 
