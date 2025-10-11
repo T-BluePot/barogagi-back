@@ -11,6 +11,7 @@ import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
+import com.barogagi.schedule.dto.ScheduleListResDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
@@ -53,6 +54,26 @@ public class ScheduleController {
         this.scheduleQueryService = scheduleQueryService;
         this.scheduleCommandService = scheduleCommandService;
         this.planQueryService = planQueryService;
+    }
+
+    @Operation(summary = "내 일정 목록 조회 기능", description = "일정 목록을 조회하는 기능입니다.")
+    @GetMapping("/list")
+    public ApiResponse getScheduleList() {
+
+        logger.info("CALL /schedule/list");
+
+        List<ScheduleListResDTO> result;
+        try {
+            // TODO. token으로 사용자 확인 후, 해당 사용자의 일정만 조회하도록 수정해야 함
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            result = scheduleQueryService.getScheduleList(1);
+
+        } catch (Exception e) {
+            return ApiResponse.error("404", "일정 목록 조회 실패");
+        }
+
+
+        return ApiResponse.success(result, "일정 목록 조회 성공");
     }
 
     @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.")
