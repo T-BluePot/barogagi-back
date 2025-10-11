@@ -4,8 +4,10 @@ import com.barogagi.member.login.controller.LoginController;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
+import com.barogagi.schedule.dto.ScheduleListResDTO;
 import com.barogagi.schedule.query.mapper.ScheduleMapper;
 import com.barogagi.schedule.query.vo.ScheduleDetailVO;
+import com.barogagi.schedule.query.vo.ScheduleListVO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,23 @@ public class ScheduleQueryService {
                                  PlanQueryService planQueryService) {
         this.scheduleMapper = scheduleMapper;
         this.planQueryService = planQueryService;
+    }
+
+    public List<ScheduleListResDTO> getScheduleList(int membershipNo) {
+        List<ScheduleListVO> scheduleListVOList = scheduleMapper.selectScheduleList(membershipNo);
+
+        // VO -> DTO 변환
+        List<ScheduleListResDTO> scheduleListResDTOList = scheduleListVOList.stream().map(scheduleListVO ->
+            ScheduleListResDTO.builder()
+                .scheduleNum(scheduleListVO.getScheduleNum())
+                .scheduleNm(scheduleListVO.getScheduleNm())
+                .startDate(scheduleListVO.getStartDate())
+                .endDate(scheduleListVO.getEndDate())
+                .scheduleTagRegistResDTOList(scheduleListVO.getScheduleTagRegistResDTOList())
+                .build()
+        ).toList();
+
+        return scheduleListResDTOList;
     }
 
     public ScheduleDetailResDTO getScheduleDetail(int scheduleNum) throws Exception{
