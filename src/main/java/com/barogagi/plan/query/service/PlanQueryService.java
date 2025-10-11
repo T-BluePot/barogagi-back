@@ -21,9 +21,6 @@ public class PlanQueryService {
     }
 
     public List<PlanDetailVO> getPlanDetail(int scheduleNum) throws Exception{
-        logger.info("scheduleNum={}", scheduleNum);
-        List<PlanDetailVO> result = planMapper.selectPlanDetailByScheduleNum(scheduleNum);
-        logger.info("result={}", result);
-        return result;
+        return planMapper.selectPlanDetailByScheduleNum(scheduleNum);
     }
 }

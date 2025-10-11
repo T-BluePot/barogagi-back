@@ -11,6 +11,8 @@
             SELECT
                     b.TAG_NUM as tagNum
 		          , b.TAG_NM as tagNm
+                  , b.TAG_TYPE as tagType
+                  , b.CATEGORY_NUM as categoryNum
             FROM    PLAN_TAG a
             JOIN    TAG b ON a.TAG_NUM = b.TAG_NUM
             WHERE   a.PLAN_NUM = #{planNum};
@@ -20,7 +22,7 @@
     <select id="selectTagByTagNum" parameterType="int" resultType="com.barogagi.tag.query.vo.TagDetailVO">
         <![CDATA[
         SELECT
-            TAG_NUM as tagNum
+               TAG_NUM as tagNum
              , TAG_NM as tagNm
         FROM    TAG
         WHERE   TAG_NUM = #{tagNum};
