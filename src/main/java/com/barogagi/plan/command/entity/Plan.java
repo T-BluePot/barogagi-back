@@ -6,6 +6,10 @@ import com.barogagi.schedule.command.entity.Schedule;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -53,5 +57,16 @@ public class Plan {
     // PLACE와 1:1 mapping
     @OneToOne(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private Place place;
+
+    @CreationTimestamp
+    @Column(name = "REG_DATE", updatable = false)
+    private LocalDateTime regDate;      // 등록일
+
+    @UpdateTimestamp
+    @Column(name = "UPD_DATE")
+    private LocalDateTime updDate;      // 수정일 (업데이트 시 자동 변경)
+
+    @Column(name = "DEL_YN", nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    private String delYn;               // 삭제 여부(Y: 삭제, N: 미삭제)
 
 }

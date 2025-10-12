@@ -3,7 +3,10 @@ package com.barogagi.schedule.command.entity;
 import com.barogagi.plan.command.entity.Plan;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,4 +40,15 @@ public class Schedule {
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Plan> plans = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(name = "REG_DATE", updatable = false)
+    private LocalDateTime regDate;      // 등록일
+
+    @UpdateTimestamp
+    @Column(name = "UPD_DATE")
+    private LocalDateTime updDate;      // 수정일 (업데이트 시 자동 변경)
+
+    @Column(name = "DEL_YN", nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
+    private String delYn;               // 삭제 여부(Y: 삭제, N: 미삭제)
 }
