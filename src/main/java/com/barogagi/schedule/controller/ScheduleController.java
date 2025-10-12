@@ -194,12 +194,12 @@ public class ScheduleController {
     }
 
 
-    @Operation(summary = "일정 등록 기능",
-            description = "일정을 등록(DB에 저장)하는 기능입니다.<br>" +
+    @Operation(summary = "일정 저장 기능",
+            description = "일정을 DB에 저장하는 기능입니다.<br>" +
                     "- '일정 생성하기' 버튼을 눌렀을 때 호출되는 API입니다.<br>" +
                     "- '일정 생성' API로 받은 응답 DTO를 그대로 보내주세요.")
-    @PostMapping("")
-    public ApiResponse registSchedule(
+    @PostMapping("/save")
+    public ApiResponse saveSchedule(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "일정 등록 요청",
                     required = true,
@@ -273,20 +273,20 @@ public class ScheduleController {
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
     ) {
 
-        logger.info("CALL /schedule");
+        logger.info("CALL /schedule/save");
         logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
 
         int result;
         try {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleCommandService.registSchedule(scheduleRegistResDTO);
+            result = scheduleCommandService.saveSchedule(scheduleRegistResDTO);
 
         } catch (Exception e) {
-            return ApiResponse.error("404", "일정 생성 실패");
+            return ApiResponse.error("404", "일정 저장 실패");
         }
 
 
-        return ApiResponse.success(result, "일정 생성 성공");
+        return ApiResponse.success(result, "일정 저장 성공");
     }
 
 }

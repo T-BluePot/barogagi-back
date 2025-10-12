@@ -324,15 +324,15 @@ public class ScheduleCommandService {
 
 
     // 등록완료된 스케쥴의 num을 리턴
-    public Integer registSchedule(ScheduleRegistResDTO scheduleRegistResDTO) {
-        return registScheduleInfo(scheduleRegistResDTO);
+    public Integer saveSchedule(ScheduleRegistResDTO scheduleRegistResDTO) {
+        return saveScheduleInfo(scheduleRegistResDTO);
     }
 
 
 
 //    @Transactional
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Integer registScheduleInfo(ScheduleRegistResDTO scheduleRegistResDTO){
+    public Integer saveScheduleInfo(ScheduleRegistResDTO scheduleRegistResDTO){
         logger.info("START DB SAVE!");
         try {
 
@@ -343,6 +343,7 @@ public class ScheduleCommandService {
                     .startDate(scheduleRegistResDTO.getStartDate())
                     .endDate(scheduleRegistResDTO.getEndDate())
                     .radius(radius)
+                    .delYn("N")
                     .build();
 
             scheduleRepository.save(schedule);
@@ -389,6 +390,7 @@ public class ScheduleCommandService {
                         .schedule(schedule)
                         .user(user)
                         .item(item)
+                        .delYn("N")
                         .build();
 
                 planRepository.saveAndFlush(plan);
