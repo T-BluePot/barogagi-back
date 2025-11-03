@@ -289,4 +289,28 @@ public class ScheduleController {
         return ApiResponse.success(result, "일정 저장 성공");
     }
 
+    @Operation(summary = "일정 전체 삭제 기능",
+            description = "일정 전체를 DB에서 삭제하는 기능입니다.")
+    @PostMapping("/delete")
+    public ApiResponse deleteSchedule(@Parameter(description = "삭제할 일정 번호", example = "1")
+                                      @RequestParam Integer scheduleNum) {
+
+        logger.info("CALL /schedule/delete");
+        logger.info("[input] scheduleNum={}", scheduleNum);
+
+        boolean result;
+        try {
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            // TODO. membershipNo를 토큰으로부터 받아와야 함
+            result = scheduleCommandService.deleteSchedule(scheduleNum, 1);
+
+            if (!result) return ApiResponse.error("404", "일정 삭제 실패");
+
+        } catch (Exception e) {
+            return ApiResponse.error("404", "일정 삭제 실패");
+        }
+
+
+        return ApiResponse.success(result, "일정 삭제 성공");
+    }
 }

@@ -467,6 +467,18 @@ public class ScheduleCommandService {
     }
 
 
+    @Transactional
+    public boolean deleteSchedule(Integer scheduleNum, Integer membershipNo) {
+        Optional<Schedule> optional = scheduleRepository.findByScheduleNumAndMembershipNo(scheduleNum, membershipNo);
+        if (optional.isPresent()) {
+            Schedule schedule = optional.get();
+            schedule.markDeleted();  // del_yn=Y로 변경
+            return true;  // 트랜잭션 커밋 시 자동 UPDATE
+        }
+        return false;
+    }
+
+
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴
     // 후보장소 수만큼 네이버 블로그 API를 호출해야 하기 때문에 제한 필요
