@@ -51,4 +51,8 @@ public class Schedule {
 
     @Column(name = "DEL_YN", nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String delYn;               // 삭제 여부(Y: 삭제, N: 미삭제)
+
+    public void markDeleted() {
+        this.delYn = "Y";
+    }
 }
