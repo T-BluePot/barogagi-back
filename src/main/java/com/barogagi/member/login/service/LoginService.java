@@ -1,10 +1,10 @@
-package com.barogagi.member.basic.login.service;
+package com.barogagi.member.login.service;
 
-import com.barogagi.member.basic.login.mapper.LoginMapper;
-import com.barogagi.member.basic.login.dto.LoginVO;
-import com.barogagi.member.basic.login.dto.LoginDTO;
-import com.barogagi.member.basic.login.dto.SearchUserIdDTO;
-import com.barogagi.member.basic.login.dto.UserIdDTO;
+import com.barogagi.member.login.dto.LoginDTO;
+import com.barogagi.member.login.dto.LoginVO;
+import com.barogagi.member.login.dto.SearchUserIdDTO;
+import com.barogagi.member.login.dto.UserIdDTO;
+import com.barogagi.member.login.mapper.LoginMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,9 +34,5 @@ public class LoginService {
 
     public LoginVO findMembershipNo(LoginVO vo) {
         return loginMapper.findMembershipNo(vo);
-    }
-
-    public LoginVO findByUserId(LoginDTO vo) {
-        return loginMapper.findByUserId(vo);
     }
 }

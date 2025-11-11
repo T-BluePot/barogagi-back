@@ -1,4 +1,4 @@
-package com.barogagi.member.basic.login.dto;
+package com.barogagi.member.login.dto;
 
 import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;

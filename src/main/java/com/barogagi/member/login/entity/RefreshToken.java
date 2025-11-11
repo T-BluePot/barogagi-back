@@ -28,7 +28,7 @@ public class RefreshToken {
     private Long id;
 
     @Column(name = "MEMBERSHIP_NO", nullable = false)
-    private Long membershipNo;
+    private String membershipNo;
 
     @Column(name = "DEVICE_ID", length = 100)
     private String deviceId;

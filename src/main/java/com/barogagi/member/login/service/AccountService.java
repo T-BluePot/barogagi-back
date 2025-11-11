@@ -14,7 +14,7 @@ public class AccountService {
     private final UserMembershipRepository userMembershipRepository;
 
     @Transactional
-    public void deleteMyAccount(Long membershipNo) {
+    public void deleteMyAccount(String membershipNo) {
         // 1) 모든 리프레시 토큰 제거
         refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
         // 2) 회원 삭제

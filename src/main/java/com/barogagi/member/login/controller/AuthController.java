@@ -21,12 +21,10 @@ public class AuthController {
 
     private final AuthService authService;
     private final AccountService accountService;
-    private final JwtUtil jwtUtil;
 
-    public AuthController(AuthService authService, AccountService accountService, JwtUtil jwtUtil) {
+    public AuthController(AuthService authService, AccountService accountService) {
         this.authService = authService;
         this.accountService = accountService;
-        this.jwtUtil = jwtUtil;
     }
 
     @Operation(summary = "토큰 재발급", description = "Access 토큰 만료 시, Refresh 토큰으로 Access 토큰 재발급")
@@ -78,7 +76,7 @@ public class AuthController {
 
     @DeleteMapping
     public ResponseEntity<?> deleteMe(Authentication auth) {
-        Long membershipNo = (Long) auth.getPrincipal(); // JwtAuthFilter에서 세팅됨
+        String membershipNo = (String) auth.getPrincipal(); // JwtAuthFilter에서 세팅됨
         accountService.deleteMyAccount(membershipNo);
         return ResponseEntity.noContent().build(); // 204
     }

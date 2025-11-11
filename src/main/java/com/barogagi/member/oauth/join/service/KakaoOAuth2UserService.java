@@ -101,7 +101,7 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
                 dto.setProfileImg(profileImg);
                 dto.setJoinType("KAKAO");
 
-                int insertResult = joinService.insertMemberInfo(dto);
+                int insertResult = joinService.insertMembershipInfo(dto);
 
                 logger.info("KAKAO join result={}", insertResult);
             }

@@ -13,11 +13,10 @@ import java.time.LocalDateTime;
 public class UserMembership {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MEMBERSHIP_NO")
-    private Long membershipNo; // INT UNSIGNED → Long
+    @Column(name = "MEMBERSHIP_NO", nullable = false, length = 100)
+    private String membershipNo;
 
-    @Column(name = "USER_ID", nullable = false, length = 50)
+    @Column(name = "USER_ID", nullable = false, length = 100)
     private String userId;
 
     @Column(name = "PASSWORD", length = 100)
@@ -38,7 +37,7 @@ public class UserMembership {
     @Column(name = "PROFILE_IMG", length = 200)
     private String profileImg;
 
-    @Column(name = "NICKNAME", length = 50)
+    @Column(name = "NICKNAME", length = 100)
     private String nickname;
 
     @Column(name = "REG_DATE")

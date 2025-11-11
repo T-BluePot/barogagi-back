@@ -14,14 +14,12 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
     Optional<RefreshToken> findByTokenAndStatus(String token, String status);
 
     List<RefreshToken> findByMembershipNoAndDeviceIdAndStatus(
-            Long membershipNo, String deviceId, String status
+            String membershipNo, String deviceId, String status
     );
 
-    List<RefreshToken> findByMembershipNoAndDeviceIdAndStatus(Long membershipNo, String deviceId, RefreshToken.Status status);
-
-    List<RefreshToken> findByMembershipNoAndStatus(Long membershipNo, RefreshToken.Status status);
+    List<RefreshToken> findByMembershipNoAndStatus(String membershipNo, RefreshToken.Status status);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from REFRESH_TOKEN r where r.membershipNo = :membershipNo")
-    int deleteAllByMembershipNo(@Param("membershipNo") Long membershipNo);
+    @Query(value = "DELETE FROM REFRESH_TOKEN WHERE MEMBERSHIP_NO = :membershipNo", nativeQuery = true)
+    int deleteAllByMembershipNo(@Param("membershipNo") String membershipNo);
 }

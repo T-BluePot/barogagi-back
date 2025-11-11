@@ -34,7 +34,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (auth != null && auth.startsWith("Bearer ")) {
             String token = auth.substring("Bearer ".length());
             if (jwt.isAccessTokenValid(token)) {
-                Long membershipNo = jwt.getMembershipNo(token);
+                String membershipNo = jwt.getMembershipNo(token);
 
                 // 필요 시 UserDetails 로드(선택: DB hit 줄이려면 Minimal Principal 사용)
                 UsernamePasswordAuthenticationToken authentication =

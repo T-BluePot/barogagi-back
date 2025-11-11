@@ -53,7 +53,7 @@ public class AuthService {
             throw new RuntimeException("BAD_CREDENTIALS");
         }
 
-        Long no = u.getMembershipNo();
+        String no = u.getMembershipNo();
         String access = jwt.generateAccessToken(no, u.getUserId());
         String refresh = jwt.generateRefreshToken(no, req.deviceId());
 
@@ -82,7 +82,7 @@ public class AuthService {
             throw new RuntimeException("NOT_OAUTH_MEMBER");
         }
 
-        Long no = u.getMembershipNo();
+        String no = u.getMembershipNo();
         String access  = jwt.generateAccessToken(no, u.getUserId());
         String refresh = jwt.generateRefreshToken(no, deviceId != null ? deviceId : "web-oauth");
 
@@ -112,7 +112,7 @@ public class AuthService {
             throw new BadCredentialsException("invalid_refresh_token");
         }
 
-        Long membershipNo = jwt.getMembershipNo(refreshToken);
+        String membershipNo = jwt.getMembershipNo(refreshToken);
         String deviceId = jwt.getDeviceId(refreshToken);
 
         logger.info("deviceId.isEmpty()={}", deviceId.isEmpty());
@@ -142,7 +142,7 @@ public class AuthService {
         refreshRepo.saveAll(olds);
 
         // 새 토큰 발급
-        var user = userRepo.findById(membershipNo)
+        var user = userRepo.findById(Long.valueOf(membershipNo))
                 .orElseThrow(() -> new BadCredentialsException("user_not_found"));
 
         String newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
@@ -168,7 +168,7 @@ public class AuthService {
     public void logout(String refreshToken) {
         if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) return;
 
-        Long membershipNo = jwt.getMembershipNo(refreshToken);
+        String membershipNo = jwt.getMembershipNo(refreshToken);
         String deviceId = jwt.getDeviceId(refreshToken);
 
         List<RefreshToken> tokens = refreshRepo
@@ -180,7 +180,7 @@ public class AuthService {
 
     /** 모든 기기 로그아웃: 회원의 모든 VALID 리프레시 REVOKE */
     @Transactional
-    public void logoutAll(Long membershipNo) {
+    public void logoutAll(String membershipNo) {
         List<RefreshToken> tokens = refreshRepo.findByMembershipNoAndStatus(membershipNo, RefreshToken.Status.VALID);
 
         for (var t : tokens) t.setStatus("REVOKED");

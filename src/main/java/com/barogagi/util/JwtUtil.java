@@ -48,11 +48,11 @@ public class JwtUtil {
                 .build();
     }
 
-    public String generateAccessToken(Long membershipNo, String userId) {
+    public String generateAccessToken(String membershipNo, String userId) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .setIssuer(issuer)
-                .setSubject(String.valueOf(membershipNo))
+                .setSubject(membershipNo)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(accessExpSeconds)))
                 .claim("uid", userId)
@@ -61,11 +61,11 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String generateRefreshToken(Long membershipNo, String deviceId) {
+    public String generateRefreshToken(String membershipNo, String deviceId) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .setIssuer(issuer)
-                .setSubject(String.valueOf(membershipNo))
+                .setSubject(membershipNo)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(refreshExpSeconds)))
                 .claim("did", deviceId == null ? "default" : deviceId)
@@ -109,8 +109,8 @@ public class JwtUtil {
         catch (Exception e) { return true; }
     }
 
-    public Long getMembershipNo(String token) {
-        return Long.valueOf(parseClaims(token).getSubject());
+    public String getMembershipNo(String token) {
+        return String.valueOf(parseClaims(token).getSubject());
     }
 
     public boolean isAccessTokenValid(String token) {

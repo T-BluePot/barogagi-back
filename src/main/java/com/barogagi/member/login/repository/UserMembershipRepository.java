@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ public interface UserMembershipRepository extends JpaRepository<UserMembership, 
     Optional<UserMembership> findByUserId(String userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("delete from USER_MEMBERSHIP_INFO u where u.membershipNo = :membershipNo")
-    int deleteByMembershipNo(@Param("membershipNo") Long membershipNo);
+    @Transactional
+    @Query(value = "DELETE FROM USER_MEMBERSHIP_INFO WHERE MEMBERSHIP_NO = :membershipNo", nativeQuery = true)
+    int deleteByMembershipNo(@Param("membershipNo") String membershipNo);
 }

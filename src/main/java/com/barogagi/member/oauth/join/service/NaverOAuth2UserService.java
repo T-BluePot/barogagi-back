@@ -114,7 +114,7 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                     joinDTO.setBirth(birth);
                 }
 
-                int insertResult = joinService.insertMemberInfo(joinDTO);
+                int insertResult = joinService.insertMembershipInfo(joinDTO);
                 logger.info("NAVER join result={}", insertResult);
             }
 

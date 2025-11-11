@@ -3,8 +3,8 @@
 <mapper namespace="com.barogagi.member.basic.join.mapper.JoinMapper">
     <insert id="insertMemberInfo" parameterType="com.barogagi.member.basic.join.dto.JoinDTO">
         <![CDATA[
-            INSERT INTO USER_MEMBERSHIP_INFO(MEMBERSHIP_NO, USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, NICKNAME, REG_DATE, JOIN_TYPE)
-                VALUES(#{membershipNo}, #{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{nickName}, NOW(), #{joinType})
+            INSERT INTO USER_MEMBERSHIP_INFO(MEMBERSHIP_NO, USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, PROFILE_IMG, NICKNAME, REG_DATE, JOIN_TYPE)
+                VALUES(#{membershipNo}, #{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{profileImg}, #{nickName}, NOW(), #{joinType})
         ]]>
     </insert>
 

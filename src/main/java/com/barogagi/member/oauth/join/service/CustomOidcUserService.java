@@ -37,6 +37,9 @@ public class CustomOidcUserService extends org.springframework.security.oauth2.c
         org.springframework.security.oauth2.core.oidc.user.OidcUser user = super.loadUser(userRequest);
 
         var attr = user.getAttributes();
+
+        logger.info("attr={}", attr);
+
         String sub     = asString(attr.get("sub"));
         String email   = asString(attr.get("email"));
         String name    = asString(attr.get("name"));
@@ -63,7 +66,7 @@ public class CustomOidcUserService extends org.springframework.security.oauth2.c
                 joinDTO.setJoinType("GOOGLE");
                 joinDTO.setProfileImg(picture);
 
-                int insertResult = joinService.insertMemberInfo(joinDTO);
+                int insertResult = joinService.insertMembershipInfo(joinDTO);
 
                 logger.info("GOOGLE join result={}", insertResult);
             }
