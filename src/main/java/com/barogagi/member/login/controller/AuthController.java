@@ -1,12 +1,14 @@
 package com.barogagi.member.login.controller;
 
 import com.barogagi.member.login.dto.*;
+import com.barogagi.member.login.service.AccountService;
 import com.barogagi.member.login.service.AuthService;
 import com.barogagi.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -18,10 +20,12 @@ import java.util.Optional;
 public class AuthController {
 
     private final AuthService authService;
+    private final AccountService accountService;
     private final JwtUtil jwtUtil;
 
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+    public AuthController(AuthService authService, AccountService accountService, JwtUtil jwtUtil) {
         this.authService = authService;
+        this.accountService = accountService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -67,9 +71,16 @@ public class AuthController {
             refresh = body.get("refreshToken");
         }
         if (refresh != null && !refresh.isBlank()) {
-            authService.logout(refresh); // ✅ DB REVOKE
+            authService.logout(refresh); // DB REVOKE
         }
         return ResponseEntity.ok(Map.of("result", "logged_out"));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteMe(Authentication auth) {
+        Long membershipNo = (Long) auth.getPrincipal(); // JwtAuthFilter에서 세팅됨
+        accountService.deleteMyAccount(membershipNo);
+        return ResponseEntity.noContent().build(); // 204
     }
 }
 

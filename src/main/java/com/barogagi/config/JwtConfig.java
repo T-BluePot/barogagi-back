@@ -11,11 +11,12 @@ public class JwtConfig {
 
     @Bean
     public JwtUtil jwtUtil(
-            @Value("${jwt.secret}") String secretBase64,
+            @Value("${jwt.secret}") String base64Secret,
             @Value("${jwt.issuer:barogagi}") String issuer,
             @Value("${jwt.access-exp-seconds}") long accessExpSeconds,
             @Value("${jwt.refresh-exp-seconds}") long refreshExpSeconds
     ) {
-        return new JwtUtil(secretBase64, issuer, accessExpSeconds, refreshExpSeconds);
+        return new JwtUtil(base64Secret, issuer, accessExpSeconds, refreshExpSeconds);
     }
+
 }

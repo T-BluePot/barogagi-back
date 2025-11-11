@@ -36,16 +36,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         // successHandler 내부 예시
         LoginResponse login = authService.loginAfterOAuthSignup(userId, "web-oauth");
 
-        // ① refreshToken → HttpOnly 쿠키(프론트 JS에서 안 보임)
-        ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", login.tokens().refreshToken())
-                .httpOnly(true).secure(true) // 배포 시 true
-                .sameSite("Lax")             // 또는 "Strict"
-                .path("/")
-                .maxAge(Duration.ofSeconds(login.tokens().refreshTokenExpiresIn()))
-                .build();
-        res.addHeader("Set-Cookie", refreshCookie.toString());
-
-        // ② accessToken → JSON 바디(프론트가 Authorization 헤더에 사용)
         res.setContentType("application/json;charset=UTF-8");
         objectMapper.writeValue(res.getWriter(), Map.of(
                 "accessToken", login.tokens().accessToken(),

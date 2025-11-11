@@ -14,10 +14,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @Transactional
 public class AuthService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private final UserMembershipRepository userRepo;
     private final RefreshTokenRepository refreshRepo;
@@ -111,7 +115,8 @@ public class AuthService {
         Long membershipNo = jwt.getMembershipNo(refreshToken);
         String deviceId = jwt.getDeviceId(refreshToken);
 
-        if(deviceId.equals("")) {
+        logger.info("deviceId.isEmpty()={}", deviceId.isEmpty());
+        if(deviceId.isEmpty()) {
             deviceId = "web-oauth";
         }
 
