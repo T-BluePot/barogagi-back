@@ -3,8 +3,8 @@
 <mapper namespace="com.barogagi.member.join.mapper.JoinMapper">
     <insert id="insertMemberInfo" parameterType="com.barogagi.member.join.dto.JoinDTO">
         <![CDATA[
-            INSERT INTO USER_MEMBERSHIP_INFO(USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, NICKNAME, REG_DATE)
-                VALUES(#{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{nickName}, NOW())
+            INSERT INTO USER_MEMBERSHIP_INFO(MEMBERSHIP_NO, USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, NICKNAME, REG_DATE, JOIN_TYPE)
+                VALUES(#{membershipNo}, #{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{nickName}, NOW(), #{joinType})
         ]]>
     </insert>
 
@@ -21,6 +21,14 @@
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO
             WHERE   NICKNAME = #{nickName}
+        ]]>
+    </select>
+
+    <select id="checkDuplicateMembershipNo" parameterType="string" resultType="int">
+        <![CDATA[
+            SELECT  COUNT(*)
+            FROM    USER_MEMBERSHIP_INFO
+            WHERE   MEMBERSHIP_NO = #{membershipNo}
         ]]>
     </select>
 </mapper>
