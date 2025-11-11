@@ -6,10 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class JoinDTO extends DefaultVO {
-
-    // 회원번호
-    private String membershipNo = "";
+public class JoinRequestDTO extends DefaultVO {
 
     // 아이디
     private String userId = "";
@@ -31,7 +28,4 @@ public class JoinDTO extends DefaultVO {
 
     // 닉네임
     private String nickName = "";
-
-    // 회원가입 종류(BASIC : 기본 / GOOGLE : 구글 / KAKAO : 카카오톡 / NAVER : 네이버)
-    private String joinType = "";
 }

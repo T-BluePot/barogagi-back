@@ -15,4 +15,7 @@ public interface JoinMapper {
 
     // 닉네임 중복 체크
     int checkNickName(NickNameDTO dto);
+
+    // 회원번호 중복 체크
+    int checkDuplicateMembershipNo(String membershipNo);
 }
