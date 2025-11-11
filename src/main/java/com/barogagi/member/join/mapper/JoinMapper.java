@@ -17,5 +17,5 @@ public interface JoinMapper {
     int checkNickName(NickNameDTO dto);
 
     // 회원번호 중복 체크
-    int checkDuplicateMembershipNo(String membershipNo) throws Exception;
+    int checkDuplicateMembershipNo(String membershipNo);
 }

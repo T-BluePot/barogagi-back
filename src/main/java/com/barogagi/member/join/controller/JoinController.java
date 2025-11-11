@@ -47,7 +47,7 @@ public class JoinController {
     @PostMapping("/basic/membership/userId/check")
     public ApiResponse checkUserId(@RequestBody UserIdCheckDTO userIdCheckDTO) {
 
-        logger.info("CALL /membership/join/userId/check");
+        logger.info("CALL /membership/join/basic/membership/userId/check");
         logger.info("[input] API_SECRET_KEY={}", userIdCheckDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -102,10 +102,10 @@ public class JoinController {
     }
 
     @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.")
-    @PostMapping("/basic/")
+    @PostMapping("/basic/membership/insert")
     public ApiResponse membershipJoinInsert(@RequestBody JoinRequestDTO joinRequestDTO){
 
-        logger.info("CALL /basic/membership/insert");
+        logger.info("CALL /membership/join/basic/membership/insert");
         logger.info("[input] API_SECRET_KEY={}", joinRequestDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -184,7 +184,7 @@ public class JoinController {
     }
 
     @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API입니다.")
-    @PostMapping("check/duplicate/nickname")
+    @PostMapping("/check/duplicate/nickname")
     public ApiResponse checkDuplicateNickname(@RequestBody NickNameDTO nickNameDTO){
 
         logger.info("CALL /membership/join/check/duplicate/nickname");
