@@ -1,5 +1,6 @@
 package com.barogagi.member.join.controller;
 
+import com.barogagi.member.join.dto.JoinRequestDTO;
 import com.barogagi.member.join.dto.NickNameDTO;
 import com.barogagi.member.join.service.JoinService;
 import com.barogagi.member.join.dto.JoinDTO;
@@ -46,7 +47,7 @@ public class JoinController {
     @PostMapping("/basic/membership/userId/check")
     public ApiResponse checkUserId(@RequestBody UserIdCheckDTO userIdCheckDTO) {
 
-        logger.info("CALL /membership/join/userId/check");
+        logger.info("CALL /membership/join/basic/membership/userId/check");
         logger.info("[input] API_SECRET_KEY={}", userIdCheckDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -102,10 +103,10 @@ public class JoinController {
 
     @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.")
     @PostMapping("/basic/membership/insert")
-    public ApiResponse membershipJoinInsert(@RequestBody JoinDTO joinDTO){
+    public ApiResponse membershipJoinInsert(@RequestBody JoinRequestDTO joinRequestDTO){
 
-        logger.info("CALL /basic/membership/insert");
-        logger.info("[input] API_SECRET_KEY={}", joinDTO.getApiSecretKey());
+        logger.info("CALL /membership/join/basic/membership/insert");
+        logger.info("[input] API_SECRET_KEY={}", joinRequestDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -113,11 +114,11 @@ public class JoinController {
 
         try {
 
-            if(joinDTO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(joinRequestDTO.getApiSecretKey().equals(API_SECRET_KEY)){
 
                 // 필수 입력값(아이디, 비밀번호, 휴대전화번호 값이 빈 값이 아닌지 확인)
                 // 선택 입력값(이메일, 생년월일, 성별, 닉네임)
-                if(inputValidate.isEmpty(joinDTO.getUserId()) || inputValidate.isEmpty(joinDTO.getPassword()) || inputValidate.isEmpty(joinDTO.getTel())){
+                if(inputValidate.isEmpty(joinRequestDTO.getUserId()) || inputValidate.isEmpty(joinRequestDTO.getPassword()) || inputValidate.isEmpty(joinRequestDTO.getTel())){
 
                     // 필수 입력값 중 빈 값이 존재. insert 중지
                     resultCode = "101";
@@ -126,23 +127,33 @@ public class JoinController {
                 } else{
 
                     // 아이디, 비밀번호, 닉네임 적합성 검사
-                    if(!(validator.isValidId(joinDTO.getUserId()) && validator.isValidPassword(joinDTO.getPassword()) && validator.isValidNickname(joinDTO.getNickName()))){
+                    if(!(validator.isValidId(joinRequestDTO.getUserId()) && validator.isValidPassword(joinRequestDTO.getPassword()) && validator.isValidNickname(joinRequestDTO.getNickName()))){
                         resultCode = "102";
                         message = "적합한 아이디, 비밀번호, 닉네임이 아닙니다.";
                     } else {
                         // 입력값 암호화 & 값 세팅
                         // 휴대전화번호, 비밀번호 암호화
-                        joinDTO.setTel(encryptUtil.encrypt(joinDTO.getTel()));
+                        joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel()));
 
                         // 이메일 값이 넘어오면 암호화
-                        if(!inputValidate.isEmpty(joinDTO.getEmail())){
-                            joinDTO.setEmail(encryptUtil.encrypt(joinDTO.getEmail()));
+                        if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){
+                            joinRequestDTO.setEmail(encryptUtil.encrypt(joinRequestDTO.getEmail()));
                         }
 
-                        joinDTO.setPassword(encryptUtil.hashEncodeString(joinDTO.getPassword()));
+                        joinRequestDTO.setPassword(encryptUtil.hashEncodeString(joinRequestDTO.getPassword()));
 
                         // 회원 정보 저장(회원가입)
-                        int insertResult = joinService.insertMemberInfo(joinDTO);
+                        JoinDTO joinDTO = new JoinDTO();
+                        joinDTO.setUserId(joinRequestDTO.getUserId());
+                        joinDTO.setPassword(joinRequestDTO.getPassword());
+                        joinDTO.setEmail(joinRequestDTO.getEmail());
+                        joinDTO.setBirth(joinRequestDTO.getBirth());
+                        joinDTO.setTel(joinRequestDTO.getTel());
+                        joinDTO.setGender(joinRequestDTO.getGender());
+                        joinDTO.setNickName(joinRequestDTO.getNickName());
+                        joinDTO.setJoinType("BASIC");
+
+                        int insertResult = joinService.insertMembershipInfo(joinDTO);
                         logger.info("@@ insertResult={}", insertResult);
 
                         if(insertResult > 0){
@@ -173,7 +184,7 @@ public class JoinController {
     }
 
     @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API입니다.")
-    @PostMapping("check/duplicate/nickname")
+    @PostMapping("/check/duplicate/nickname")
     public ApiResponse checkDuplicateNickname(@RequestBody NickNameDTO nickNameDTO){
 
         logger.info("CALL /membership/join/check/duplicate/nickname");
