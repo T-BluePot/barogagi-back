@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
-public interface UserMembershipRepository extends JpaRepository<UserMembership, Long> {
+public interface UserMembershipRepository extends JpaRepository<UserMembership, String> {
     Optional<UserMembership> findByUserId(String userId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)

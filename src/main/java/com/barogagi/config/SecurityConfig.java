@@ -1,6 +1,5 @@
 package com.barogagi.config;
 
-import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,14 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -42,7 +35,8 @@ public class SecurityConfig {
             "/oauth2/**",
             "/auth/**",
             "/login/**",
-            "/membership/join/**"
+            "/membership/join/**",
+            "/terms/**"
     };
 
     @Bean

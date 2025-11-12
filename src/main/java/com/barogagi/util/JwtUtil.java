@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
 
@@ -20,7 +18,7 @@ public class JwtUtil {
     private final String issuer;
     private final long accessExpSeconds;
     private final long refreshExpSeconds;
-    private final long clockSkewSeconds = 30;  // 만료시간 오차 허용(선택)
+    private final long clockSkewSeconds = 60;  // 만료시간 오차 허용(선택)
 
     public JwtUtil(
             @Value("${jwt.secret}") String base64Secret,
@@ -74,6 +72,33 @@ public class JwtUtil {
                 .compact();
     }
 
+    /*
+        토큰이 유효한지 체크
+     */
+    public Claims parseAndValidate(String jwt) {
+        return Jwts.parserBuilder()  // 파서 준비
+                .requireIssuer(issuer)  // 우리가 발행한 토큰이 맞는지 검증
+                .setSigningKey(key)  // 서명검증에 쓸 키 지정
+                .setAllowedClockSkewSeconds(clockSkewSeconds)  // 서명 위조 여부 확인, 만료되었는지 확인
+                .build()
+                .parseClaimsJws(jwt)
+                .getBody();
+    }
+
+    /*
+        token이 유효한지 체크
+        - typ : ACCESS / REFRESH
+     */
+    public Claims parseToken(String jwt, String typ) {
+        Claims claims = parseAndValidate(jwt);
+
+        if(!typ.equals(claims.get("typ", String.class))) {
+            throw new SecurityException("Not our token");
+        }
+
+        return claims;
+    }
+
     public Claims parseClaims(String token) {
         return parser.parseClaimsJws(token).getBody();
     }
@@ -111,6 +136,10 @@ public class JwtUtil {
 
     public String getMembershipNo(String token) {
         return String.valueOf(parseClaims(token).getSubject());
+    }
+
+    public String getMembershipNo(Claims claims) {
+        return claims.getSubject();
     }
 
     public boolean isAccessTokenValid(String token) {

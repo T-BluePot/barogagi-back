@@ -73,14 +73,14 @@ public class AuthService {
     }
 
     /** 구글/네이버 등 OAuth 가입 직후: userId로 바로 토큰 발급 (비밀번호 검증 없음) */
-    public LoginResponse loginAfterOAuthSignup(String userId, String deviceId) {
+    public LoginResponse loginAfterSignup(String userId, String deviceId) {
         var u = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("USER_NOT_FOUND"));
 
         // 선택: BASIC 사용자가 이 엔드포인트를 타지 못하게 막고 싶다면
-        if ("BASIC".equalsIgnoreCase(u.getJoinType())) {
-            throw new RuntimeException("NOT_OAUTH_MEMBER");
-        }
+//        if ("BASIC".equalsIgnoreCase(u.getJoinType())) {
+//            throw new RuntimeException("NOT_OAUTH_MEMBER");
+//        }
 
         String no = u.getMembershipNo();
         String access  = jwt.generateAccessToken(no, u.getUserId());
@@ -142,7 +142,7 @@ public class AuthService {
         refreshRepo.saveAll(olds);
 
         // 새 토큰 발급
-        var user = userRepo.findById(Long.valueOf(membershipNo))
+        var user = userRepo.findById(membershipNo)
                 .orElseThrow(() -> new BadCredentialsException("user_not_found"));
 
         String newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());

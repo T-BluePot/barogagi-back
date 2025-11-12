@@ -38,7 +38,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         logger.info("userId={}", userId);
 
         // successHandler 내부 예시
-        LoginResponse login = authService.loginAfterOAuthSignup(userId, "web-oauth");
+        LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
         res.setContentType("application/json;charset=UTF-8");
         objectMapper.writeValue(res.getWriter(), Map.of(

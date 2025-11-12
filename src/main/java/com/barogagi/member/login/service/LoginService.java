@@ -24,6 +24,10 @@ public class LoginService {
         return loginMapper.selectMemberCnt(loginDTO);
     }
 
+    public LoginVO findByUserId(LoginDTO loginDTO) {
+        return loginMapper.findByUserId(loginDTO);
+    }
+
     public List<UserIdDTO> myUserIdList(SearchUserIdDTO searchUserIdDTO){
         return loginMapper.myUserIdList(searchUserIdDTO);
     }

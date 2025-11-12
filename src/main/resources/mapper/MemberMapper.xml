@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.barogagi.member.info.mapper.MemberMapper">
+    <select id="findByMembershipNo" parameterType="string" resultType="com.barogagi.member.info.dto.Member">
+        <![CDATA[
+            SELECT  MEMBERSHIP_NO   as  membershipNo,
+                    USER_ID         as  userId,
+                    PASSWORD        as  password,
+                    EMAIL           as  email,
+                    BIRTH           as  birth,
+                    TEL             as  tel,
+                    GENDER          as  gender,
+                    PROFILE_IMG     as  profileImg,
+                    NICKNAME        as  nickName,
+                    JOIN_TYPE       as  joinType,
+                    REG_DATE        as  regDate,
+                    UPD_DATE        as  updDate
+
+            FROM    USER_MEMBERSHIP_INFO
+
+            WHERE   MEMBERSHIP_NO = #{membershipNo}
+        ]]>
+    </select>
+
+    <select id="selectUserMembershipInfo" parameterType="string" resultType="com.barogagi.member.info.dto.Member">
+        <![CDATA[
+            SELECT  MEMBERSHIP_NO   as  membershipNo,
+                    USER_ID         as  userId,
+                    PASSWORD        as  password,
+                    EMAIL           as  email,
+                    BIRTH           as  birth,
+                    TEL             as  tel,
+                    GENDER          as  gender,
+                    PROFILE_IMG     as  profileImg,
+                    NICKNAME        as  nickName,
+                    JOIN_TYPE       as  joinType,
+                    REG_DATE        as  regDate,
+                    UPD_DATE        as  updDate
+
+            FROM    USER_MEMBERSHIP_INFO
+
+            WHERE   USER_ID = #{userId}
+        ]]>
+    </select>
+</mapper>

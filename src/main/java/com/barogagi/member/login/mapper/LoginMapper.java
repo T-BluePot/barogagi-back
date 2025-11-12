@@ -13,6 +13,8 @@ public interface LoginMapper {
 
     int selectMemberCnt(LoginDTO loginDTO);
 
+    LoginVO findByUserId(LoginDTO loginDTO);
+
     List<UserIdDTO> myUserIdList(SearchUserIdDTO searchUserIdDTO);
 
     int updatePassword(LoginDTO loginDTO);

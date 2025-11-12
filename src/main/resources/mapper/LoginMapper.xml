@@ -12,7 +12,7 @@
 
     <select id="findByUserId" parameterType="com.barogagi.member.login.dto.LoginDTO" resultType="com.barogagi.member.login.dto.LoginVO">
         <![CDATA[
-            SELECT  User_ID     userId,
+            SELECT  USER_ID     userId,
                     MEMBERSHIP_NO membershipNo,
                     PASSWORD    password
             FROM    USER_MEMBERSHIP_INFO
