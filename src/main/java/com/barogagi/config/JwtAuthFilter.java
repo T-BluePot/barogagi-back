@@ -2,7 +2,6 @@ package com.barogagi.config;
 
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
-import com.barogagi.member.login.entity.UserMembership;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -10,18 +9,11 @@ import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.Collection;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {

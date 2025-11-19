@@ -137,7 +137,7 @@ public class JoinController {
                     } else {
                         // 입력값 암호화 & 값 세팅
                         // 휴대전화번호, 비밀번호 암호화
-                        joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel()));
+                        joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel().replaceAll("[^0-9]", "")));
 
                         // 이메일 값이 넘어오면 암호화
                         if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){

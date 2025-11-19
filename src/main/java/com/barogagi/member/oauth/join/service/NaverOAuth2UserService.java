@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -66,6 +67,7 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         String email = str(resp.get("email"));
         String birthday = str(resp.get("birthday"));
         String birthyear = str(resp.get("birthyear"));
+        String tel = str(resp.get("mobile"));
 
         logger.info("id={}", id);
         logger.info("nickName={}", nickName);
@@ -74,6 +76,7 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         logger.info("email={}", email);
         logger.info("birthday={}", birthday);
         logger.info("birthyear={}", birthyear);
+        logger.info("tel={}", tel);
 
         try {
             // 네이버로 회원가입한 정보가 있는지 체크
@@ -92,9 +95,15 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                 joinDTO.setEmail(encryptUtil.encrypt(email));
                 joinDTO.setNickName(nickName);
                 joinDTO.setJoinType("NAVER");
-                joinDTO.setProfileImg(profileImg);
+
+                logger.info("@@ profileImg={}", null != profileImg);
+                if(null != profileImg) {
+                    // 프로필 사진
+                    joinDTO.setProfileImg(profileImg);
+                }
 
                 // gender(성별) : M(남성), F(여성), U(미설정)
+                logger.info("@@ gender={}", null != gender);
                 if(null != gender) {
                     if(gender.equals("M")) {  // 남성
                         joinDTO.setGender("M");
@@ -105,13 +114,20 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                     }
                 }
 
-                if(null != birthday) {
-                    // BIRTH(생년월일)
+                logger.info("@@ birthday & birthyear={}", null != birthday && null != birthyear);
+                if(null != birthday && null != birthyear) {
+                    // BIRTH(생년월일) (출생연도 + 생일)
                     String birth = birthyear;
                     if(birthday.contains("-")) {
                         birth = birth + birthday.replace("-", "");
                     }
                     joinDTO.setBirth(birth);
+                }
+
+                logger.info("@@ tel={}", null != tel);
+                if(null != tel) {
+                    // 휴대 전화번호
+                    joinDTO.setTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
                 }
 
                 int insertResult = joinService.insertMembershipInfo(joinDTO);
