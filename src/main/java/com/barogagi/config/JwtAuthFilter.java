@@ -54,11 +54,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
-            res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired");
+            // 유효기간이 지나서 만료된 경우
+            writeErrorResponse(res, "TOKEN_EXPIRED", "Access token has expired");
         } catch (JwtException | SecurityException e) {
-            res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
+            writeErrorResponse(res, "REVOKED_TOKEN", "Revoked access token");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            writeErrorResponse(res, "UNKNOWN_ERROR", "Unknown authentication error");
         }
 
     }
@@ -68,5 +70,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String p = request.getRequestURI();
         return p.startsWith("/auth/");
     }
+
+    private void writeErrorResponse(HttpServletResponse res, String errorCode, String message) throws IOException {
+        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        res.setContentType("application/json;charset=UTF-8");
+
+        String json = String.format(
+                "{\"errorCode\":\"%s\", \"message\":\"%s\"}",
+                errorCode, message
+        );
+
+        res.getWriter().write(json);
+    }
+
 }
 
