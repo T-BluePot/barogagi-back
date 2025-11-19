@@ -18,4 +18,8 @@ public class MemberService {
     public Member selectUserMembershipInfo(String userId) throws Exception {
         return memberMapper.selectUserMembershipInfo(userId);
     }
+
+    public int updateMemberInfo(Member member) throws Exception {
+        return memberMapper.updateMemberInfo(member);
+    }
 }
