@@ -1,7 +1,7 @@
-package com.barogagi.member.join.mapper;
+package com.barogagi.member.basic.join.mapper;
 
-import com.barogagi.member.join.dto.JoinDTO;
-import com.barogagi.member.join.dto.NickNameDTO;
+import com.barogagi.member.basic.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.NickNameDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

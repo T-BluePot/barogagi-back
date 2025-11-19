@@ -1,4 +1,4 @@
-package com.barogagi.member.join.vo;
+package com.barogagi.member.basic.join.vo;
 
 import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
