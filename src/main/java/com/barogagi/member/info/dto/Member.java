@@ -1,12 +1,11 @@
-package com.barogagi.member.join.dto;
+package com.barogagi.member.info.dto;
 
-import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class JoinDTO extends DefaultVO {
+public class Member {
 
     // 회원번호
     private String membershipNo = "";
@@ -34,4 +33,13 @@ public class JoinDTO extends DefaultVO {
 
     // 회원가입 종류(BASIC : 기본 / GOOGLE : 구글 / KAKAO : 카카오톡 / NAVER : 네이버)
     private String joinType = "";
+
+    // 프로필 이미지
+    private String profileImg = "";
+
+    // 등록일
+    private String regDate = "";
+
+    // 수정일
+    private String updDate = "";
 }

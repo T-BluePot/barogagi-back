@@ -1,6 +1,5 @@
 package com.barogagi.schedule.query.service;
 
-import com.barogagi.member.login.controller.LoginController;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;

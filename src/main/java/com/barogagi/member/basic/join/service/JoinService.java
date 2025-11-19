@@ -1,8 +1,8 @@
-package com.barogagi.member.join.service;
+package com.barogagi.member.basic.join.service;
 
-import com.barogagi.member.join.dto.NickNameDTO;
-import com.barogagi.member.join.mapper.JoinMapper;
-import com.barogagi.member.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.NickNameDTO;
+import com.barogagi.member.basic.join.mapper.JoinMapper;
+import com.barogagi.member.basic.join.dto.JoinDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
