@@ -69,15 +69,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         String birthyear = str(resp.get("birthyear"));
         String tel = str(resp.get("mobile"));
 
-        logger.info("id={}", id);
-        logger.info("nickName={}", nickName);
-        logger.info("profileImg={}", profileImg);
-        logger.info("gender={}", gender);
-        logger.info("email={}", email);
-        logger.info("birthday={}", birthday);
-        logger.info("birthyear={}", birthyear);
-        logger.info("tel={}", tel);
-
         try {
             // 네이버로 회원가입한 정보가 있는지 체크
             OAuth2UserDTO oAuth2UserDTO = new OAuth2UserDTO();
