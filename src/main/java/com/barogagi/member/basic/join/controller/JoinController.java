@@ -152,7 +152,7 @@ public class JoinController {
                         joinDTO.setUserId(joinRequestDTO.getUserId());
                         joinDTO.setPassword(joinRequestDTO.getPassword());
                         joinDTO.setEmail(joinRequestDTO.getEmail());
-                        joinDTO.setBirth(joinRequestDTO.getBirth());
+                        joinDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
                         joinDTO.setTel(joinRequestDTO.getTel());
                         joinDTO.setGender(joinRequestDTO.getGender());
                         joinDTO.setNickName(joinRequestDTO.getNickName());

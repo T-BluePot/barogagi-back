@@ -9,4 +9,6 @@ public interface MemberMapper {
     public Member findByMembershipNo(String membershipNo);
 
     public Member selectUserMembershipInfo(String userId);
+
+    public int updateMemberInfo(Member member);
 }
