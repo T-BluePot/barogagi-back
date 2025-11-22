@@ -1,10 +1,13 @@
 package com.barogagi.terms.controller;
 
+import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.vo.LoginVO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.service.TermsService;
-import com.barogagi.terms.vo.TermsVO;
+import com.barogagi.terms.dto.TermsInputDTO;
+import com.barogagi.terms.dto.TermsDTO;
+import com.barogagi.terms.dto.TermsOutputDTO;
+import com.barogagi.terms.dto.TermsProcessDTO;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,22 +42,22 @@ public class TermsController {
 
     @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. apiSecretKey와 termsType값만 보내주시면 됩니다.")
     @PostMapping("/list")
-    public ApiResponse termsList(@RequestBody TermsVO vo){
+    public ApiResponse termsList(@RequestBody TermsInputDTO termsInputDTO){
         logger.info("CALL /terms/list");
-        logger.info("[input] API_SECRET_KEY={}", vo.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", termsInputDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+            if(termsInputDTO.getApiSecretKey().equals(API_SECRET_KEY)) {
 
-                if(inputValidate.isEmpty(vo.getTermsType())) {
+                if(inputValidate.isEmpty(termsInputDTO.getTermsType())) {
                     resultCode = "101";
                     message = "조회하실 약관의 종류 값이 존재하지 않습니다.";
                 } else {
-                    List<TermsVO> termsList = termsService.selectTermsList(vo);
+                    List<TermsOutputDTO> termsList = termsService.selectTermsList(termsInputDTO);
 
                     int termsCnt = termsList.size();
                     logger.info("termsCnt={}", termsCnt);
@@ -86,28 +89,28 @@ public class TermsController {
         return apiResponse;
     }
 
-    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다. apiSecretKey와 termsNum, agreeYn, userId 값을 보내주세요.")
+    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.")
     @PostMapping("/agree/insert")
-    public ApiResponse insertTermsAgree(@RequestBody TermsVO vo) {
+    public ApiResponse insertTermsAgree(@RequestBody TermsDTO termsDTO) {
         logger.info("CALL /agree/insert");
-        logger.info("[input] API_SECRET_KEY={}", vo.getApiSecretKey());
+        logger.info("[input] API_SECRET_KEY={}", termsDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+            if(termsDTO.getApiSecretKey().equals(API_SECRET_KEY)) {
 
-                String userId = vo.getUserId();
+                String userId = termsDTO.getUserId();
                 LoginVO lvo = new LoginVO();
                 lvo.setUserId(userId);
 
                 LoginVO loginVO = loginService.findMembershipNo(lvo);
                 if(null != loginVO) {
-                    List<TermsVO> termsAgreeList = vo.getTermsAgreeList();
-                    for(TermsVO termsVO : termsAgreeList) {
-                        termsVO.setMembershipNo(loginVO.getMembershipNo());
+                    List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
+                    for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
+                        termsProcessDTO.setMembershipNo(loginVO.getMembershipNo());
                     }
                     String resCode = termsService.insertTermsAgreeList(termsAgreeList);
                     if(resCode.equals("200")) {
