@@ -12,7 +12,6 @@ import lombok.*;
 public class PlanUserMembershipInfo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "MEMBERSHIP_NO")
     private Integer membershipNo;           // 회원번호
 

@@ -1,25 +1,18 @@
 package com.barogagi.schedule.controller;
 
-import com.barogagi.member.join.vo.JoinVO;
-import com.barogagi.member.join.vo.UserIdCheckVO;
-import com.barogagi.member.login.controller.LoginController;
+//import com.barogagi.member.join.vo.JoinVO;
 import com.barogagi.plan.query.service.PlanQueryService;
-import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
-import com.barogagi.schedule.query.vo.ScheduleDetailVO;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
