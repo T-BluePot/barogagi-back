@@ -1,7 +1,9 @@
 package com.barogagi.terms.service;
 
 import com.barogagi.terms.mapper.TermsMapper;
-import com.barogagi.terms.vo.TermsVO;
+import com.barogagi.terms.dto.TermsInputDTO;
+import com.barogagi.terms.dto.TermsOutputDTO;
+import com.barogagi.terms.dto.TermsProcessDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,20 +22,20 @@ public class TermsService {
     }
 
     // 사용중인 약관 목록 조회
-    public List<TermsVO> selectTermsList(TermsVO vo) throws Exception {
-        return termsMapper.selectTermsList(vo);
+    public List<TermsOutputDTO> selectTermsList(TermsInputDTO termsInputDTO) throws Exception {
+        return termsMapper.selectTermsList(termsInputDTO);
     }
 
     // 약관 동의 여부 저장
-    public int insertTermsAgreeInfo(TermsVO vo) throws Exception {
+    public int insertTermsAgreeInfo(TermsProcessDTO vo) throws Exception {
         return termsMapper.insertTermsAgreeInfo(vo);
     }
 
     @Transactional
-    public String insertTermsAgreeList(List<TermsVO> termsList) {
+    public String insertTermsAgreeList(List<TermsProcessDTO> termsList) {
         String resultCode = "";
         try {
-            for(TermsVO vo : termsList) {
+            for(TermsProcessDTO vo : termsList) {
                 int insertFlag = this.insertTermsAgreeInfo(vo);
                 if(insertFlag > 0){
                     resultCode = "200";
