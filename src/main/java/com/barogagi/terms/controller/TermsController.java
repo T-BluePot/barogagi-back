@@ -1,13 +1,13 @@
 package com.barogagi.terms.controller;
 
+import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.login.vo.LoginVO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.service.TermsService;
-import com.barogagi.terms.vo.TermsInputDTO;
-import com.barogagi.terms.vo.TermsDTO;
-import com.barogagi.terms.vo.TermsOutputDTO;
-import com.barogagi.terms.vo.TermsProcessDTO;
+import com.barogagi.terms.dto.TermsInputDTO;
+import com.barogagi.terms.dto.TermsDTO;
+import com.barogagi.terms.dto.TermsOutputDTO;
+import com.barogagi.terms.dto.TermsProcessDTO;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
