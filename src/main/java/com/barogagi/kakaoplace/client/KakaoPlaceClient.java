@@ -72,4 +72,5 @@ public class KakaoPlaceClient {
         List<KakaoPlaceResDTO> body = response.getBody().getDocuments();
         return body;
     }
+
 }
