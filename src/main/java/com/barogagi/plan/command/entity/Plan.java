@@ -2,7 +2,9 @@ package com.barogagi.plan.command.entity;
 
 import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
 import com.barogagi.region.command.entity.Place;
+import com.barogagi.region.command.entity.PlanRegion;
 import com.barogagi.schedule.command.entity.Schedule;
+import com.barogagi.tag.command.entity.PlanTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +12,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -68,5 +72,12 @@ public class Plan {
 
     @Column(name = "DEL_YN", nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String delYn;               // 삭제 여부(Y: 삭제, N: 미삭제)
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PlanRegion> planRegions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<PlanTag> planTags = new ArrayList<>();
+
 
 }

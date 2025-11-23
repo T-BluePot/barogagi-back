@@ -342,7 +342,7 @@ public class ScheduleCommandService {
                     .scheduleNm(scheduleRegistResDTO.getScheduleNm())
                     .startDate(scheduleRegistResDTO.getStartDate())
                     .endDate(scheduleRegistResDTO.getEndDate())
-                    .radius(radius)
+                    // .radius(radius)
                     .delYn("N")
                     .build();
 
@@ -478,6 +478,110 @@ public class ScheduleCommandService {
         return false;
     }
 
+    @Transactional
+    public boolean updateSchedule(ScheduleRegistResDTO dto) {
+
+        // 1) Schedule 조회
+        Schedule schedule = scheduleRepository.findById(dto.getScheduleNum())
+                .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + dto.getScheduleNum()));
+
+        // 2) Schedule 기본 정보 업데이트
+        schedule.updateBasicInfo(
+                dto.getScheduleNm(),
+                dto.getStartDate(),
+                dto.getEndDate()
+        );
+
+        // 3) ScheduleTag 전체 삭제 후 재등록
+        scheduleTagRepository.deleteBySchedule(schedule);
+
+        if (dto.getScheduleTagRegistResDTOList() != null) {
+            for (TagRegistResDTO tagReq : dto.getScheduleTagRegistResDTOList()) {
+                Tag tag = tagRepository.findById(tagReq.getTagNum())
+                        .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
+
+                ScheduleTag scheduleTag = ScheduleTag.builder()
+                        .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
+                        .schedule(schedule)
+                        .tag(tag)
+                        .build();
+
+                scheduleTagRepository.save(scheduleTag);
+            }
+        }
+
+        // 4) 기존 Plan 전체 삭제
+        planRepository.deleteBySchedule(schedule);
+
+        // 5) 새 Plan + PlanTag + Region + Place 저장
+        if (dto.getPlanRegistResDTOList() != null) {
+
+            for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
+
+                Item item = itemRepository.findById(planRes.getItemNum())
+                        .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+
+                PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
+                        .membershipNo(1)
+                        .build();
+
+                Plan plan = Plan.builder()
+                        .planNum(planRes.getPlanNum())
+                        .planNm(planRes.getPlanNm())
+                        .startTime(planRes.getStartTime())
+                        .endTime(planRes.getEndTime())
+                        .planLink(planRes.getPlanLink())
+                        .planDescription(planRes.getPlanDescription())
+                        .planAddress(planRes.getPlanAddress())
+                        .schedule(schedule)
+                        .user(user)
+                        .item(item)
+                        .delYn("N")
+                        .build();
+
+                planRepository.save(plan);
+
+                // PlanTag
+                if (planRes.getPlanTagRegistResDTOList() != null) {
+                    for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
+
+                        Tag tag = tagRepository.findById(tagRes.getTagNum())
+                                .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
+
+                        planTagRepository.save(
+                                new PlanTag(new PlanTagId(tag.getTagNum(), plan.getPlanNum()), plan, tag)
+                        );
+                    }
+                }
+
+                // PlanRegion
+                if (planRes.getRegionNum() != null) {
+                    Region region = regionRepository.findById(planRes.getRegionNum())
+                            .orElseThrow(() -> new IllegalArgumentException("Region not found"));
+
+                    PlanRegionId regionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
+
+                    planRegionRepository.save(
+                            new PlanRegion(regionId, plan, region)
+                    );
+
+                    // Place
+                    Place place = Place.builder()
+                            .region(region)
+                            .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
+                            .address(planRes.getPlanAddress())
+                            .planLink(planRes.getPlanLink())
+                            .placeDescription(planRes.getPlanDescription())
+                            .plan(plan)
+                            .build();
+
+                    placeRepository.save(place);
+                }
+            }
+        }
+
+        return true; // 트랜잭션 커밋 → 자동 UPDATE
+    }
 
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴
