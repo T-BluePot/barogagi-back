@@ -35,8 +35,8 @@ public class Schedule {
     @Column(name = "END_DATE", nullable = false)
     private String endDate;             // 종료 날짜
 
-    @Column(name = "RADIUS", nullable = false)
-    private int radius;                 // 추천 반경 (미터 단위)
+//    @Column(name = "RADIUS", nullable = false)
+//    private int radius;                 // 추천 반경 (미터 단위)
 
     @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Plan> plans = new ArrayList<>();
@@ -54,5 +54,11 @@ public class Schedule {
 
     public void markDeleted() {
         this.delYn = "Y";
+    }
+
+    public void updateBasicInfo(String scheduleNm, String startDate, String endDate) {
+        this.scheduleNm = scheduleNm;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }

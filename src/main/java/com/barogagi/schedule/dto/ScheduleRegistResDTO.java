@@ -26,4 +26,5 @@ public class ScheduleRegistResDTO {
 
     // 계획 리스트
     private List<PlanRegistResDTO> planRegistResDTOList;
+
 }

@@ -289,9 +289,105 @@ public class ScheduleController {
         return ApiResponse.success(result, "일정 저장 성공");
     }
 
+    @Operation(summary = "일정 수정 기능",
+            description = "DB에 저장되어 있는 일정을 수정하는 기능입니다.<br>" +
+            "- 전체 일정 내 세부 일정을 수정/삭제하는 경우에도 이 API를 호출해주세요.<br>" +
+            "- '일정 번호'가 반드시 필요합니다.<br>" +
+            "- '일정 조회' API로 받은 응답 DTO를 수정하여 보내주세요.")
+    @PutMapping("/")
+    public ApiResponse updateSchedule(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "일정 등록 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "일정 수정 요청 예시",
+                                    value = "{\n" +
+                                            "    \"scheduleNum\": 1,\n" +
+                                            "    \"scheduleNm\": \"서울 데이트 코스2\",\n" +
+                                            "    \"startDate\": \"2025-07-01\",\n" +
+                                            "    \"endDate\": \"2025-07-01\",\n" +
+                                            "    \"planRegistResDTOList\": [\n" +
+                                            "      {\n" +
+                                            "        \"startTime\": \"08:30\",\n" +
+                                            "        \"endTime\": \"09:00\",\n" +
+                                            "        \"itemNum\": 10,\n" +
+                                            "        \"itemNm\": \"프랜차이즈카페\",\n" +
+                                            "        \"categoryNum\": 2,\n" +
+                                            "        \"categoryNm\": \"카페\",\n" +
+                                            "        \"planNm\": \"제비꽃다방\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
+                                            "        \"planDescription\": \"분위기 좋은 한옥 카페 '더숲 초소책방'은 서울 종로구에 위치해 있으며, 숲속의 아늑함을 느낄 수 있는 넓은 야외 공간과 아름다운 서울 풍경을 감상할 수 있는 2층 테라스가 특징입니다.\",\n" +
+                                            "        \"planAddress\": \"서울 종로구 창의문로 146\",\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": [\n" +
+                                            "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
+                                            "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
+                                            "        ]\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"startTime\": \"14:00\",\n" +
+                                            "        \"endTime\": \"15:00\",\n" +
+                                            "        \"itemNum\": 2,\n" +
+                                            "        \"itemNm\": \"한식\",\n" +
+                                            "        \"categoryNum\": 1,\n" +
+                                            "        \"categoryNm\": \"식사\",\n" +
+                                            "        \"planNm\": \"식사\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
+                                            "        \"planDescription\": \"분위기 좋은 카페로 뷰가 좋은 곳입니다.\",\n" +
+                                            "        \"planAddress\": \"서울 중구 무교로 17\",\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": [\n" +
+                                            "          { \"tagNum\": 17, \"tagNm\": \"조용한\" }\n" +
+                                            "        ]\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"startTime\": \"15:30\",\n" +
+                                            "        \"endTime\": \"19:00\",\n" +
+                                            "        \"itemNum\": 15,\n" +
+                                            "        \"itemNm\": \"놀이공원\",\n" +
+                                            "        \"categoryNum\": 4,\n" +
+                                            "        \"categoryNm\": \"놀거리\",\n" +
+                                            "        \"planNm\": \"구룡관 혜화본점\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/40669117\",\n" +
+                                            "        \"planDescription\": \"혜화에서 분위기 좋고 저렴한 중식 술집으로는 구룡관 혜화본점이 추천됩니다.\",\n" +
+                                            "        \"planAddress\": \"서울 종로구 창경궁로 258-5\",\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": [\n" +
+                                            "          { \"tagNum\": 4, \"tagNm\": \"테마파크\" }\n" +
+                                            "        ]\n" +
+                                            "      }\n" +
+                                            "    ]\n" +
+                                            "}"
+                            )
+                    )
+            )
+            @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
+    ) {
+
+        logger.info("CALL /schedule/update");
+        logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
+
+        boolean result;
+        try {
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            result = scheduleCommandService.updateSchedule(scheduleRegistResDTO);
+
+        } catch (Exception e) {
+            return ApiResponse.error("404", "일정 저장 실패");
+        }
+
+
+        return ApiResponse.success(result, "일정 저장 성공");
+    }
+
     @Operation(summary = "일정 전체 삭제 기능",
             description = "일정 전체를 DB에서 삭제하는 기능입니다.")
-    @PostMapping("/delete")
+    @DeleteMapping("/")
     public ApiResponse deleteSchedule(@Parameter(description = "삭제할 일정 번호", example = "1")
                                       @RequestParam Integer scheduleNum) {
 
