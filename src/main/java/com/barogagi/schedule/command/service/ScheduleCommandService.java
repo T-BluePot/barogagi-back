@@ -500,20 +500,23 @@ public class ScheduleCommandService {
                 Tag tag = tagRepository.findById(tagReq.getTagNum())
                         .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
 
-                ScheduleTag scheduleTag = ScheduleTag.builder()
-                        .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
-                        .schedule(schedule)
-                        .tag(tag)
-                        .build();
-
-                scheduleTagRepository.save(scheduleTag);
+                scheduleTagRepository.save(
+                        ScheduleTag.builder()
+                                .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
+                                .schedule(schedule)
+                                .tag(tag)
+                                .build()
+                );
             }
         }
 
-        // 4) 기존 Plan 전체 삭제
-        planRepository.deleteBySchedule(schedule);
+        // 4) 기존 Plan은 soft delete 처리
+        List<Plan> oldPlans = planRepository.findBySchedule(schedule);
+        for (Plan p : oldPlans) {
+            p.markDeleted();
+        }
 
-        // 5) 새 Plan + PlanTag + Region + Place 저장
+        // 5) 새 Plan + PlanTag + PlanRegion + Place 저장
         if (dto.getPlanRegistResDTOList() != null) {
 
             for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
@@ -525,8 +528,8 @@ public class ScheduleCommandService {
                         .membershipNo(1)
                         .build();
 
+                // 새 Plan 생성
                 Plan plan = Plan.builder()
-                        .planNum(planRes.getPlanNum())
                         .planNm(planRes.getPlanNm())
                         .startTime(planRes.getStartTime())
                         .endTime(planRes.getEndTime())
@@ -541,10 +544,9 @@ public class ScheduleCommandService {
 
                 planRepository.save(plan);
 
-                // PlanTag
+                // PlanTag 저장
                 if (planRes.getPlanTagRegistResDTOList() != null) {
                     for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
-
                         Tag tag = tagRepository.findById(tagRes.getTagNum())
                                 .orElseThrow(() -> new IllegalArgumentException("Tag not found"));
 
@@ -554,16 +556,14 @@ public class ScheduleCommandService {
                     }
                 }
 
-                // PlanRegion
+                // PlanRegion + Place 저장
                 if (planRes.getRegionNum() != null) {
                     Region region = regionRepository.findById(planRes.getRegionNum())
                             .orElseThrow(() -> new IllegalArgumentException("Region not found"));
 
+                    // PlanRegion
                     PlanRegionId regionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
-
-                    planRegionRepository.save(
-                            new PlanRegion(regionId, plan, region)
-                    );
+                    planRegionRepository.save(new PlanRegion(regionId, plan, region));
 
                     // Place
                     Place place = Place.builder()
@@ -580,7 +580,7 @@ public class ScheduleCommandService {
             }
         }
 
-        return true; // 트랜잭션 커밋 → 자동 UPDATE
+        return true;
     }
 
 
