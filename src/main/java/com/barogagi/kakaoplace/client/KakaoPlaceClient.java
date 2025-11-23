@@ -50,4 +50,26 @@ public class KakaoPlaceClient {
         List<KakaoPlaceResDTO> body = response.getBody().getDocuments();
         return body;
     }
+
+    public List<KakaoPlaceResDTO> searchKakaoPlaceByKeyword(String query) {
+        String url = String.valueOf(UriComponentsBuilder
+                .fromHttpUrl("https://dapi.kakao.com/v2/local/search/keyword.json")
+                .queryParam("query", query)
+                .build(false));
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "KakaoAK " + kakaoApiKey);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        ResponseEntity<KakaoPlaceSearchResDTO> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                KakaoPlaceSearchResDTO.class
+        );
+
+        List<KakaoPlaceResDTO> body = response.getBody().getDocuments();
+        return body;
+    }
 }
