@@ -79,5 +79,7 @@ public class Plan {
     @OneToMany(mappedBy = "plan", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PlanTag> planTags = new ArrayList<>();
 
-
+    public void markDeleted() {
+        this.delYn = "Y";
+    }
 }
