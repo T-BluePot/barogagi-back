@@ -32,6 +32,7 @@ public class PlaceController {
 
     @Operation(summary = "장소 검색 기능",
             description = "사용자가 찾고 싶은 장소를 Kakao API로 검색하는 기능입니다.<br>" +
+                    "- 일정을 생성하는 API를 호출할 때, 이 API에서 받은 placeName, placeUrl, addressName을 보내주세요.<br>" +
                     "- regionNum은 쓰지 않는 필드입니다. (null 값이 전달됨)")
     @GetMapping("/keyword-search")
     public ApiResponse searchPlace(@Parameter(description = "검색 키워드", example = "스타벅스")

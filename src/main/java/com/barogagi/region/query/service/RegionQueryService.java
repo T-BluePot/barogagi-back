@@ -1,20 +1,19 @@
 package com.barogagi.region.query.service;
 
-import com.barogagi.kakaoplace.client.KakaoGeoCodeClient;
-import com.barogagi.kakaoplace.dto.KakaoGeoCodeResDTO;
-import com.barogagi.region.dto.RegionGeoCodeResDTO;
 import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.region.query.mapper.RegionMapper;
 import com.barogagi.region.query.vo.RegionDetailVO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class RegionQueryService {
+    private static final Logger logger = LoggerFactory.getLogger(RegionQueryService.class);
 
     private final RegionMapper regionMapper;
 
@@ -22,7 +21,6 @@ public class RegionQueryService {
     public RegionQueryService(RegionMapper regionMapper) {
         this.regionMapper = regionMapper;
     }
-
 
     /**
      * 검색어로 지역 정보를 조회하고,
@@ -88,6 +86,66 @@ public class RegionQueryService {
         return result;
     }
 
+    public RegionDetailVO getRegionByRegionNum(int regionNum) {
+        return regionMapper.selectRegionByRegionNum(regionNum);
+    }
+
+    public RegionDetailVO getRegionNumByAddress(String address) {
+
+        // todo. !!!!!!!!!! 주소가 이상하게 들어감 !!!!!!!!
+        if (address == null || address.isBlank()) {
+            throw new IllegalArgumentException("주소가 입력되지 않았습니다.");
+        }
+
+        String[] parts = address.split(" ");
+
+        List<String> tokens = Arrays.stream(parts)
+                .filter(t -> !t.matches("\\d+"))
+                .collect(Collectors.toList());
+
+        // LEVEL 4 (동/읍/면)
+        if (tokens.size() >= 3) {
+            String level4 = tokens.get(2);
+            RegionDetailVO r4 = regionMapper.selectRegionByLevel4(level4);
+            logger.info("#$# r4 = {}", r4);
+
+            if (r4 != null) {
+                return r4;
+            }
+        }
+        logger.info("#$# next?");
+
+        // LEVEL 3
+        if (tokens.size() >= 3) {
+            String level3 = tokens.get(2);
+            RegionDetailVO r3 = regionMapper.selectRegionByLevel3(level3);
+            logger.info("#$# r3 = {}", r3);
+
+            if (r3 != null) {
+                return r3;
+            }
+        }
+
+        // LEVEL 2
+        if (tokens.size() >= 2) {
+            String level2 = tokens.get(1);
+            RegionDetailVO r2 = regionMapper.selectRegionByLevel2(level2);
+            if (r2 != null) {
+                return r2;
+            }
+        }
+
+        // LEVEL 1
+        if (tokens.size() >= 1) {
+            String level1 = tokens.get(0);
+            RegionDetailVO r1 = regionMapper.selectRegionByLevel1(level1);
+            if (r1 != null) {
+                return r1;
+            }
+        }
+
+        throw new IllegalStateException("입력된 주소로 지역을 찾을 수 없습니다: " + address);
+    }
 
 }
 

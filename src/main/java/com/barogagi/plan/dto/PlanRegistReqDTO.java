@@ -15,9 +15,6 @@ import java.util.List;
 @Schema(description = "계획 등록 요청 DTO")
 public class PlanRegistReqDTO {
 
-    //@Schema(description = "계획 이름", example = "프랜차이즈카페")
-    //public String planNm;
-
     @Schema(description = "시작 시간", example = "08:00")
     public String startTime;
 
@@ -35,5 +32,19 @@ public class PlanRegistReqDTO {
 
     @Schema(description = "계획 태그 목록")
     public List<TagRegistReqDTO> planTagRegistReqDTOList;
+
+    // 사용자가 직접 세부일정을 추가한 경우에만 필요한 값
+    @Schema(description = "사용자가 수동으로 추가한 일정인지 여부(AI 생성 안함)", example = "Y")
+    public String isUserAdded;
+
+    @Schema(description = "사용자 직접 추가 CASE 1. 카카오 API 장소검색으로 추가한 장소 정보.")
+    UserAddedPlaceDTO userAddedPlaceDTO;
+
+    @Schema(description = "사용자 직접 추가 CASE 2. 사용자가 직접 입력한 장소", example = "친구집 방문")
+    public String planNm;
+
+
+
+
 }
 

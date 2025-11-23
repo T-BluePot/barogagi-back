@@ -62,6 +62,53 @@
         ]]>
     </select>
 
+    <select id="selectRegionByLevel4" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        SELECT
+               REGION_NUM as regionNum
+             , REGION_LEVEL_1 as regionLevel1
+             , REGION_LEVEL_2 as regionLevel2
+             , REGION_LEVEL_3 as regionLevel3
+             , REGION_LEVEL_4 as regionLevel4
+        FROM REGION
+        WHERE REGION_LEVEL_4 LIKE CONCAT('%', #{level4}, '%')
+            LIMIT 1
+    </select>
+
+    <select id="selectRegionByLevel3" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        SELECT
+               REGION_NUM as regionNum
+             , REGION_LEVEL_1 as regionLevel1
+             , REGION_LEVEL_2 as regionLevel2
+             , REGION_LEVEL_3 as regionLevel3
+             , REGION_LEVEL_4 as regionLevel4
+        FROM REGION
+        WHERE REGION_LEVEL_3 LIKE CONCAT('%', #{level3}, '%')
+            LIMIT 1
+    </select>
+
+    <select id="selectRegionByLevel2" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        SELECT
+               REGION_NUM as regionNum
+             , REGION_LEVEL_1 as regionLevel1
+             , REGION_LEVEL_2 as regionLevel2
+             , REGION_LEVEL_3 as regionLevel3
+             , REGION_LEVEL_4 as regionLevel4
+        FROM REGION
+        WHERE REGION_LEVEL_2 LIKE CONCAT('%', #{level2}, '%')
+            LIMIT 1
+    </select>
+
+    <select id="selectRegionByLevel1" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
+        SELECT
+               REGION_NUM as regionNum
+             , REGION_LEVEL_1 as regionLevel1
+             , REGION_LEVEL_2 as regionLevel2
+             , REGION_LEVEL_3 as regionLevel3
+             , REGION_LEVEL_4 as regionLevel4
+        FROM REGION
+        WHERE REGION_LEVEL_1 LIKE CONCAT('%', #{level1}, '%')
+            LIMIT 1
+    </select>
 
 
 </mapper>
