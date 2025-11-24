@@ -3,7 +3,7 @@ package com.barogagi.member.info.controller;
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
-import com.barogagi.member.info.MemberInfoException;
+import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
