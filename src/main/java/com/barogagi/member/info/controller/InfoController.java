@@ -3,7 +3,7 @@ package com.barogagi.member.info.controller;
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
-import com.barogagi.member.info.MemberInfoException;
+import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
@@ -55,11 +55,12 @@ public class InfoController {
 
         try {
 
-            String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
-            logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
-            if (membershipNo.isEmpty()) {
+            Object membershipNoAttr = request.getAttribute("membershipNo");
+            if(membershipNoAttr == null) {
                 throw new MemberInfoException("401", "접근 권한이 존재하지 않습니다.");
             }
+
+            String membershipNo = String.valueOf(membershipNoAttr);
 
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
