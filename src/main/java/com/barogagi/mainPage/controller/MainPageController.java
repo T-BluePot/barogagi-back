@@ -155,4 +155,49 @@ public class MainPageController {
 
         return apiResponse;
     }
+
+    @Operation(summary = "인기 지역 조회 API ", description = "메인 화면 - 지금 인기많은 핫 플레이스 부분에 해당하는 API")
+    @PostMapping("/popular/region/list")
+    public ApiResponse selectPopularRegionList(@RequestBody DefaultVO vo) {
+
+        logger.info("CALL /main/page/popular/region/list");
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            if(!vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+                throw new MainPageException("100", "잘못된 접근입니다.");
+            }
+
+            // 인기 지역 조회
+            List<RegionRankInfoDTO> regionRankInfoList = mainPageService.selectRegionRankList();
+
+            logger.info("@@ !regionRankInfoList.isEmpty()={}", !regionRankInfoList.isEmpty());
+            if(!regionRankInfoList.isEmpty()) {
+                resultCode = "200";
+                message = "인기 지역 조회 완료하였습니다.";
+                apiResponse.setData(regionRankInfoList);
+            } else {
+                resultCode = "201";
+                message = "인기 지역 목록이 존재하지 않습니다.";
+            }
+
+        } catch (MainPageException ex) {
+            resultCode = ex.getResultCode();
+            message = ex.getMessage();
+
+        } catch (Exception e) {
+            logger.error("error", e);
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
+        }
+
+        return apiResponse;
+    }
 }

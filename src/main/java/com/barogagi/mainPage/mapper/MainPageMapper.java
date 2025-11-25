@@ -18,6 +18,7 @@ public interface MainPageMapper {
     RegionInfoDTO selectScheduleRegionInfo(UserInfoRequestDTO userInfoRequestDTO);
 
     // 인기 지역 조회
+    List<RegionRankInfoDTO> selectRegionRankList();
 
     // 인기 태그 조회
     List<TagRankInfoDTO> selectTagRankList();

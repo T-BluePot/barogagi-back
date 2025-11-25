@@ -37,6 +37,9 @@ public class MainPageService {
     }
 
     // 인기 지역 조회
+    public List<RegionRankInfoDTO> selectRegionRankList() throws Exception {
+        return mainPageMapper.selectRegionRankList();
+    }
 
     // 인기 태그 조회
     public List<TagRankInfoDTO> selectTagRankList() throws Exception {
