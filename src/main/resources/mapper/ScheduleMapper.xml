@@ -5,7 +5,36 @@
 
     <!-- resultMap -->
 
+    <resultMap id="scheduleListResultMap" type="com.barogagi.schedule.query.vo.ScheduleListVO">
+        <id property="scheduleNum" column="SCHEDULE_NUM"/>
+        <result property="scheduleNm" column="SCHEDULE_NM"/>
+        <result property="startDate" column="START_DATE"/>
+        <result property="endDate" column="END_DATE"/>
+
+        <collection property="scheduleTagRegistResDTOList"
+                    ofType="com.barogagi.tag.query.vo.TagSimpleVO">
+            <id property="tagNum" column="TAG_NUM"/>
+            <result property="tagNm" column="TAG_NM"/>
+        </collection>
+    </resultMap>
+
     <!-- Select Query -->
+
+    <select id="selectScheduleList" parameterType="int" resultMap="scheduleListResultMap">
+        <![CDATA[
+            SELECT
+                    a.SCHEDULE_NUM
+                  , a.SCHEDULE_NM
+                  , a.START_DATE
+                  , a.END_DATE
+                  , b.TAG_NUM
+                  , c.TAG_NM
+            FROM    SCHEDULE a
+            LEFT JOIN SCHEDULE_TAG b ON a.SCHEDULE_NUM = b.SCHEDULE_NUM
+            LEFT JOIN TAG c ON b.TAG_NUM = c.TAG_NUM
+            WHERE a.MEMBERSHIP_NO = #{membershipNo}
+        ]]>
+    </select>
 
     <select id="selectScheduleDetail" parameterType="int" resultType="com.barogagi.schedule.query.vo.ScheduleDetailVO">
         <![CDATA[
