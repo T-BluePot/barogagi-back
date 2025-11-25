@@ -6,5 +6,12 @@
     <!-- resultMap -->
 
     <!-- Select Query -->
-
+    <select id="selectItemNmBy" parameterType="int" resultType="String">
+        <![CDATA[
+        SELECT
+                ITEM_NM
+        FROM    ITEM
+        WHERE   ITEM_NUM = #{itemNum}
+        ]]>
+    </select>
 </mapper>

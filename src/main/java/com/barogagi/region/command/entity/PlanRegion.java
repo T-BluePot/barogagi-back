@@ -1,8 +1,7 @@
 package com.barogagi.region.command.entity;
 
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import com.barogagi.plan.command.entity.Plan;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -14,5 +13,15 @@ import lombok.*;
 public class PlanRegion {
 
     @EmbeddedId
-    private PlanRegionNum planRegionNum;    // (복합키) 계획 번호, 지역 번호
+    private PlanRegionId id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("planNum")
+    @JoinColumn(name = "PLAN_NUM")
+    private Plan plan;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("regionNum")
+    @JoinColumn(name = "REGION_NUM")
+    private Region region;
 }
