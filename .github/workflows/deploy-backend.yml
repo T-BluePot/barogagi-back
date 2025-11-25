@@ -28,7 +28,7 @@ jobs:
           else
             echo "HOST=${{ secrets.TEST_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.TEST_TARGET_DIR }}" >> $GITHUB_ENV
-            echo "${{ secrets.APP_PROPS_MAIN  }}" > ./src/main/resources/application.properties
+            echo "${{ secrets.APP_PROPS_MAIN_BASE64 }}" | base64 --decode > ./src/main/resources/application.properties
           fi
 
       - name: Build jar file
