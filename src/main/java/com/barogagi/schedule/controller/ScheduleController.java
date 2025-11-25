@@ -1,7 +1,7 @@
 package com.barogagi.schedule.controller;
 
-import com.barogagi.member.join.vo.JoinVO;
-import com.barogagi.member.join.vo.UserIdCheckVO;
+//import com.barogagi.member.join.vo.JoinVO;
+//import com.barogagi.member.join.vo.UserIdCheckVO;
 import com.barogagi.member.login.controller.LoginController;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.query.service.PlanQueryService;
