@@ -1,10 +1,9 @@
 package com.barogagi.terms.service;
 
 import com.barogagi.terms.mapper.TermsMapper;
-import com.barogagi.terms.vo.TermsInputDTO;
-import com.barogagi.terms.vo.TermsDTO;
-import com.barogagi.terms.vo.TermsOutputDTO;
-import com.barogagi.terms.vo.TermsProcessDTO;
+import com.barogagi.terms.dto.TermsInputDTO;
+import com.barogagi.terms.dto.TermsOutputDTO;
+import com.barogagi.terms.dto.TermsProcessDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.barogagi.mainPage.mapper.MainPageMapper">
+    <select id="selectUserScheduleInfo" parameterType="com.barogagi.mainPage.dto.UserInfoRequestDTO" resultType="com.barogagi.mainPage.dto.UserInfoResponseDTO">
+        <![CDATA[
+            SELECT
+                cs.SCHEDULE_NUM    AS scheduleNum,
+                cs.SCHEDULE_NM     AS scheduleNm,
+                cs.START_DATE      AS startDate,
+                c.CATEGORY_NM      AS categoryNm,
+                p.PLAN_NM          AS planNm,
+                p.PLAN_NUM         AS planNum
+            FROM (
+                SELECT *
+                FROM (
+                    SELECT s.*,
+                           ROW_NUMBER() OVER (
+                               ORDER BY DATEDIFF(s.START_DATE, CURDATE()) ASC,
+                                        s.START_DATE ASC,
+                                        s.SCHEDULE_NUM ASC
+                           ) AS rn
+                    FROM SCHEDULE s
+                    WHERE s.MEMBERSHIP_NO = #{membershipNo}
+                      AND s.DEL_YN = 'N'
+                      AND s.START_DATE >= CURDATE()
+                ) ss
+                WHERE ss.rn = 1
+            ) cs
+            LEFT OUTER JOIN (
+                SELECT *
+                FROM (
+                    SELECT p.*,
+                           ROW_NUMBER() OVER (PARTITION BY p.SCHEDULE_NUM ORDER BY p.START_TIME ASC, p.PLAN_NUM ASC) AS rn
+                    FROM PLAN p
+                    WHERE p.DEL_YN = 'N'
+                ) px
+                WHERE px.rn = 1
+            ) p
+                ON cs.SCHEDULE_NUM = p.SCHEDULE_NUM
+            LEFT OUTER JOIN ITEM i
+                ON p.ITEM_NUM = i.ITEM_NUM
+            LEFT OUTER JOIN CATEGORY c
+                ON i.CATEGORY_NUM = c.CATEGORY_NUM
+            ORDER BY cs.START_DATE DESC
+        ]]>
+    </select>
+
+    <select id="selectScheduleTag" parameterType="com.barogagi.mainPage.dto.UserInfoRequestDTO" resultType="com.barogagi.mainPage.dto.TagInfoDTO">
+        <![CDATA[
+            SELECT  t.TAG_NM as tagNm,
+                    t.TAG_NUM as tagNum,
+                    t.TAG_TYPE as tagType
+            FROM SCHEDULE_TAG st
+            LEFT OUTER JOIN TAG t
+            ON st.TAG_NUM = t.TAG_NUM
+            WHERE st.SCHEDULE_NUM = #{scheduleNum}
+            and st.MEMBERSHIP_NO = #{membershipNo}
+            and t.TAG_TYPE = 'S'
+        ]]>
+    </select>
+
+    <select id="selectScheduleRegionInfo" parameterType="com.barogagi.mainPage.dto.UserInfoRequestDTO" resultType="com.barogagi.mainPage.dto.RegionInfoDTO">
+        <![CDATA[
+            SELECT  rg.REGION_LEVEL_1 regionLevel1,
+                    rg.REGION_LEVEL_2 regionLevel2,
+                    rg.REGION_LEVEL_3 regionLevel3,
+                    rg.REGION_LEVEL_4 regionLevel4
+            FROM    PLAN_REGION pr
+            LEFT OUTER JOIN REGION rg
+            ON pr.REGION_NUM = rg.REGION_NUM
+            WHERE pr.PLAN_NUM = #{planNum}
+            ORDER BY pr.REGION_NUM ASC
+            LIMIT 1
+        ]]>
+    </select>
+
+    <select id="selectTagRankList" resultType="com.barogagi.mainPage.dto.TagRankInfoDTO">
+        <![CDATA[
+            SELECT  ti.TAG_NM tagNm,
+                    DENSE_RANK() OVER (ORDER BY tc.usage_count DESC, ti.TAG_NUM ASC) AS rankNo
+            FROM (
+                    SELECT TAG_NUM, COUNT(*) AS usage_count
+                    FROM (
+                        SELECT st.TAG_NUM
+                        FROM schedule_tag st
+                        JOIN schedule s ON s.SCHEDULE_NUM = st.SCHEDULE_NUM
+                        WHERE s.DEL_YN = 'N'
+                          AND s.start_date >= CURDATE()
+                        UNION ALL
+                        SELECT pt.TAG_NUM
+                        FROM plan_tag pt
+                        JOIN plan p ON p.PLAN_NUM = pt.PLAN_NUM
+                        WHERE p.DEL_YN  = 'N'
+                  ) AS combined
+                  GROUP BY TAG_NUM
+            ) tc
+            JOIN tag ti ON ti.TAG_NUM = tc.TAG_NUM
+            ORDER BY rankNo ASC
+        ]]>
+    </select>
+
+    <select id="selectRegionRankList" resultType="com.barogagi.mainPage.dto.RegionRankInfoDTO">
+        <![CDATA[
+            SELECT
+                r.REGION_LEVEL_1 regionLevel1,
+                r.REGION_LEVEL_2 regionLevel2,
+                r.REGION_LEVEL_3 regionLevel3,
+                r.REGION_LEVEL_4 regionLevel4,
+                DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS rankNo
+            FROM REGION r
+            LEFT OUTER JOIN PLAN_REGION pr
+            ON r.REGION_NUM = pr.REGION_NUM
+            LEFT OUTER JOIN PLAN p
+            ON pr.PLAN_NUM = p.PLAN_NUM
+            LEFT OUTER JOIN SCHEDULE s
+            ON p.SCHEDULE_NUM = s.SCHEDULE_NUM
+            WHERE s.DEL_YN = 'N'
+            AND p.DEL_YN = 'N'
+            AND s.START_DATE >= CURDATE()
+            GROUP BY r.REGION_NUM
+            ORDER BY rankNo ASC
+        ]]>
+    </select>
+</mapper>

@@ -1,9 +1,8 @@
 package com.barogagi.terms.mapper;
 
-import com.barogagi.terms.vo.TermsInputDTO;
-import com.barogagi.terms.vo.TermsDTO;
-import com.barogagi.terms.vo.TermsOutputDTO;
-import com.barogagi.terms.vo.TermsProcessDTO;
+import com.barogagi.terms.dto.TermsInputDTO;
+import com.barogagi.terms.dto.TermsOutputDTO;
+import com.barogagi.terms.dto.TermsProcessDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
