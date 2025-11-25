@@ -73,4 +73,29 @@
             LIMIT 1
         ]]>
     </select>
+
+    <select id="selectTagRankList" resultType="com.barogagi.mainPage.dto.TagRankInfoDTO">
+        <![CDATA[
+            SELECT  ti.TAG_NM tagNm,
+                    DENSE_RANK() OVER (ORDER BY tc.usage_count DESC, ti.TAG_NUM ASC) AS rankNo
+            FROM (
+                    SELECT TAG_NUM, COUNT(*) AS usage_count
+                    FROM (
+                        SELECT st.TAG_NUM
+                        FROM schedule_tag st
+                        JOIN schedule s ON s.SCHEDULE_NUM = st.SCHEDULE_NUM
+                        WHERE s.DEL_YN = 'N'
+                          AND s.start_date >= CURDATE()
+                        UNION ALL
+                        SELECT pt.TAG_NUM
+                        FROM plan_tag pt
+                        JOIN plan p ON p.PLAN_NUM = pt.PLAN_NUM
+                        WHERE p.DEL_YN  = 'N'
+                  ) AS combined
+                  GROUP BY TAG_NUM
+            ) tc
+            JOIN tag ti ON ti.TAG_NUM = tc.TAG_NUM
+            ORDER BY rankNo ASC
+        ]]>
+    </select>
 </mapper>

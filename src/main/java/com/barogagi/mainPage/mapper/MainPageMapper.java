@@ -1,9 +1,6 @@
 package com.barogagi.mainPage.mapper;
 
-import com.barogagi.mainPage.dto.RegionInfoDTO;
-import com.barogagi.mainPage.dto.TagInfoDTO;
-import com.barogagi.mainPage.dto.UserInfoRequestDTO;
-import com.barogagi.mainPage.dto.UserInfoResponseDTO;
+import com.barogagi.mainPage.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -23,4 +20,5 @@ public interface MainPageMapper {
     // 인기 지역 조회
 
     // 인기 태그 조회
+    List<TagRankInfoDTO> selectTagRankList();
 }

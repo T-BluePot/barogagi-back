@@ -1,9 +1,6 @@
 package com.barogagi.mainPage.service;
 
-import com.barogagi.mainPage.dto.RegionInfoDTO;
-import com.barogagi.mainPage.dto.TagInfoDTO;
-import com.barogagi.mainPage.dto.UserInfoRequestDTO;
-import com.barogagi.mainPage.dto.UserInfoResponseDTO;
+import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.mapper.MainPageMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,4 +39,7 @@ public class MainPageService {
     // 인기 지역 조회
 
     // 인기 태그 조회
+    public List<TagRankInfoDTO> selectTagRankList() throws Exception {
+        return mainPageMapper.selectTagRankList();
+    }
 }

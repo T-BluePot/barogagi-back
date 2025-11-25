@@ -1,9 +1,7 @@
 package com.barogagi.mainPage.controller;
 
-import com.barogagi.mainPage.dto.RegionInfoDTO;
-import com.barogagi.mainPage.dto.TagInfoDTO;
-import com.barogagi.mainPage.dto.UserInfoRequestDTO;
-import com.barogagi.mainPage.dto.UserInfoResponseDTO;
+import com.barogagi.config.vo.DefaultVO;
+import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.response.MainPageResponse;
 import com.barogagi.mainPage.service.MainPageService;
@@ -14,7 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,9 +29,13 @@ public class MainPageController {
 
     private final MainPageService mainPageService;
 
+    private final String API_SECRET_KEY;
+
     @Autowired
-    public MainPageController(MainPageService mainPageService) {
+    public MainPageController(MainPageService mainPageService,
+                              Environment environment) {
         this.mainPageService = mainPageService;
+        this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
     @Operation(summary = "유저 일정 정보 API", description = "메인 화면 - 다가오는 일정 부분에 해당하는 API")
@@ -105,5 +109,50 @@ public class MainPageController {
         }
 
         return mainPageResponse;
+    }
+
+    @Operation(summary = "인기 태그 조회 API ", description = "메인 화면 - 오늘 많이 생성되는 일정 부분에 해당하는 API")
+    @PostMapping("/popular/tag/list")
+    public ApiResponse selectPopularTagList(@RequestBody DefaultVO vo) {
+
+        logger.info("CALL /main/page/popular/tag/list");
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            if(!vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+                throw new MainPageException("100", "잘못된 접근입니다.");
+            }
+
+            // 인기 태그 조회
+            List<TagRankInfoDTO> tagRankInfoList = mainPageService.selectTagRankList();
+
+            logger.info("@@ !tagRankInfoList.isEmpty()={}", !tagRankInfoList.isEmpty());
+            if(!tagRankInfoList.isEmpty()) {
+                resultCode = "200";
+                message = "인기 태그 조회 완료하였습니다.";
+                apiResponse.setData(tagRankInfoList);
+            } else {
+                resultCode = "201";
+                message = "인기 태그 목록이 존재하지 않습니다.";
+            }
+
+        } catch (MainPageException ex) {
+            resultCode = ex.getResultCode();
+            message = ex.getMessage();
+
+        } catch (Exception e) {
+            logger.error("error", e);
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
+        }
+
+        return apiResponse;
     }
 }
