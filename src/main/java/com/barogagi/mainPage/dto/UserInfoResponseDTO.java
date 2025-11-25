@@ -13,7 +13,6 @@ public class UserInfoResponseDTO {
     private String startDate = "";
 
     // PLAN
-    private String planNm = "";
     private int planNum = 0;
 
     // CATEGORY

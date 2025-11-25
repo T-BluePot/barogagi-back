@@ -51,12 +51,11 @@ public class MainPageController {
         try {
 
             // 회원번호
-            String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
-
-            logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
-            if (membershipNo.isEmpty()) {
+            Object membershipNoAttr = request.getAttribute("membershipNo");
+            if (membershipNoAttr == null) {
                 throw new MainPageException("401", "접근 권한이 존재하지 않습니다.");
             }
+            String membershipNo = String.valueOf(membershipNoAttr);
 
             // 유저 일정 정보 API
             UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
