@@ -1,4 +1,4 @@
-package com.barogagi.member.info;
+package com.barogagi.member.info.exception;
 
 import lombok.Getter;
 
