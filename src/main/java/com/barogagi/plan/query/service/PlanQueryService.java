@@ -1,6 +1,5 @@
 package com.barogagi.plan.query.service;
 
-import com.barogagi.member.login.controller.LoginController;
 import com.barogagi.plan.query.mapper.PlanMapper;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import org.slf4j.Logger;

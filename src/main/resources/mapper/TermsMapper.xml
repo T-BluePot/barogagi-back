@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.barogagi.terms.mapper.TermsMapper">
-    <select id="selectTermsList" parameterType="com.barogagi.terms.vo.TermsInputDTO" resultType="com.barogagi.terms.vo.TermsOutputDTO">
+    <select id="selectTermsList" parameterType="com.barogagi.terms.dto.TermsInputDTO" resultType="com.barogagi.terms.dto.TermsOutputDTO">
         <![CDATA[
             SELECT 	TERMS_NUM 	    AS 	    termsNum,
 		            TITLE		    AS	    title,
@@ -18,7 +18,7 @@
         ]]>
     </select>
 
-    <insert id="insertTermsAgreeInfo" parameterType="com.barogagi.terms.vo.TermsProcessDTO">
+    <insert id="insertTermsAgreeInfo" parameterType="com.barogagi.terms.dto.TermsProcessDTO">
         <![CDATA[
             INSERT INTO TERMS_AGREE(TERMS_NUM, MEMBERSHIP_NO, AGREE_YN)
                 VALUES(#{termsNum}, #{membershipNo}, #{agreeYn})
