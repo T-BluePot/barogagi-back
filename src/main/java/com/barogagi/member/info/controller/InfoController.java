@@ -44,7 +44,13 @@ public class InfoController {
         this.passwordConfig = passwordConfig;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member")
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
         logger.info("CALL /info/member");
@@ -97,7 +103,15 @@ public class InfoController {
         return apiResponse;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 수정", description = "회원 정보 조회 수정입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "이미 해당 닉네임이 존재합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자 정보 수정 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 완료하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member/update")
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDto) {
         logger.info("CALL /info/member/update");

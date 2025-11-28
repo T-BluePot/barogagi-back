@@ -55,12 +55,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
             // 유효기간이 지나서 만료된 경우
-            writeErrorResponse(res, "TOKEN_EXPIRED", "Access token has expired");
+            writeErrorResponse(res, "300", "Access token has expired");
         } catch (JwtException | SecurityException e) {
             // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
-            writeErrorResponse(res, "REVOKED_TOKEN", "Revoked access token");
+            writeErrorResponse(res, "301", "Revoked access token");
         } catch (Exception e) {
-            writeErrorResponse(res, "UNKNOWN_ERROR", "Unknown authentication error");
+            writeErrorResponse(res, "302", "Unknown authentication error");
         }
 
     }
