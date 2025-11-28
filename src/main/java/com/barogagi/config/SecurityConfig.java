@@ -38,7 +38,7 @@ public class SecurityConfig {
             "/membership/join/**",
             "/terms/**",
             "/main/page/popular/tag/list",
-            "main/page/popular/region/list"
+            "/main/page/popular/region/list"
     };
 
     @Bean

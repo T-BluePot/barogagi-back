@@ -68,7 +68,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String p = request.getRequestURI();
-        return p.startsWith("/auth/");
+        return p.startsWith("/auth/") || p.startsWith("/login/basic/membership/userId/search");
     }
 
     private void writeErrorResponse(HttpServletResponse res, String errorCode, String message) throws IOException {
