@@ -3,6 +3,8 @@ package com.barogagi.config;
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
@@ -23,6 +27,7 @@ public class SecurityConfig {
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        logger.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
     private static final String[] PERMIT_URL_ARRAY = {
@@ -33,12 +38,14 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/auth/**",
             "/login/**",
             "/membership/join/**",
             "/terms/**",
             "/main/page/popular/tag/list",
-            "main/page/popular/region/list"
+            "/main/page/popular/region/list",
+            "/approval/tel/authCode/send",
+            "/approval/tel/authCode/check",
+            "/auth/**"
     };
 
     @Bean

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "인증", description = "인증 API")
 @RestController
-@RequestMapping("/approval")
+@RequestMapping("/approval/tel")
 public class ApprovalController {
     private static final Logger logger = LoggerFactory.getLogger(ApprovalController.class);
 
@@ -46,7 +46,15 @@ public class ApprovalController {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
-    @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다.")
+    @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "인증번호를 발송할 전화번호를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증번호 발송에 성공하었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "오류가 발생하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "인증번호 발송에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/authCode/send")
     public ApiResponse approvalTelSend(@RequestBody ApprovalSendVO approvalSendVO) {
 
@@ -131,7 +139,14 @@ public class ApprovalController {
         return apiResponse;
     }
 
-    @Operation(summary = "인증번호 일치 여부 확인", description = "휴대전화번호에 발송된 인증번호와 입력된 인증번호가 동일한지 확인")
+    @Operation(summary = "인증번호 일치 여부 확인", description = "휴대전화번호에 발송된 인증번호와 입력된 인증번호가 동일한지 확인",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "전화번호 또는 인증번호 값을 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증이 완료되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "인증이 실패하었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/authCode/check")
     public ApiResponse approvalTelCheck(@RequestBody ApprovalCompleteVO approvalCompleteVO) {
 
@@ -146,9 +161,9 @@ public class ApprovalController {
 
         try {
             if(approvalCompleteVO.getApiSecretKey().equals(API_SECRET_KEY)) {
-                if(inputValidate.isEmpty(approvalCompleteVO.getAuthCode())){
+                if(inputValidate.isEmpty(approvalCompleteVO.getAuthCode()) || inputValidate.isEmpty(approvalCompleteVO.getTel())){
                     resultCode = "101";
-                    message = "인증번호를 입력해주세요.";
+                    message = "전화번호 또는 인증번호 값을 입력해주세요.";
 
                 } else{
                     logger.info("@@@@ authCode = {}", approvalCompleteVO.getAuthCode());

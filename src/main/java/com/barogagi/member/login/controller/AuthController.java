@@ -2,7 +2,6 @@ package com.barogagi.member.login.controller;
 
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
-import com.barogagi.member.login.service.AccountService;
 import com.barogagi.member.login.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -24,11 +22,10 @@ public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthService authService;
-    private final AccountService accountService;
 
-    public AuthController(AuthService authService, AccountService accountService) {
+
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.accountService = accountService;
     }
 
     @Operation(summary = "토큰 재발급", description = "Access 토큰 만료 시, Refresh 토큰으로 Access 토큰 재발급")
@@ -89,14 +86,7 @@ public class AuthController {
         if (refresh != null && !refresh.isBlank()) {
             authService.logout(refresh); // DB REVOKE
         }
-        return ResponseEntity.ok(Map.of("result", "logged_out"));
-    }
-
-    @DeleteMapping
-    public ResponseEntity<?> deleteMe(Authentication auth) {
-        String membershipNo = (String) auth.getPrincipal(); // JwtAuthFilter에서 세팅됨
-        accountService.deleteMyAccount(membershipNo);
-        return ResponseEntity.noContent().build(); // 204
+        return ResponseEntity.ok(Map.of("resultCode", "200", "message", "로그아웃 되었습니다."));
     }
 }
 

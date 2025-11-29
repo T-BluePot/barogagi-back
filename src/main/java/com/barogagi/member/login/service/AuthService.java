@@ -78,11 +78,6 @@ public class AuthService {
         var u = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("USER_NOT_FOUND"));
 
-        // 선택: BASIC 사용자가 이 엔드포인트를 타지 못하게 막고 싶다면
-//        if ("BASIC".equalsIgnoreCase(u.getJoinType())) {
-//            throw new RuntimeException("NOT_OAUTH_MEMBER");
-//        }
-
         String no = u.getMembershipNo();
         String access  = jwt.generateAccessToken(no, u.getUserId());
         String refresh = jwt.generateRefreshToken(no, deviceId != null ? deviceId : "web-oauth");
