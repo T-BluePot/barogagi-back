@@ -8,6 +8,8 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
@@ -17,6 +19,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtil jwt;
     private final UserMembershipRepository userRepo;
@@ -34,13 +38,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String header = req.getHeader("Authorization");
+
+            logger.info("@@@ header={}", header);
+
             if (header != null && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
-
+                logger.info("@@@ token={}", token);
                 Claims claims = jwt.parseToken(token, "ACCESS");
 
                 String membershipNo = jwt.getMembershipNo(claims);
-
+                logger.info("@@@ membershipNo={}", membershipNo);
                 // 회원 조회
                 Member member = memberService.findByMembershipNo(membershipNo);
 
