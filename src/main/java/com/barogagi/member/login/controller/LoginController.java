@@ -70,7 +70,15 @@ public class LoginController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Operation(summary = "로그인", description = "로그인 기능입니다. apiSecretKey, userId와 password 값만 보내주세요.")
+    @Operation(summary = "로그인", description = "로그인 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "로그인에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "로그인이 불가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "회원 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "로그인에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/basic/membership/login")
     public ApiResponse basicMemberLogin(@RequestBody LoginDTO loginRequestDTO){
 
@@ -101,7 +109,7 @@ public class LoginController {
 
                     logger.info("@@ ok={}", ok);
                     if(!ok) {
-                        throw new LoginException("103", "로그인에 실패하였습니다");
+                        throw new LoginException("103", "로그인에 실패하였습니다.");
                     }
 
                     String userId = member.getUserId();
@@ -139,7 +147,14 @@ public class LoginController {
         return  apiResponse;
     }
 
-    @Operation(summary = "아이디 찾기 기능", description = "아이디 찾기 기능입니다. apiSecretKey, tel 값만 보내주시면 됩니다.")
+    @Operation(summary = "아이디 찾기 기능", description = "아이디 찾기 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "해당 전화번호로 가입된 아이디입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "전화번호가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "해당 전화번호로 가입된 계정이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/basic/membership/userId/search")
     public ApiResponse searchUserId(@RequestBody SearchUserIdDTO searchUserIdRequestDTO){
 
@@ -198,7 +213,14 @@ public class LoginController {
         return  apiResponse;
     }
 
-    @Operation(summary = "비밀번호 재설정 기능", description = "비밀번호 재설정 기능입니다. apiSecretKey, userId, password값만 보내주시면 됩니다.")
+    @Operation(summary = "비밀번호 재설정 기능", description = "비밀번호 재설정 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "비밀번호 재설정에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "아이디, 비밀번호 값이 없습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "비밀번호 재설정에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/basic/membership/password/update")
     public ApiResponse updatePassword(@RequestBody LoginDTO vo){
 

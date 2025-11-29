@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MemberRequestDTO extends DefaultVO {
+public class MemberRequestDTO {
 
     // 비밀번호
     private String password = "";

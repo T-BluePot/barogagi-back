@@ -7,6 +7,7 @@ import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
+import com.barogagi.member.login.service.AccountService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,6 +29,7 @@ public class InfoController {
 
     private final MemberService memberService;
     private final JoinService joinService;
+    private final AccountService accountService;
 
     private final EncryptUtil encryptUtil;
 
@@ -35,16 +37,24 @@ public class InfoController {
 
     public InfoController(MemberService memberService,
                           JoinService joinService,
+                          AccountService accountService,
                           EncryptUtil encryptUtil,
                           PasswordConfig passwordConfig) {
 
         this.memberService = memberService;
         this.joinService = joinService;
+        this.accountService = accountService;
         this.encryptUtil = encryptUtil;
         this.passwordConfig = passwordConfig;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member")
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
         logger.info("CALL /info/member");
@@ -97,7 +107,15 @@ public class InfoController {
         return apiResponse;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 수정", description = "회원 정보 조회 수정입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "이미 해당 닉네임이 존재합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자 정보 수정 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 완료하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member/update")
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDto) {
         logger.info("CALL /info/member/update");
@@ -191,6 +209,53 @@ public class InfoController {
             logger.error("error", e);
             resultCode = "400";
             message = "오류가 발생하였습니다.";
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
+        }
+
+        return apiResponse;
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
+    @PostMapping("/member/delete")
+    public ApiResponse deleteMe(HttpServletRequest request) {
+
+        logger.info("CALL /info/member/delete");
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            Object membershipNoAttr = request.getAttribute("membershipNo");
+            logger.info("@@@ membershipNoAttr={}", membershipNoAttr);
+            if(membershipNoAttr == null) {
+                throw new MemberInfoException("100", "접근 권한이 존재하지 않습니다.");
+            }
+
+            String membershipNo = String.valueOf(membershipNoAttr);
+
+            accountService.deleteMyAccount(membershipNo);
+
+            resultCode = "200";
+            message = "회원 탈퇴되었습니다.";
+
+        } catch (MemberInfoException ex) {
+            resultCode = ex.getResultCode();
+            message = ex.getMessage();
+
+        } catch (Exception e) {
+            logger.error("error", e);
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+
         } finally {
             apiResponse.setResultCode(resultCode);
             apiResponse.setMessage(message);
