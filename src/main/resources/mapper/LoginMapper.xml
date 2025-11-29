@@ -44,14 +44,4 @@
             WHERE   USER_ID = #{userId}
         ]]>
     </select>
-
-    <select id="findMembershipByToken" parameterType="string" resultType="com.barogagi.member.login.dto.LoginVO">
-        <![CDATA[
-            SELECT  MEMBERSHIP_NO
-            FROM    REFRESH_TOKEN
-            WHERE   TOKEN = #{token}
-            AND     EXPIRES_AT >= CURDATE()
-            AND     STATUS = "VALID"
-        ]]>
-    </select>
 </mapper>
