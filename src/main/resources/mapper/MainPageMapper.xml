@@ -96,6 +96,7 @@
             ) tc
             JOIN tag ti ON ti.TAG_NUM = tc.TAG_NUM
             ORDER BY rankNo ASC
+            LIMIT 10
         ]]>
     </select>
 
