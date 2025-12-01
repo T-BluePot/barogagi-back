@@ -10,7 +10,6 @@
                     BIRTH           as  birth,
                     TEL             as  tel,
                     GENDER          as  gender,
-                    PROFILE_IMG     as  profileImg,
                     NICKNAME        as  nickName,
                     JOIN_TYPE       as  joinType,
                     REG_DATE        as  regDate,
@@ -31,7 +30,6 @@
                     BIRTH           as  birth,
                     TEL             as  tel,
                     GENDER          as  gender,
-                    PROFILE_IMG     as  profileImg,
                     NICKNAME        as  nickName,
                     JOIN_TYPE       as  joinType,
                     REG_DATE        as  regDate,
@@ -46,13 +44,9 @@
     <update id="updateMemberInfo" parameterType="com.barogagi.member.info.dto.Member">
         <![CDATA[
             UPDATE  USER_MEMBERSHIP_INFO
-            SET     PASSWORD        =   #{password},
-                    EMAIL           =   #{email},
-                    BIRTH           =   #{birth},
-                    TEL             =   #{tel},
+            SET     BIRTH           =   #{birth},
                     GENDER          =   #{gender},
                     NICKNAME        =   #{nickName},
-                    PROFILE_IMG     =   #{profileImg},
                     UPD_DATE        =   NOW()
 
             WHERE   MEMBERSHIP_NO   =   #{membershipNo}

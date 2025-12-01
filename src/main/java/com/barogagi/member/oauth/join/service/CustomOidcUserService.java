@@ -64,7 +64,6 @@ public class CustomOidcUserService extends org.springframework.security.oauth2.c
                 joinDTO.setEmail(encryptUtil.encrypt(email));
                 joinDTO.setNickName(name);
                 joinDTO.setJoinType("GOOGLE");
-                joinDTO.setProfileImg(picture);
 
                 int insertResult = joinService.insertMembershipInfo(joinDTO);
 
