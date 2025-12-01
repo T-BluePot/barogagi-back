@@ -34,9 +34,6 @@ public class UserMembership {
     @Column(name = "GENDER", length = 1)
     private String gender; // M / W
 
-    @Column(name = "PROFILE_IMG", length = 200)
-    private String profileImg;
-
     @Column(name = "NICKNAME", length = 100)
     private String nickname;
 

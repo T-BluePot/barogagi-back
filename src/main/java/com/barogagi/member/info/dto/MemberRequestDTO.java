@@ -8,12 +8,6 @@ import lombok.Setter;
 @Setter
 public class MemberRequestDTO {
 
-    // 비밀번호
-    private String password = "";
-
-    // 이메일
-    private String email = "";
-
     // 생년월일
     private String birth = "";
 
@@ -22,10 +16,4 @@ public class MemberRequestDTO {
 
     // 닉네임
     private String nickName = "";
-
-    // 프로필 이미지
-    private String profileImg = "";
-
-    // 휴대폰 번호
-    private String tel = "";
 }
