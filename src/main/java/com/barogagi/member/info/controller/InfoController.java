@@ -126,11 +126,8 @@ public class InfoController {
 
         try {
 
-            logger.info("param password={}", memberRequestDto.getPassword());
-            logger.info("param email={}", memberRequestDto.getEmail());
             logger.info("param gender={}", memberRequestDto.getGender());
             logger.info("param nickName={}", memberRequestDto.getNickName());
-            logger.info("param tel={}", memberRequestDto.getTel());
 
             String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
             logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
@@ -142,22 +139,6 @@ public class InfoController {
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
             if(null == memberInfo) {
                 throw new MemberInfoException("402", "해당 사용자에 대한 정보가 존재하지 않습니다.");
-            }
-
-            String joinType = memberInfo.getJoinType();
-            logger.info("@@ joinType={}", joinType);
-            if(joinType.equals("BASIC")) {
-                // 일반 회원가입으로 가입한 경우에만 비밀번호 수정 가능
-                if(!memberRequestDto.getPassword().isEmpty()) {
-                    String encodedPassword = passwordConfig.passwordEncoder().encode(memberRequestDto.getPassword());
-                    memberInfo.setPassword(encodedPassword);
-                }
-            }
-
-            // 이메일
-            if(!memberRequestDto.getEmail().isEmpty()) {
-                String encodedEmail = encryptUtil.encrypt(memberRequestDto.getEmail());
-                memberInfo.setEmail(encodedEmail);
             }
 
             // 생년월일
@@ -182,13 +163,6 @@ public class InfoController {
                 }
 
                 memberInfo.setNickName(memberRequestDto.getNickName());
-            }
-
-            // 프로필 이미지(저장 코드는 회의 진행 후 작업)
-
-            // 전화번호
-            if(!memberRequestDto.getTel().isEmpty()) {
-                memberInfo.setTel(encryptUtil.encrypt(memberRequestDto.getTel().replaceAll("[^0-9]", "")));
             }
 
             int updateMemberInfo = memberService.updateMemberInfo(memberInfo);

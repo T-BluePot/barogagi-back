@@ -62,7 +62,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
 
         String id = str(resp.get("id"));
         String nickName = str(resp.get("nickname"));
-        String profileImg = str(resp.get("profile_image"));
         String gender = str(resp.get("gender"));
         String email = str(resp.get("email"));
         String birthday = str(resp.get("birthday"));
@@ -86,12 +85,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                 joinDTO.setEmail(encryptUtil.encrypt(email));
                 joinDTO.setNickName(nickName);
                 joinDTO.setJoinType("NAVER");
-
-                logger.info("@@ profileImg={}", null != profileImg);
-                if(null != profileImg) {
-                    // 프로필 사진
-                    joinDTO.setProfileImg(profileImg);
-                }
 
                 // gender(성별) : M(남성), F(여성), U(미설정)
                 logger.info("@@ gender={}", null != gender);
