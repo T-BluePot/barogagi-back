@@ -4,6 +4,7 @@ import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.login.mapper.AuthMapper;
 import com.barogagi.member.login.repository.RefreshTokenRepository;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
@@ -29,17 +30,21 @@ public class AuthService {
     private final JwtUtil jwt;
     private final PasswordEncoder encoder;
 
+    private final AuthMapper authMapper;
+
     @Value("${jwt.access-exp-seconds}")
     private long accessExp;
     @Value("${jwt.refresh-exp-seconds}")
     private long refreshExp;
 
     public AuthService(UserMembershipRepository userRepo, RefreshTokenRepository refreshRepo,
-                       JwtUtil jwt, PasswordEncoder encoder) {
+                       JwtUtil jwt, PasswordEncoder encoder,
+                       AuthMapper authMapper) {
         this.userRepo = userRepo;
         this.refreshRepo = refreshRepo;
         this.jwt = jwt;
         this.encoder = encoder;
+        this.authMapper = authMapper;
     }
 
     public LoginResponse login(LoginRequest req) {
@@ -181,6 +186,10 @@ public class AuthService {
 
         for (var t : tokens) t.setStatus("REVOKED");
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
+    }
+
+    public String selectUserInfoByToken(String refreshToken) throws Exception {
+        return authMapper.selectUserInfoByToken(refreshToken);
     }
 }
 
