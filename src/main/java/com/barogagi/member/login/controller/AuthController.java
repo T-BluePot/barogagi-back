@@ -1,6 +1,5 @@
 package com.barogagi.member.login.controller;
 
-import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.service.AccountService;
@@ -104,7 +103,7 @@ public class AuthController {
     public ApiResponse deleteMe(@RequestHeader(value = "Refresh-Token", required = false) String refreshHeader,
                                 @RequestBody(required = false) Map<String, String> body) {
 
-        logger.info("CALL /info/member/delete");
+        logger.info("CALL /auth/member/delete");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -121,7 +120,13 @@ public class AuthController {
             }
 
             // refresh token을 이용해서 membershipNo 구하기
-            String membershipNo = authService.selectUserInfoByToken(refreshToken);
+
+            Map<String, String> resultMap = authService.selectUserInfoByToken(refreshToken);
+            if(!resultMap.get("resultCode").equals("200")) {
+                throw new InvalidRefreshTokenException(resultMap.get("resultCode"), resultMap.get("message"));
+            }
+
+            String membershipNo = resultMap.get("membershipNo");
 
             int deleteResult = accountService.deleteMyAccount(membershipNo);
             if(deleteResult > 0) {

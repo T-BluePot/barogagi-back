@@ -1,6 +1,5 @@
 package com.barogagi.member.login.mapper;
 
-import com.barogagi.member.login.dto.RefreshRequest;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

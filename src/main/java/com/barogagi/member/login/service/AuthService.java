@@ -15,7 +15,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,8 +191,40 @@ public class AuthService {
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
     }
 
-    public String selectUserInfoByToken(String refreshToken) throws Exception {
-        return authMapper.selectUserInfoByToken(refreshToken);
+    public Map<String, String> selectUserInfoByToken(String refreshToken) {
+
+        Map<String, String> returnMap = new HashMap<>();
+
+        String resultCode = "";
+        String message = "";
+        String membershipNo = "";
+
+        try {
+            // 1. JWT 토큰 유효성 검증
+            if(!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+                throw new InvalidRefreshTokenException("301", "유효하지 않은 refresh token입니다.");
+            }
+
+            // 2. membershipNo 구하기
+            membershipNo = authMapper.selectUserInfoByToken(refreshToken);
+
+            // 3. membershipNo 조회가 되지 않을 경우
+            if(membershipNo == null || membershipNo.isBlank()) {
+                throw new InvalidRefreshTokenException("302", "유효한 token 정보를 찾을 수 없습니다.");
+            }
+
+            resultCode = "200";
+            message = "성공";
+            returnMap.put("membershipNo", membershipNo);
+
+        } catch (InvalidRefreshTokenException e) {
+            resultCode = e.getCode();
+            message = e.getMessage();
+        } finally {
+            returnMap.put("resultCode", resultCode);
+            returnMap.put("message", message);
+        }
+        return returnMap;
     }
 }
 
