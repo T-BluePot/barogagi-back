@@ -14,10 +14,20 @@ public class AccountService {
     private final UserMembershipRepository userMembershipRepository;
 
     @Transactional
-    public void deleteMyAccount(String membershipNo) {
+    public int deleteMyAccount(String membershipNo) {
+
+        int result = 0;
+
         // 1) 모든 리프레시 토큰 제거
-        refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
+        int deleteRefreshToken = refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
+
         // 2) 회원 삭제
-        userMembershipRepository.deleteByMembershipNo(membershipNo);
+        int deleteByMembershipNo = userMembershipRepository.deleteByMembershipNo(membershipNo);
+
+        if(deleteRefreshToken > 0 && deleteByMembershipNo > 0) {
+            result = 1;
+        }
+
+        return result;
     }
 }
