@@ -4,6 +4,7 @@ import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.login.mapper.AuthMapper;
 import com.barogagi.member.login.repository.RefreshTokenRepository;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
@@ -14,7 +15,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +33,21 @@ public class AuthService {
     private final JwtUtil jwt;
     private final PasswordEncoder encoder;
 
+    private final AuthMapper authMapper;
+
     @Value("${jwt.access-exp-seconds}")
     private long accessExp;
     @Value("${jwt.refresh-exp-seconds}")
     private long refreshExp;
 
     public AuthService(UserMembershipRepository userRepo, RefreshTokenRepository refreshRepo,
-                       JwtUtil jwt, PasswordEncoder encoder) {
+                       JwtUtil jwt, PasswordEncoder encoder,
+                       AuthMapper authMapper) {
         this.userRepo = userRepo;
         this.refreshRepo = refreshRepo;
         this.jwt = jwt;
         this.encoder = encoder;
+        this.authMapper = authMapper;
     }
 
     public LoginResponse login(LoginRequest req) {
@@ -181,6 +189,42 @@ public class AuthService {
 
         for (var t : tokens) t.setStatus("REVOKED");
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
+    }
+
+    public Map<String, String> selectUserInfoByToken(String refreshToken) {
+
+        Map<String, String> returnMap = new HashMap<>();
+
+        String resultCode = "";
+        String message = "";
+        String membershipNo = "";
+
+        try {
+            // 1. JWT 토큰 유효성 검증
+            if(!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+                throw new InvalidRefreshTokenException("301", "유효하지 않은 refresh token입니다.");
+            }
+
+            // 2. membershipNo 구하기
+            membershipNo = authMapper.selectUserInfoByToken(refreshToken);
+
+            // 3. membershipNo 조회가 되지 않을 경우
+            if(membershipNo == null || membershipNo.isBlank()) {
+                throw new InvalidRefreshTokenException("302", "유효한 token 정보를 찾을 수 없습니다.");
+            }
+
+            resultCode = "200";
+            message = "성공";
+            returnMap.put("membershipNo", membershipNo);
+
+        } catch (InvalidRefreshTokenException e) {
+            resultCode = e.getCode();
+            message = e.getMessage();
+        } finally {
+            returnMap.put("resultCode", resultCode);
+            returnMap.put("message", message);
+        }
+        return returnMap;
     }
 }
 
