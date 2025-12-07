@@ -1,5 +1,6 @@
 package com.barogagi.terms.service;
 
+import com.barogagi.terms.dto.TermsAgreeDTO;
 import com.barogagi.terms.mapper.TermsMapper;
 import com.barogagi.terms.dto.TermsInputDTO;
 import com.barogagi.terms.dto.TermsOutputDTO;
@@ -27,15 +28,15 @@ public class TermsService {
     }
 
     // 약관 동의 여부 저장
-    public int insertTermsAgreeInfo(TermsProcessDTO vo) throws Exception {
+    public int insertTermsAgreeInfo(TermsAgreeDTO vo) throws Exception {
         return termsMapper.insertTermsAgreeInfo(vo);
     }
 
     @Transactional
-    public String insertTermsAgreeList(List<TermsProcessDTO> termsList) {
+    public String insertTermsAgreeList(List<TermsAgreeDTO> termsList) {
         String resultCode = "";
         try {
-            for(TermsProcessDTO vo : termsList) {
+            for(TermsAgreeDTO vo : termsList) {
                 int insertFlag = this.insertTermsAgreeInfo(vo);
                 if(insertFlag > 0){
                     resultCode = "200";

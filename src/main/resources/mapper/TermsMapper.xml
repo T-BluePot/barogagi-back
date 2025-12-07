@@ -18,7 +18,7 @@
         ]]>
     </select>
 
-    <insert id="insertTermsAgreeInfo" parameterType="com.barogagi.terms.dto.TermsProcessDTO">
+    <insert id="insertTermsAgreeInfo" parameterType="com.barogagi.terms.dto.TermsAgreeDTO">
         <![CDATA[
             INSERT INTO TERMS_AGREE(TERMS_NUM, MEMBERSHIP_NO, AGREE_YN)
                 VALUES(#{termsNum}, #{membershipNo}, #{agreeYn})
