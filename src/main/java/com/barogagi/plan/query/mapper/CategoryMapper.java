@@ -10,4 +10,6 @@ public interface CategoryMapper {
 
     // 카테고리명 조회
     String selectCategoryNmBy(int categoryNum);
+
+    int selectRandomCategoryNum();
 }

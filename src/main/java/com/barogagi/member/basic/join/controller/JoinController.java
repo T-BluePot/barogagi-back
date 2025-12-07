@@ -47,7 +47,15 @@ public class JoinController {
         this.passwordConfig = passwordConfig;
     }
 
-    @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.")
+    @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "해당 아이디 사용이 가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "아이디를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합한 아이디가 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "해당 아이디 사용이 불가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/basic/membership/userId/check")
     public ApiResponse checkUserId(@RequestBody UserIdCheckDTO userIdCheckDTO) {
 
@@ -105,7 +113,16 @@ public class JoinController {
         return apiResponse;
     }
 
-    @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.")
+    @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "회원가입에 필요한 정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합한 아이디, 비밀번호, 닉네임이 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "해당 아이디에 대한 회원 정보가 이미 존재합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "회원가입에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/basic/membership/insert")
     public ApiResponse membershipJoinInsert(@RequestBody JoinRequestDTO joinRequestDTO){
 
@@ -158,15 +175,23 @@ public class JoinController {
                         joinDTO.setNickName(joinRequestDTO.getNickName());
                         joinDTO.setJoinType("BASIC");
 
-                        int insertResult = joinService.insertMembershipInfo(joinDTO);
-                        logger.info("@@ insertResult={}", insertResult);
+                        // 아이디 중복 검증
+                        int duplicateUserId = joinService.checkUserId(joinDTO);
 
-                        if(insertResult > 0){
-                            resultCode = "200";
-                            message = "회원가입에 성공하였습니다.";
-                        } else{
-                            resultCode = "300";
-                            message = "회원가입에 실패하였습니다.";
+                        if(duplicateUserId > 0) {
+                            resultCode = "103";
+                            message = "해당 아이디에 대한 회원 정보가 이미 존재합니다.";
+                        } else {
+                            int insertResult = joinService.insertMembershipInfo(joinDTO);
+                            logger.info("@@ insertResult={}", insertResult);
+
+                            if(insertResult > 0){
+                                resultCode = "200";
+                                message = "회원가입에 성공하였습니다.";
+                            } else{
+                                resultCode = "300";
+                                message = "회원가입에 실패하였습니다.";
+                            }
                         }
                     }
                 }
@@ -188,7 +213,15 @@ public class JoinController {
         return apiResponse;
     }
 
-    @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API입니다.")
+    @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "이용 가능한 닉네임입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "닉네임 데이터를 보내주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합하지 않는 닉네임입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "이미 존재하는 닉네임입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/check/duplicate/nickname")
     public ApiResponse checkDuplicateNickname(@RequestBody NickNameDTO nickNameDTO){
 

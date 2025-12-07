@@ -104,9 +104,10 @@ public class ScheduleController {
             description = "일정을 생성하는 기능입니다.<br>" +
             "- 사용자가 직접 일정을 생성하는 경우는 2가지가 존재합니다.<br>" +
             "&nbsp;&nbsp;&nbsp;&nbsp; CASE 1. 카카오 장소 검색 API를 사용해서 사용자가 가고 싶은 장소를 선택하는 경우, 카카오 장소 검색 API에서 검색한 placeName, placeUrl, addressName을 보내주세요.<br>" +
+            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 주의 1) 사용자가 랜덤 카테고리를 선택한 경우 isRandomCategory=\"Y\"로 전달해 주세요. 이때 categoryNum은 전달하지 않아도 됩니다.<br>" +
             "&nbsp;&nbsp;&nbsp;&nbsp; CASE 2. 사용자가 세부일정을 직접 텍스트로 입력하는 경우(ex, 친구집 방문), 세부일정명을 planNm 필드에 담아 보내주세요.<br>" +
-            "&nbsp;&nbsp;&nbsp;&nbsp; 주의 1) 반드시 isUserAdded=\"Y\"로 전달해 주세요.<br>" +
-            "&nbsp;&nbsp;&nbsp;&nbsp; 주의 2) 사용자가 직접 일정을 생성하는 경우 planTagRegistReqDTOList 값을 전달할 필요는 없습니다.<br>" +
+            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 주의 1) 반드시 isUserAdded=\"Y\"로 전달해 주세요.<br>" +
+            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 주의 2) 사용자가 직접 일정을 생성하는 경우 planTagRegistReqDTOList 값을 전달할 필요는 없습니다.<br>" +
             "- 생성된 일정은 '일정 등록'과정을 거쳐야 DB에 저장됩니다.<br>" +
             "- 사용자가 이 API로 생성된 일정을 확인한 후 '일정 생성하기' 버튼을 누르면 '일정 등록' API를 호출해 주세요.")
     @PostMapping("/create")
@@ -134,6 +135,7 @@ public class ScheduleController {
                                             "      \"itemNum\": 10,\n" +
                                             "      \"categoryNum\": 2,\n" +
                                             "      \"isUserAdded\": \"N\",\n" +
+                                            "      \"isRandomCategory\": \"Y\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        { \"regionNum\": 1 }\n" +
                                             "      ],\n" +
@@ -148,6 +150,7 @@ public class ScheduleController {
                                             "      \"itemNum\": 2,\n" +
                                             "      \"categoryNum\": 1,\n" +
                                             "      \"isUserAdded\": \"Y\",\n" +
+                                            "      \"isRandomCategory\": \"N\",\n" +
                                             "      \"userAddedPlaceDTO\": {\n" +
                                             "        \"placeName\": \"카카오프렌즈 코엑스점\",\n" +
                                             "        \"placeUrl\": \"http://place.map.kakao.com/26338954\",\n" +

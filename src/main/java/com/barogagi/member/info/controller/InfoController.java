@@ -1,6 +1,5 @@
 package com.barogagi.member.info.controller;
 
-import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.exception.MemberInfoException;
@@ -31,20 +30,22 @@ public class InfoController {
 
     private final EncryptUtil encryptUtil;
 
-    private final PasswordConfig passwordConfig;
-
     public InfoController(MemberService memberService,
                           JoinService joinService,
-                          EncryptUtil encryptUtil,
-                          PasswordConfig passwordConfig) {
+                          EncryptUtil encryptUtil) {
 
         this.memberService = memberService;
         this.joinService = joinService;
         this.encryptUtil = encryptUtil;
-        this.passwordConfig = passwordConfig;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member")
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
         logger.info("CALL /info/member");
@@ -97,7 +98,15 @@ public class InfoController {
         return apiResponse;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.")
+    @Operation(summary = "회원 정보 수정", description = "회원 정보 조회 수정입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "이미 해당 닉네임이 존재합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자 정보 수정 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 완료하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/member/update")
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDto) {
         logger.info("CALL /info/member/update");
@@ -108,11 +117,8 @@ public class InfoController {
 
         try {
 
-            logger.info("param password={}", memberRequestDto.getPassword());
-            logger.info("param email={}", memberRequestDto.getEmail());
             logger.info("param gender={}", memberRequestDto.getGender());
             logger.info("param nickName={}", memberRequestDto.getNickName());
-            logger.info("param tel={}", memberRequestDto.getTel());
 
             String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
             logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
@@ -124,22 +130,6 @@ public class InfoController {
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
             if(null == memberInfo) {
                 throw new MemberInfoException("402", "해당 사용자에 대한 정보가 존재하지 않습니다.");
-            }
-
-            String joinType = memberInfo.getJoinType();
-            logger.info("@@ joinType={}", joinType);
-            if(joinType.equals("BASIC")) {
-                // 일반 회원가입으로 가입한 경우에만 비밀번호 수정 가능
-                if(!memberRequestDto.getPassword().isEmpty()) {
-                    String encodedPassword = passwordConfig.passwordEncoder().encode(memberRequestDto.getPassword());
-                    memberInfo.setPassword(encodedPassword);
-                }
-            }
-
-            // 이메일
-            if(!memberRequestDto.getEmail().isEmpty()) {
-                String encodedEmail = encryptUtil.encrypt(memberRequestDto.getEmail());
-                memberInfo.setEmail(encodedEmail);
             }
 
             // 생년월일
@@ -164,13 +154,6 @@ public class InfoController {
                 }
 
                 memberInfo.setNickName(memberRequestDto.getNickName());
-            }
-
-            // 프로필 이미지(저장 코드는 회의 진행 후 작업)
-
-            // 전화번호
-            if(!memberRequestDto.getTel().isEmpty()) {
-                memberInfo.setTel(encryptUtil.encrypt(memberRequestDto.getTel().replaceAll("[^0-9]", "")));
             }
 
             int updateMemberInfo = memberService.updateMemberInfo(memberInfo);

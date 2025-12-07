@@ -3,11 +3,8 @@ package com.barogagi.terms.controller;
 import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.terms.dto.*;
 import com.barogagi.terms.service.TermsService;
-import com.barogagi.terms.dto.TermsInputDTO;
-import com.barogagi.terms.dto.TermsDTO;
-import com.barogagi.terms.dto.TermsOutputDTO;
-import com.barogagi.terms.dto.TermsProcessDTO;
 import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "약관", description = "약관 관련 API")
@@ -40,7 +38,14 @@ public class TermsController {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
-    @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. apiSecretKey와 termsType값만 보내주시면 됩니다.")
+    @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 조회에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "조회하실 약관의 종류 값이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "약관이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/list")
     public ApiResponse termsList(@RequestBody TermsInputDTO termsInputDTO){
         logger.info("CALL /terms/list");
@@ -89,7 +94,14 @@ public class TermsController {
         return apiResponse;
     }
 
-    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.")
+    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 저장에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "해당 사용자의 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "약관 저장에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @PostMapping("/agree/insert")
     public ApiResponse insertTermsAgree(@RequestBody TermsDTO termsDTO) {
         logger.info("CALL /agree/insert");
@@ -108,11 +120,20 @@ public class TermsController {
 
                 LoginVO loginVO = loginService.findMembershipNo(lvo);
                 if(null != loginVO) {
+
+                    List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
                     List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
+
                     for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
-                        termsProcessDTO.setMembershipNo(loginVO.getMembershipNo());
+
+                        TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
+                        termsAgreeDTO.setMembershipNo(loginVO.getMembershipNo());
+                        termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
+                        termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
+
+                        termsAgreeDTOList.add(termsAgreeDTO);
                     }
-                    String resCode = termsService.insertTermsAgreeList(termsAgreeList);
+                    String resCode = termsService.insertTermsAgreeList(termsAgreeDTOList);
                     if(resCode.equals("200")) {
                         resultCode = "200";
                         message = "약관 저장에 성공하였습니다.";
