@@ -1,4 +1,4 @@
-## Chacnged
+## Changed
 > 간단한 설명 (예: 로그인 완료 후 세션 동기화 누락 문제 해결)
 수정 내용
    - 예) 로그인 성공 시 `store.setSession()` 호출 추가
