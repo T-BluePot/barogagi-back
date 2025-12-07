@@ -3,6 +3,7 @@ package com.barogagi.plan.dto;
 import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Getter
 @ToString
+@Builder(toBuilder = true)
 @Schema(description = "계획 등록 요청 DTO")
 public class PlanRegistReqDTO {
 
@@ -32,6 +34,9 @@ public class PlanRegistReqDTO {
 
     @Schema(description = "계획 태그 목록")
     public List<TagRegistReqDTO> planTagRegistReqDTOList;
+
+    @Schema(description = "사용자가 랜덤 카테고리를 선택한 경우", example = "Y")
+    public String isRandomCategory;
 
     // 사용자가 직접 세부일정을 추가한 경우에만 필요한 값
     @Schema(description = "사용자가 수동으로 추가한 일정인지 여부(AI 생성 안함)", example = "Y")
