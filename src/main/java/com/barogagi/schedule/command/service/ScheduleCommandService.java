@@ -176,6 +176,14 @@ public class ScheduleCommandService {
 
         List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
 
+        // 랜덤 카테고리를 선택한 경우, 카테고리 번호를 랜덤으로 선택
+        if (plan.getIsRandomCategory().equals("Y")) {
+            plan = plan.toBuilder()
+                    .categoryNum(categoryMapper.selectRandomCategoryNum())
+                    .build();
+            logger.info("#$# getCategoryNum={}", plan.getCategoryNum());
+        }
+
         String categoryNm = categoryMapper.selectCategoryNmBy(plan.getCategoryNum());
         String queryString = categoryNm;  // 검색어
 

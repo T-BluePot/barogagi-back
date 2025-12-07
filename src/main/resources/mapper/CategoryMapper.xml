@@ -16,4 +16,14 @@
         ]]>
     </select>
 
+    <select id="selectRandomCategoryNum" resultType="int">
+        <![CDATA[
+            SELECT CATEGORY_NUM
+            FROM CATEGORY
+            ORDER BY RAND()
+                LIMIT 1
+        ]]>
+    </select>
+
+
 </mapper>
