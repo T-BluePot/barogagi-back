@@ -415,11 +415,11 @@ public class ScheduleCommandService {
 
             // 1. Schedule
             Schedule schedule = Schedule.builder()
-                    .membershipNo(1) // todo. token에서 정보 가져오는 방식으로 수정 필요
+                    .membershipNo("1") // todo. token에서 정보 가져오는 방식으로 수정 필요
                     .scheduleNm(scheduleRegistResDTO.getScheduleNm())
                     .startDate(scheduleRegistResDTO.getStartDate())
                     .endDate(scheduleRegistResDTO.getEndDate())
-                    // .radius(radius)
+                    .radius(radius)
                     .delYn("N")
                     .build();
 
@@ -428,6 +428,8 @@ public class ScheduleCommandService {
 
             // 2. Schedule_tag
             if (scheduleRegistResDTO.getScheduleTagRegistResDTOList() != null) {
+                logger.info("schedule save result id={}", schedule.getScheduleNum());
+
                 for (TagRegistResDTO tagReq : scheduleRegistResDTO.getScheduleTagRegistResDTOList()) {
                     Tag tag = tagRepository.findById(tagReq.getTagNum())
                             .orElseThrow(() -> new IllegalArgumentException("Tag not found: " + tagReq.getTagNum()));
@@ -452,7 +454,7 @@ public class ScheduleCommandService {
                         .orElseThrow(() -> new IllegalArgumentException("Item not found: " + planRes.getItemNum()));
 
                 PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
-                        .membershipNo(1) // todo. token에서 정보 가져오는 방식으로 수정 필요
+                        .membershipNo("1") // todo. token에서 정보 가져오는 방식으로 수정 필요
                         .build();
 
                 // 3-1. Plan
@@ -545,7 +547,7 @@ public class ScheduleCommandService {
 
 
     @Transactional
-    public boolean deleteSchedule(Integer scheduleNum, Integer membershipNo) {
+    public boolean deleteSchedule(Integer scheduleNum, String membershipNo) {
         Optional<Schedule> optional = scheduleRepository.findByScheduleNumAndMembershipNo(scheduleNum, membershipNo);
         if (optional.isPresent()) {
             Schedule schedule = optional.get();
@@ -559,7 +561,7 @@ public class ScheduleCommandService {
     public boolean updateSchedule(ScheduleRegistResDTO dto) {
 
         // 1) Schedule 조회
-        Schedule schedule = scheduleRepository.findById(dto.getScheduleNum())
+        Schedule schedule = scheduleRepository.findById(String.valueOf(dto.getScheduleNum()))
                 .orElseThrow(() -> new IllegalArgumentException("Schedule not found: " + dto.getScheduleNum()));
 
         // 2) Schedule 기본 정보 업데이트
@@ -602,7 +604,7 @@ public class ScheduleCommandService {
                         .orElseThrow(() -> new IllegalArgumentException("Item not found"));
 
                 PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
-                        .membershipNo(1)
+                        .membershipNo("1")
                         .build();
 
                 // 새 Plan 생성

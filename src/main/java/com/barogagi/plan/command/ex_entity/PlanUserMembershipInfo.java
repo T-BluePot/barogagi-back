@@ -13,7 +13,7 @@ public class PlanUserMembershipInfo {
 
     @Id
     @Column(name = "MEMBERSHIP_NO")
-    private Integer membershipNo;           // 회원번호
+    private String membershipNo;           // 회원번호
 
     @Column(name = "USER_ID", nullable = false, length = 100)
     private String userId;                  // 아이디
