@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 @Table(name = "SCHEDULE_TAG")
+@EqualsAndHashCode
 public class ScheduleTag {
 
     @EmbeddedId
@@ -24,6 +25,7 @@ public class ScheduleTag {
     @MapsId("tagNum")
     @JoinColumn(name = "TAG_NUM")
     private Tag tag;
+
 }
 
 
