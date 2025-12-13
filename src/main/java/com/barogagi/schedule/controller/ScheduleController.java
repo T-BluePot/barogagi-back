@@ -10,10 +10,7 @@ import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
-import com.barogagi.schedule.dto.ScheduleDetailResDTO;
-import com.barogagi.schedule.dto.ScheduleListResDTO;
-import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
-import com.barogagi.schedule.dto.ScheduleRegistResDTO;
+import com.barogagi.schedule.dto.*;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.schedule.query.vo.ScheduleDetailVO;
 import com.barogagi.util.InputValidate;
@@ -62,7 +59,7 @@ public class ScheduleController {
 
         logger.info("CALL /schedule/list");
 
-        List<ScheduleListResDTO> result;
+        ScheduleListGroupResDTO result;
         try {
             // TODO. token으로 사용자 확인 후, 해당 사용자의 일정만 조회하도록 수정해야 함
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
@@ -212,6 +209,10 @@ public class ScheduleController {
                                             "    \"scheduleNm\": \"서울 데이트 코스\",\n" +
                                             "    \"startDate\": \"2025-07-01\",\n" +
                                             "    \"endDate\": \"2025-07-01\",\n" +
+                                            "    \"scheduleTagRegistResDTOList\": [\n" +
+                                            "      { \"tagNm\": \"핫플\", \"tagNum\": 5 },\n" +
+                                            "      { \"tagNm\": \"활동적인\", \"tagNum\": 8 }\n" +
+                                            "    ],\n" +
                                             "    \"planRegistResDTOList\": [\n" +
                                             "      {\n" +
                                             "        \"startTime\": \"08:30\",\n" +
@@ -398,7 +399,7 @@ public class ScheduleController {
         try {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             // TODO. membershipNo를 토큰으로부터 받아와야 함
-            result = scheduleCommandService.deleteSchedule(scheduleNum, 1);
+            result = scheduleCommandService.deleteSchedule(scheduleNum, "1");
 
             if (!result) return ApiResponse.error("404", "일정 삭제 실패");
 
