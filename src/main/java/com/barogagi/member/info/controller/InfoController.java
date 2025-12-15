@@ -1,6 +1,5 @@
 package com.barogagi.member.info.controller;
 
-import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.exception.MemberInfoException;
@@ -15,16 +14,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @Tag(name = "회원 정보", description = "회원 정보 관련 API")
 @RestController
-@RequestMapping("/info")
+@RequestMapping("/api/v1/members")
 public class InfoController {
 
     private static final Logger logger = LoggerFactory.getLogger(InfoController.class);
@@ -53,9 +49,9 @@ public class InfoController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/member")
+    @GetMapping
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
-        logger.info("CALL /info/member");
+        logger.info("CALL /api/v1/members");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -116,9 +112,9 @@ public class InfoController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 완료하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/member/update")
+    @PatchMapping
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDto) {
-        logger.info("CALL /info/member/update");
+        logger.info("CALL /api/v1/members");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
