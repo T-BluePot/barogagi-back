@@ -1,5 +1,6 @@
 package com.barogagi.member.info.controller;
 
+import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.exception.MemberInfoException;
@@ -8,6 +9,7 @@ import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
+import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @Tag(name = "회원 정보", description = "회원 정보 관련 API")
 @RestController
@@ -29,14 +33,17 @@ public class InfoController {
     private final JoinService joinService;
 
     private final EncryptUtil encryptUtil;
+    private final MembershipUtil membershipUtil;
 
     public InfoController(MemberService memberService,
                           JoinService joinService,
-                          EncryptUtil encryptUtil) {
+                          EncryptUtil encryptUtil,
+                          MembershipUtil membershipUtil) {
 
         this.memberService = memberService;
         this.joinService = joinService;
         this.encryptUtil = encryptUtil;
+        this.membershipUtil = membershipUtil;
     }
 
     @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
@@ -56,12 +63,14 @@ public class InfoController {
 
         try {
 
-            Object membershipNoAttr = request.getAttribute("membershipNo");
-            if(membershipNoAttr == null) {
-                throw new MemberInfoException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                        String.valueOf(membershipNoInfo.get("message")));
             }
 
-            String membershipNo = String.valueOf(membershipNoAttr);
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
@@ -120,11 +129,15 @@ public class InfoController {
             logger.info("param gender={}", memberRequestDto.getGender());
             logger.info("param nickName={}", memberRequestDto.getNickName());
 
-            String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
-            logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
-            if (membershipNo.isEmpty()) {
-                throw new MemberInfoException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                        String.valueOf(membershipNoInfo.get("message")));
             }
+
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
+            logger.info("@@ membershipNo={}", membershipNo);
 
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
