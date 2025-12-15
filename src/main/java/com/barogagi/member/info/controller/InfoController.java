@@ -66,7 +66,7 @@ public class InfoController {
             // 회원번호 구하기
             Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
             if(!membershipNoInfo.get("resultCode").equals("200")) {
-                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                throw new MemberInfoException(String.valueOf(membershipNoInfo.get("resultCode")),
                         String.valueOf(membershipNoInfo.get("message")));
             }
 
@@ -132,7 +132,7 @@ public class InfoController {
             // 회원번호 구하기
             Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
             if(!membershipNoInfo.get("resultCode").equals("200")) {
-                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                throw new MemberInfoException(String.valueOf(membershipNoInfo.get("resultCode")),
                         String.valueOf(membershipNoInfo.get("message")));
             }
 
