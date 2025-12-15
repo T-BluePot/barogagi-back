@@ -10,7 +10,7 @@ import java.util.Map;
 @Component
 public class MembershipUtil {
 
-    public Map<String, Object> MembershipNoService(HttpServletRequest request) {
+    public Map<String, Object> membershipNoService(HttpServletRequest request) {
 
         Map<String, Object> resultMap = new HashMap<>();
 
@@ -25,11 +25,6 @@ public class MembershipUtil {
             }
 
             membershipNo = String.valueOf(membershipNoAttr);
-
-            if(membershipNo.isBlank()) {
-                throw new BasicException("402", "회원 번호가 존재하지 않습니다.");
-            }
-
             resultCode = "200";
             message = "회원 번호가 존재합니다.";
 
