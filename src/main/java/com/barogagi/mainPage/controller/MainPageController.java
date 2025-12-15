@@ -63,7 +63,7 @@ public class MainPageController {
         try {
 
             // 회원번호 구하기
-            Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
+            Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
             if(!membershipNoInfo.get("resultCode").equals("200")) {
                 throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
                                             String.valueOf(membershipNoInfo.get("message")));
