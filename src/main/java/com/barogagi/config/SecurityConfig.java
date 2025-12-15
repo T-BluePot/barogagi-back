@@ -39,7 +39,7 @@ public class SecurityConfig {
             "/login/oauth2/**",
             "/oauth2/**",
             "/login/**",
-            "/membership/join/**",
+            "/api/v1/users/**",
             "/terms/**",
             "/main/page/popular/tag/list",
             "/main/page/popular/region/list",

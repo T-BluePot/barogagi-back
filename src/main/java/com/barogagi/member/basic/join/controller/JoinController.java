@@ -4,7 +4,6 @@ import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.basic.join.dto.JoinDTO;
-import com.barogagi.member.basic.join.dto.UserIdCheckDTO;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "일반 회원가입", description = "일반 회원가입 관련 API")
 @RestController
-@RequestMapping("/membership/join")
+@RequestMapping("/api/v1/users")
 public class JoinController {
     private static final Logger logger = LoggerFactory.getLogger(JoinController.class);
 
@@ -56,11 +55,11 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "해당 아이디 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/basic/membership/userId/check")
-    public ApiResponse checkUserId(@RequestBody UserIdCheckDTO userIdCheckDTO) {
+    @GetMapping("/userId/exists")
+    public ApiResponse checkUserId(@RequestParam String apiSecretKey, @RequestParam String userId) {
 
-        logger.info("CALL /membership/join/basic/membership/userId/check");
-        logger.info("[input] API_SECRET_KEY={}", userIdCheckDTO.getApiSecretKey());
+        logger.info("CALL /api/v1/users/userId/exists");
+        logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -68,19 +67,19 @@ public class JoinController {
 
         try {
 
-            if(userIdCheckDTO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(apiSecretKey.equals(API_SECRET_KEY)){
 
-                if(inputValidate.isEmpty(userIdCheckDTO.getUserId())) {
+                if(inputValidate.isEmpty(userId)) {
                     resultCode = "101";
                     message = "아이디를 입력해주세요.";
                 } else{
 
-                    if(!validator.isValidId(userIdCheckDTO.getUserId())) {
+                    if(!validator.isValidId(userId)) {
                         resultCode = "102";
                         message = "적합한 아이디가 아닙니다.";
                     } else {
                         JoinDTO joinDTO = new JoinDTO();
-                        joinDTO.setUserId(userIdCheckDTO.getUserId());
+                        joinDTO.setUserId(userId);
 
                         int checkUserId = joinService.checkUserId(joinDTO);
                         logger.info("@@ checkUserId={}", checkUserId);
@@ -123,10 +122,10 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "회원가입에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/basic/membership/insert")
+    @PostMapping
     public ApiResponse membershipJoinInsert(@RequestBody JoinRequestDTO joinRequestDTO){
 
-        logger.info("CALL /membership/join/basic/membership/insert");
+        logger.info("CALL /api/v1/users");
         logger.info("[input] API_SECRET_KEY={}", joinRequestDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -222,11 +221,12 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "이미 존재하는 닉네임입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/check/duplicate/nickname")
-    public ApiResponse checkDuplicateNickname(@RequestBody NickNameDTO nickNameDTO){
+    @GetMapping("/nickname/exists")
+    public ApiResponse checkDuplicateNickname(@RequestParam String apiSecretKey,
+                                              @RequestParam String nickname){
 
-        logger.info("CALL /membership/join/check/duplicate/nickname");
-        logger.info("[input] API_SECRET_KEY={}", nickNameDTO.getApiSecretKey());
+        logger.info("CALL /api/v1/user/nickname/exists");
+        logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -234,10 +234,10 @@ public class JoinController {
 
         try {
 
-            if(nickNameDTO.getApiSecretKey().equals(API_SECRET_KEY)){
+            if(apiSecretKey.equals(API_SECRET_KEY)){
 
                 // 필수 입력값
-                if(inputValidate.isEmpty(nickNameDTO.getNickName())){
+                if(inputValidate.isEmpty(nickname)){
 
                     // 필수 입력값 중 빈 값이 존재. insert 중지
                     resultCode = "101";
@@ -245,10 +245,14 @@ public class JoinController {
 
                 } else{
 
-                    if(!validator.isValidNickname(nickNameDTO.getNickName())) {
+                    if(!validator.isValidNickname(nickname)) {
                         resultCode = "102";
                         message = "적합하지 않는 닉네임입니다.";
                     } else {
+
+                        NickNameDTO nickNameDTO = new NickNameDTO();
+                        nickNameDTO.setNickName(nickname);
+
                         int nickNameCnt = joinService.checkNickName(nickNameDTO);
                         logger.info("nickNameCnt={}", nickNameCnt);
                         if(nickNameCnt > 0) {
