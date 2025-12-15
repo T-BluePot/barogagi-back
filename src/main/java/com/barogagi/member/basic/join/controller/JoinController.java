@@ -68,7 +68,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/userid/exists")
-    public ApiResponse checkUserId(@RequestParam String apiSecretKey, @RequestParam String userId) {
+    public ApiResponse checkUserId(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String userId) {
 
         logger.info("CALL /api/v1/users/userId/exists");
         logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
@@ -234,7 +234,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/nickname/exists")
-    public ApiResponse checkDuplicateNickname(@RequestParam String apiSecretKey,
+    public ApiResponse checkDuplicateNickname(@RequestHeader("API-KEY") String apiSecretKey,
                                               @RequestParam String nickname){
 
         logger.info("CALL /api/v1/user/nickname/exists");

@@ -47,7 +47,7 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping
-    public ApiResponse termsList(@RequestParam String apiSecretKey, @RequestParam String termsType){
+    public ApiResponse termsList(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String termsType){
         logger.info("CALL /api/v1/terms");
         logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
 

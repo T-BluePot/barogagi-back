@@ -1,6 +1,5 @@
 package com.barogagi.mainPage.controller;
 
-import com.barogagi.config.vo.DefaultVO;
 import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.response.MainPageResponse;
@@ -129,7 +128,7 @@ public class MainPageController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/tags/popular")
-    public ApiResponse selectPopularTagList(@RequestParam String apiSecretKey) {
+    public ApiResponse selectPopularTagList(@RequestHeader("API-KEY") String apiSecretKey) {
 
         logger.info("CALL /api/v1/home/tags/popular");
 
@@ -180,7 +179,7 @@ public class MainPageController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/regions/popular")
-    public ApiResponse selectPopularRegionList(@RequestParam String apiSecretKey) {
+    public ApiResponse selectPopularRegionList(@RequestHeader("API-KEY") String apiSecretKey) {
 
         logger.info("CALL /api/v1/home/regions/popular");
 
