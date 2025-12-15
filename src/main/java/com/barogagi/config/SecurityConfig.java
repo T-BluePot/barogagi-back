@@ -40,7 +40,7 @@ public class SecurityConfig {
             "/oauth2/**",
             "/api/v1/auth/**",  // 일반 회원가입 관련
             "/api/v1/users/**",  // 로그인 관련
-            "/terms/**",
+            "/api/v1/terms/**",  // 약관 관련
             "/main/page/popular/tag/list",
             "/main/page/popular/region/list",
             "/approval/tel/authCode/send",

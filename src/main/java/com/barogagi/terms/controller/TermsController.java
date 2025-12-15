@@ -19,13 +19,13 @@ import java.util.List;
 
 @Tag(name = "약관", description = "약관 관련 API")
 @RestController
-@RequestMapping("/terms")
+@RequestMapping("/api/v1/terms")
 public class TermsController {
     private static final Logger logger = LoggerFactory.getLogger(TermsController.class);
 
-    private InputValidate inputValidate;
-    private TermsService termsService;
-    private LoginService loginService;
+    private final InputValidate inputValidate;
+    private final TermsService termsService;
+    private final LoginService loginService;
 
     private final String API_SECRET_KEY;
 
@@ -46,22 +46,24 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "약관이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/list")
-    public ApiResponse termsList(@RequestBody TermsInputDTO termsInputDTO){
-        logger.info("CALL /terms/list");
-        logger.info("[input] API_SECRET_KEY={}", termsInputDTO.getApiSecretKey());
+    @GetMapping
+    public ApiResponse termsList(@RequestParam String apiSecretKey, @RequestParam String termsType){
+        logger.info("CALL /api/v1/terms");
+        logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
 
         try {
-            if(termsInputDTO.getApiSecretKey().equals(API_SECRET_KEY)) {
+            if(apiSecretKey.equals(API_SECRET_KEY)) {
 
-                if(inputValidate.isEmpty(termsInputDTO.getTermsType())) {
+                if(inputValidate.isEmpty(termsType)) {
                     resultCode = "101";
                     message = "조회하실 약관의 종류 값이 존재하지 않습니다.";
                 } else {
+                    TermsInputDTO termsInputDTO = new TermsInputDTO();
+                    termsInputDTO.setTermsType(termsType);
                     List<TermsOutputDTO> termsList = termsService.selectTermsList(termsInputDTO);
 
                     int termsCnt = termsList.size();
@@ -102,9 +104,9 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "약관 저장에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/agree/insert")
+    @PostMapping("/terms-agreements")
     public ApiResponse insertTermsAgree(@RequestBody TermsDTO termsDTO) {
-        logger.info("CALL /agree/insert");
+        logger.info("CALL /api/v1/terms/{userId}/terms-agreements");
         logger.info("[input] API_SECRET_KEY={}", termsDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
