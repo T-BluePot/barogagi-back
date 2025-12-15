@@ -6,6 +6,7 @@ import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.response.MainPageResponse;
 import com.barogagi.mainPage.service.MainPageService;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "메인 화면", description = "메인 화면에 필요한 API")
 @RestController
@@ -29,12 +31,16 @@ public class MainPageController {
 
     private final MainPageService mainPageService;
 
+    private final MembershipUtil membershipUtil;
+
     private final String API_SECRET_KEY;
 
     @Autowired
     public MainPageController(MainPageService mainPageService,
+                              MembershipUtil membershipUtil,
                               Environment environment) {
         this.mainPageService = mainPageService;
+        this.membershipUtil = membershipUtil;
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
@@ -56,12 +62,14 @@ public class MainPageController {
 
         try {
 
-            // 회원번호
-            Object membershipNoAttr = request.getAttribute("membershipNo");
-            if (membershipNoAttr == null) {
-                throw new MainPageException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.MembershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                                            String.valueOf(membershipNoInfo.get("message")));
             }
-            String membershipNo = String.valueOf(membershipNoAttr);
+
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
             // 유저 일정 정보 API
             UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
