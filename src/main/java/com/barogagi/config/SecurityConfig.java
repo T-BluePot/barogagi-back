@@ -38,8 +38,8 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/login/**",
-            "/api/v1/users/**",
+            "/api/v1/auth/**",  // 일반 회원가입 관련
+            "/api/v1/users/**",  // 로그인 관련
             "/terms/**",
             "/main/page/popular/tag/list",
             "/main/page/popular/region/list",

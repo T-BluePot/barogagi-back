@@ -55,7 +55,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "해당 아이디 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @GetMapping("/userId/exists")
+    @GetMapping("/userid/exists")
     public ApiResponse checkUserId(@RequestParam String apiSecretKey, @RequestParam String userId) {
 
         logger.info("CALL /api/v1/users/userId/exists");

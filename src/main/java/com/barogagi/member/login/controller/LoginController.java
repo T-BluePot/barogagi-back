@@ -10,7 +10,6 @@ import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
-import com.barogagi.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -30,21 +29,21 @@ import java.util.Map;
 
 @Tag(name = "일반 로그인", description = "일반 로그인 관련 API")
 @RestController
-@RequestMapping("/login")
+@RequestMapping("/api/v1/auth")
 public class LoginController {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
 
     private final InputValidate inputValidate;
-    private final PasswordConfig passwordConfig;
 
     private final EncryptUtil encryptUtil;
-    private final JwtUtil jwtUtil;
 
     private final LoginService loginService;
     private final MemberService memberService;
     private final AuthService authService;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final PasswordConfig passwordConfig;
 
     private final String API_SECRET_KEY;
 
@@ -55,9 +54,8 @@ public class LoginController {
                            LoginService loginService,
                            MemberService memberService,
                            AuthService authService,
-                           JwtUtil jwtUtil,
-                           PasswordConfig passwordConfig,
-                           PasswordEncoder passwordEncoder){
+                           PasswordEncoder passwordEncoder,
+                           PasswordConfig passwordConfig){
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
 
         this.inputValidate = inputValidate;
@@ -65,9 +63,8 @@ public class LoginController {
         this.loginService = loginService;
         this.memberService = memberService;
         this.authService = authService;
-        this.jwtUtil = jwtUtil;
-        this.passwordConfig = passwordConfig;
         this.passwordEncoder = passwordEncoder;
+        this.passwordConfig = passwordConfig;
     }
 
     @Operation(summary = "로그인", description = "로그인 기능입니다.",
@@ -79,10 +76,10 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/basic/membership/login")
+    @PostMapping("/login")
     public ApiResponse basicMemberLogin(@RequestBody LoginDTO loginRequestDTO){
 
-        logger.info("CALL /login/basic/membership/login");
+        logger.info("CALL /api/v1/auth/login");
         logger.info("[input] API_SECRET_KEY={}", loginRequestDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -155,10 +152,10 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/basic/membership/userId/search")
+    @PostMapping("/find-user")
     public ApiResponse searchUserId(@RequestBody SearchUserIdDTO searchUserIdRequestDTO){
 
-        logger.info("CALL /login/basic/membership/userId/search");
+        logger.info("CALL /api/v1/auth/find-user");
         logger.info("[input] API_SECRET_KEY={}", searchUserIdRequestDTO.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -221,10 +218,10 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/basic/membership/password/update")
+    @PostMapping("/password-reset/confirm")
     public ApiResponse updatePassword(@RequestBody LoginDTO vo){
 
-        logger.info("CALL /login/basic/membership/password/update");
+        logger.info("CALL /api/v1/auth/password-reset/confirm");
         logger.info("[input] API_SECRET_KEY={}", vo.getApiSecretKey());
 
         ApiResponse apiResponse = new ApiResponse();
@@ -240,7 +237,8 @@ public class LoginController {
 
                 } else {
                     // 비밀번호 암호화
-                    vo.setPassword(encryptUtil.hashEncodeString(vo.getPassword()));
+                    String encodedPassword = passwordConfig.passwordEncoder().encode(vo.getPassword());
+                    vo.setPassword(encodedPassword);
 
                     // 비밀번호 update
                     int updatePassword = loginService.updatePassword(vo);
