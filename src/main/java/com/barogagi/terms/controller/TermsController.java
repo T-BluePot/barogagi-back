@@ -38,7 +38,7 @@ public class TermsController {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
-    @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다.",
+    @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 조회에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
