@@ -5,6 +5,9 @@ import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.basic.join.dto.JoinDTO;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
+import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.login.service.AccountService;
+import com.barogagi.member.login.service.AuthService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
@@ -17,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+import java.util.Optional;
+
 @Tag(name = "일반 회원가입", description = "일반 회원가입 관련 API")
 @RestController
 @RequestMapping("/api/v1/users")
@@ -24,6 +30,8 @@ public class JoinController {
     private static final Logger logger = LoggerFactory.getLogger(JoinController.class);
 
     private final JoinService joinService;
+    private final AccountService accountService;
+    private final AuthService authService;
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
     private final Validator validator;
@@ -34,12 +42,16 @@ public class JoinController {
     @Autowired
     public JoinController(Environment environment,
                           JoinService joinService,
+                          AccountService accountService,
+                          AuthService authService,
                           InputValidate inputValidate,
                           EncryptUtil encryptUtil,
                           Validator validator,
                           PasswordConfig passwordConfig) {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.joinService = joinService;
+        this.accountService = accountService;
+        this.authService = authService;
         this.inputValidate = inputValidate;
         this.encryptUtil = encryptUtil;
         this.validator = validator;
@@ -274,6 +286,68 @@ public class JoinController {
             resultCode = "400";
             message = "오류가 발생하였습니다.";
             throw new RuntimeException(e);
+        } finally {
+            apiResponse.setResultCode(resultCode);
+            apiResponse.setMessage(message);
+        }
+
+        return apiResponse;
+    }
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "refresh token이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "회원 탈퇴 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
+    @DeleteMapping("/me")
+    public ApiResponse deleteMe(@RequestHeader(value = "Refresh-Token", required = false) String refreshHeader,
+                                @RequestBody(required = false) Map<String, String> body) {
+
+        logger.info("CALL /api/v1/users/me");
+
+        ApiResponse apiResponse = new ApiResponse();
+        String resultCode = "";
+        String message = "";
+
+        try {
+
+            String refreshToken = Optional.ofNullable(refreshHeader)
+                    .or(() -> Optional.ofNullable(body == null ? null : body.get("refreshToken")))
+                    .orElse(null);
+
+            if (refreshToken == null || refreshToken.isBlank()) {
+                throw new InvalidRefreshTokenException("100", "refresh token이 존재하지 않습니다.");
+            }
+
+            // refresh token을 이용해서 membershipNo 구하기
+
+            Map<String, String> resultMap = authService.selectUserInfoByToken(refreshToken);
+            if(!resultMap.get("resultCode").equals("200")) {
+                throw new InvalidRefreshTokenException(resultMap.get("resultCode"), resultMap.get("message"));
+            }
+
+            String membershipNo = resultMap.get("membershipNo");
+
+            int deleteResult = accountService.deleteMyAccount(membershipNo);
+            if(deleteResult > 0) {
+                resultCode = "200";
+                message = "회원 탈퇴되었습니다.";
+            } else {
+                resultCode = "300";
+                message = "회원 탈퇴 실패하였습니다.";
+            }
+
+        } catch (InvalidRefreshTokenException ex) {
+            resultCode = ex.getCode();
+            message = ex.getMessage();
+
+        } catch (Exception e) {
+            logger.error("error", e);
+            resultCode = "400";
+            message = "오류가 발생하였습니다.";
+
         } finally {
             apiResponse.setResultCode(resultCode);
             apiResponse.setMessage(message);

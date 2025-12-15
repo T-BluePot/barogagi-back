@@ -38,13 +38,12 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/api/v1/auth/**",  // 일반 회원가입 관련
+            "/api/v1/auth/**",  //   ㄲ일반 회원가입 관련
             "/api/v1/users/**",  // 로그인 관련
             "/api/v1/terms/**",  // 약관 관련
             "/api/v1/home/tags/popular",  // 인기 태그 조회
             "/api/v1/home/regions/popular",  // 인기 지역 조회
-            "/api/v1/verification-codes/**",  // 인증번호 관련
-            "/auth/**"
+            "/api/v1/verification-codes/**"  // 인증번호 관련
     };
 
     @Bean
