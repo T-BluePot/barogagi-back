@@ -30,4 +30,19 @@ public class ApiResponse<T> {
         res.message = message;
         return res;
     }
+
+    public static <T> ApiResponse<T> resultData(T data, String code, String message) {
+        ApiResponse<T> res = new ApiResponse<>();
+        res.resultCode = code;
+        res.message = message;
+        res.data = data;
+        return res;
+    }
+
+    public static <T> ApiResponse<T> result(String code, String message) {
+        ApiResponse<T> res = new ApiResponse<>();
+        res.resultCode = code;
+        res.message = message;
+        return res;
+    }
 }

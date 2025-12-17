@@ -155,7 +155,7 @@ public class InfoController {
             if(!memberRequestDto.getNickName().isEmpty()) {
                 NickNameDTO nickNameRequest = new NickNameDTO();
                 nickNameRequest.setNickName(memberRequestDto.getNickName());
-                int nickNameCnt = joinService.checkNickName(nickNameRequest);
+                int nickNameCnt = joinService.selectNicknameCnt(nickNameRequest);
 
                 logger.info("@@ nickNameCnt={}", nickNameCnt);
                 if(nickNameCnt > 0) {

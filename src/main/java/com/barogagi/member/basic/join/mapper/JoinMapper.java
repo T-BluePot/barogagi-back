@@ -11,10 +11,10 @@ public interface JoinMapper {
     int insertMemberInfo(JoinDTO vo);
 
     // 아이디 중복 체크
-    int checkUserId(JoinDTO vo);
+    int selectUserIdCnt(JoinDTO vo);
 
     // 닉네임 중복 체크
-    int checkNickName(NickNameDTO dto);
+    int selectNicknameCnt(NickNameDTO dto);
 
     // 회원번호 중복 체크
     int checkDuplicateMembershipNo(String membershipNo);
