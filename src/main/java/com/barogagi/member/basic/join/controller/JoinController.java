@@ -1,10 +1,10 @@
 package com.barogagi.member.basic.join.controller;
 
 import com.barogagi.config.PasswordConfig;
-import com.barogagi.member.basic.join.dto.DeleteAccountRequestDTO;
 import com.barogagi.member.basic.join.service.BasicJoinService;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
+import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
 import com.barogagi.member.login.service.AccountService;
 import com.barogagi.member.login.service.AuthService;
 import com.barogagi.response.ApiResponse;
@@ -63,7 +63,7 @@ public class JoinController {
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "해당 아이디 사용이 가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "아이디를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합한 아이디가 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "해당 아이디 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
@@ -77,7 +77,7 @@ public class JoinController {
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원가입에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "회원가입에 필요한 정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합한 아이디, 비밀번호, 닉네임이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "해당 아이디에 대한 회원 정보가 이미 존재합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "회원가입에 실패하였습니다."),
@@ -92,7 +92,7 @@ public class JoinController {
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용 가능한 닉네임입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "닉네임 데이터를 보내주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합하지 않는 닉네임입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "해당 닉네임 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
@@ -104,13 +104,13 @@ public class JoinController {
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "refresh token이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 탈퇴되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "회원 탈퇴 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @DeleteMapping("/me")
-    public ApiResponse deleteAccount(@RequestBody DeleteAccountRequestDTO deleteAccountRequestDTO) {
-        return basicJoinService.deleteAccount(deleteAccountRequestDTO);
+    public ApiResponse deleteAccount(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
+        return basicJoinService.deleteAccount(refreshTokenRequestDTO);
     }
 }

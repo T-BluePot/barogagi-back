@@ -1,5 +1,6 @@
 package com.barogagi.member.login.service;
 
+import com.barogagi.member.MemberResultCode;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
@@ -125,29 +126,35 @@ public class AuthService {
         }
 
         // 현재 리프레시가 DB에 VALID로 존재하는지 확인
-        RefreshToken current = refreshRepo.findByTokenAndStatus(
-                refreshToken, "VALID"
-        ).orElseThrow(() -> new InvalidRefreshTokenException("refresh_not_found_or_revoked", "로그인을 진행해주세요."));
+        RefreshToken current = refreshRepo.findByTokenAndStatus(refreshToken, "VALID")
+                .orElseThrow(() -> new InvalidRefreshTokenException(
+                        MemberResultCode.REQUIRED_LOGIN.getResultCode(),
+                        MemberResultCode.REQUIRED_LOGIN.getMessage()
+                ));
 
         // 만료 체크
         if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
             current.setStatus("REVOKED");
             refreshRepo.save(current);
-            throw new InvalidRefreshTokenException("refresh_expired", "로그인을 다시 진행해주세요.");
+            throw new InvalidRefreshTokenException(
+                    MemberResultCode.REQUIRED_RE_LOGIN.getResultCode(),
+                    MemberResultCode.REQUIRED_RE_LOGIN.getMessage()
+            );
         }
 
         // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
-        var olds = refreshRepo.findByMembershipNoAndDeviceIdAndStatus(
-                membershipNo, deviceId, "VALID"
-        );
-        for (var o : olds) {
+        List<RefreshToken> olds = refreshRepo.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
+        for (RefreshToken o : olds) {
             o.setStatus("REVOKED");
         }
         refreshRepo.saveAll(olds);
 
         // 새 토큰 발급
-        var user = userRepo.findById(membershipNo)
-                .orElseThrow(() -> new InvalidRefreshTokenException("user_not_found", "회원 정보가 존재하지 않습니다."));
+        UserMembership user = userRepo.findById(membershipNo)
+                .orElseThrow(() -> new InvalidRefreshTokenException(
+                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                ));
 
         String newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
         String newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
@@ -178,7 +185,7 @@ public class AuthService {
         List<RefreshToken> tokens = refreshRepo
                 .findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
 
-        for (var t : tokens) t.setStatus("REVOKED");
+        for (RefreshToken t : tokens) t.setStatus("REVOKED");
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
     }
 

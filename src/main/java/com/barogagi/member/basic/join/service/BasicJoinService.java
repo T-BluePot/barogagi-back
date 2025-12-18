@@ -2,11 +2,11 @@ package com.barogagi.member.basic.join.service;
 
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.MemberResultCode;
-import com.barogagi.member.basic.join.dto.DeleteAccountRequestDTO;
 import com.barogagi.member.basic.join.dto.JoinDTO;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.exception.JoinException;
+import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.service.AccountService;
 import com.barogagi.member.login.service.AuthService;
@@ -15,8 +15,6 @@ import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.ResultCode;
 import com.barogagi.util.Validator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +22,6 @@ import java.util.Map;
 
 @Service
 public class BasicJoinService {
-
-    private static final Logger logger = LoggerFactory.getLogger(BasicJoinService.class);
 
     private final Validator validator;
     private final InputValidate inputValidate;
@@ -71,8 +67,8 @@ public class BasicJoinService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(nickname)) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_NICKNAME.getResultCode(),
-                        MemberResultCode.EMPTY_NICKNAME.getMessage()
+                        MemberResultCode.EMPTY_DATA.getResultCode(),
+                        MemberResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -129,8 +125,8 @@ public class BasicJoinService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(userId)) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_USER_ID.getResultCode(),
-                        MemberResultCode.EMPTY_USER_ID.getMessage()
+                        MemberResultCode.EMPTY_DATA.getResultCode(),
+                        MemberResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -192,8 +188,8 @@ public class BasicJoinService {
                     || inputValidate.isEmpty(joinRequestDTO.getTel()))
             {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_SIGN_UP.getResultCode(),
-                        MemberResultCode.EMPTY_SIGN_UP.getMessage()
+                        MemberResultCode.EMPTY_DATA.getResultCode(),
+                        MemberResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -287,7 +283,7 @@ public class BasicJoinService {
         return ApiResponse.result(resultCode, message);
     }
 
-    public ApiResponse deleteAccount(DeleteAccountRequestDTO deleteAccountRequestDTO) {
+    public ApiResponse deleteAccount(RefreshTokenRequestDTO refreshTokenRequestDTO) {
 
         String resultCode = "";
         String message = "";
@@ -295,14 +291,14 @@ public class BasicJoinService {
         try {
 
             // 1. refresh token이 공백 또는 null인지 확인
-            if(deleteAccountRequestDTO.getRefreshToken().isEmpty()) {
+            if(refreshTokenRequestDTO.getRefreshToken().isEmpty()) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_REFRESH_TOKEN.getResultCode(),
-                        MemberResultCode.EMPTY_REFRESH_TOKEN.getMessage());
+                        MemberResultCode.EMPTY_DATA.getResultCode(),
+                        MemberResultCode.EMPTY_DATA.getMessage());
             }
 
             // 2. refresh token을 이용해서 membershipNo 구하기
-            Map<String, String> resultMap = authService.selectUserInfoByToken(deleteAccountRequestDTO.getRefreshToken());
+            Map<String, String> resultMap = authService.selectUserInfoByToken(refreshTokenRequestDTO.getRefreshToken());
             if(!resultMap.get("resultCode").equals("200")) {
                 throw new InvalidRefreshTokenException(
                         resultMap.get("resultCode"),
