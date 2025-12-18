@@ -21,12 +21,15 @@ public class MembershipUtil {
         try {
             Object membershipNoAttr = request.getAttribute("membershipNo");
             if(membershipNoAttr == null) {
-                throw new BasicException("401", "접근 권한이 존재하지 않습니다.");
+                throw new BasicException(
+                        ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                        ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+                );
             }
 
             membershipNo = String.valueOf(membershipNoAttr);
-            resultCode = "200";
-            message = "회원 번호가 존재합니다.";
+            resultCode = ResultCode.EXIST_ACCESS_AUTH.getResultCode();
+            message = ResultCode.EXIST_ACCESS_AUTH.getMessage();
 
         } catch (BasicException ex) {
             resultCode = ex.getResultCode();

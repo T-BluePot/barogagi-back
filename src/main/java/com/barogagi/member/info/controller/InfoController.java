@@ -45,13 +45,12 @@ public class InfoController {
     @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "접근 권한이 존재하지 않습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "402", description = "해당 사용자에 대한 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "회원 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
-        logger.info("CALL /api/v1/members");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -71,7 +70,7 @@ public class InfoController {
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
             if(null == memberInfo) {
-                throw new MemberInfoException("402", "해당 사용자에 대한 정보가 존재하지 않습니다.");
+                throw new MemberInfoException("102", "회원 정보가 존재하지 않습니다.");
             }
 
             // 이메일 복호화

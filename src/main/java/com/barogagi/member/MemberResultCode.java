@@ -54,7 +54,10 @@ public enum MemberResultCode {
     FOUND_TERMS("200", "약관 조회에 성공하였습니다."),
     NOT_FOUND_TERMS("102", "약관이 존재하지 않습니다."),
     SUCCESS_INSERT_TERMS("200", "약관 저장에 성공하였습니다."),
-    FAIL_INSERT_TERMS("300", "약관 저장에 실패하였습니다.");
+    FAIL_INSERT_TERMS("300", "약관 저장에 실패하였습니다."),
+
+    // memberInfo
+    FOUND_USER_INFO("200", "회원 정보 조회가 완료되었습니다.");
 
     private final String resultCode;
     private final String message;

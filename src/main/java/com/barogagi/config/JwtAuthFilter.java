@@ -4,6 +4,7 @@ import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
+import com.barogagi.util.ResultCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
@@ -15,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.xml.transform.Result;
 import java.io.IOException;
 
 @Component
@@ -62,12 +65,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
             // 유효기간이 지나서 만료된 경우
-            writeErrorResponse(res, "300", "Access token has expired");
+            writeErrorResponse(
+                    res,
+                    ResultCode.EXPIRE_TOKEN.getResultCode(),
+                    ResultCode.EXPIRE_TOKEN.getMessage()
+            );
         } catch (JwtException | SecurityException e) {
             // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
-            writeErrorResponse(res, "301", "Revoked access token");
+            writeErrorResponse(
+                    res,
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+            );
         } catch (Exception e) {
-            writeErrorResponse(res, "302", "Unknown authentication error");
+            writeErrorResponse(
+                    res,
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+            );
         }
 
     }
@@ -78,13 +93,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return p.startsWith("/auth/") || p.startsWith("/login/basic/membership/userId/search");
     }
 
-    private void writeErrorResponse(HttpServletResponse res, String errorCode, String message) throws IOException {
+    private void writeErrorResponse(HttpServletResponse res, String resultCode, String message) throws IOException {
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         res.setContentType("application/json;charset=UTF-8");
 
         String json = String.format(
-                "{\"errorCode\":\"%s\", \"message\":\"%s\"}",
-                errorCode, message
+                "{\"resultCode\":\"%s\", \"message\":\"%s\"}",
+                resultCode, message
         );
 
         res.getWriter().write(json);
