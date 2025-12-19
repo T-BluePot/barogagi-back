@@ -57,7 +57,9 @@ public enum MemberResultCode {
     FAIL_INSERT_TERMS("300", "약관 저장에 실패하였습니다."),
 
     // memberInfo
-    FOUND_USER_INFO("200", "회원 정보 조회가 완료되었습니다.");
+    FOUND_USER_INFO("200", "회원 정보 조회가 완료되었습니다."),
+    FAIL_UPDATE_USER_INFO("404", "사용자 정보 수정 실패하였습니다."),
+    SUCCESS_UPDATE_USER_INFO("200", "사용자 정보 수정 완료하였습니다.");
 
     private final String resultCode;
     private final String message;

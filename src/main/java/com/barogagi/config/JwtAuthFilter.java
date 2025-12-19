@@ -41,16 +41,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String header = req.getHeader("Authorization");
-
-            logger.info("@@@ header={}", header);
-
             if (header != null && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
-                logger.info("@@@ token={}", token);
                 Claims claims = jwt.parseToken(token, "ACCESS");
 
                 String membershipNo = jwt.getMembershipNo(claims);
-                logger.info("@@@ membershipNo={}", membershipNo);
                 // 회원 조회
                 Member member = memberService.findByMembershipNo(membershipNo);
 
