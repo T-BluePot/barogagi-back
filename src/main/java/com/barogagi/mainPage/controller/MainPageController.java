@@ -1,11 +1,11 @@
 package com.barogagi.mainPage.controller;
 
-import com.barogagi.config.vo.DefaultVO;
 import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.response.MainPageResponse;
 import com.barogagi.mainPage.service.MainPageService;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,28 +13,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "메인 화면", description = "메인 화면에 필요한 API")
 @RestController
-@RequestMapping("/main/page")
+@RequestMapping("/api/v1/home")
 public class MainPageController {
 
     private static final Logger logger = LoggerFactory.getLogger(MainPageController.class);
 
     private final MainPageService mainPageService;
 
+    private final MembershipUtil membershipUtil;
+
     private final String API_SECRET_KEY;
 
     @Autowired
     public MainPageController(MainPageService mainPageService,
+                              MembershipUtil membershipUtil,
                               Environment environment) {
         this.mainPageService = mainPageService;
+        this.membershipUtil = membershipUtil;
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
@@ -45,10 +47,10 @@ public class MainPageController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/user/schedule/info")
+    @GetMapping("/me/schedules")
     public MainPageResponse selectUserScheduleInfo(HttpServletRequest request) {
 
-        logger.info("CALL /main/page/user/schedule/info");
+        logger.info("CALL /api/v1/home/me/schedules");
 
         MainPageResponse mainPageResponse = new MainPageResponse();
         String resultCode = "";
@@ -56,12 +58,14 @@ public class MainPageController {
 
         try {
 
-            // 회원번호
-            Object membershipNoAttr = request.getAttribute("membershipNo");
-            if (membershipNoAttr == null) {
-                throw new MainPageException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MainPageException(String.valueOf(membershipNoInfo.get("resultCode")),
+                                            String.valueOf(membershipNoInfo.get("message")));
             }
-            String membershipNo = String.valueOf(membershipNoAttr);
+
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
             // 유저 일정 정보 API
             UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
@@ -123,10 +127,10 @@ public class MainPageController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "인기 태그 목록이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/popular/tag/list")
-    public ApiResponse selectPopularTagList(@RequestBody DefaultVO vo) {
+    @GetMapping("/tags/popular")
+    public ApiResponse selectPopularTagList(@RequestHeader("API-KEY") String apiSecretKey) {
 
-        logger.info("CALL /main/page/popular/tag/list");
+        logger.info("CALL /api/v1/home/tags/popular");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -134,7 +138,7 @@ public class MainPageController {
 
         try {
 
-            if(!vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+            if(!apiSecretKey.equals(API_SECRET_KEY)) {
                 throw new MainPageException("100", "잘못된 접근입니다.");
             }
 
@@ -174,10 +178,9 @@ public class MainPageController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "인기 지역 목록이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/popular/region/list")
-    public ApiResponse selectPopularRegionList(@RequestBody DefaultVO vo) {
-
-        logger.info("CALL /main/page/popular/region/list");
+    @GetMapping("/regions/popular")
+    public ApiResponse selectPopularRegionList(@RequestHeader("API-KEY") String apiSecretKey) {
+        logger.info("CALL /api/v1/home/regions/popular");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -185,7 +188,7 @@ public class MainPageController {
 
         try {
 
-            if(!vo.getApiSecretKey().equals(API_SECRET_KEY)) {
+            if(!apiSecretKey.equals(API_SECRET_KEY)) {
                 throw new MainPageException("100", "잘못된 접근입니다.");
             }
 
