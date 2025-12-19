@@ -1,62 +1,24 @@
 package com.barogagi.member.basic.join.controller;
 
-import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.basic.join.service.BasicJoinService;
-import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
-import com.barogagi.member.login.service.AccountService;
-import com.barogagi.member.login.service.AuthService;
 import com.barogagi.response.ApiResponse;
-import com.barogagi.util.EncryptUtil;
-import com.barogagi.util.InputValidate;
-import com.barogagi.util.Validator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "일반 회원가입", description = "일반 회원가입 관련 API")
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
 public class JoinController {
-    private static final Logger logger = LoggerFactory.getLogger(JoinController.class);
 
-    private final JoinService joinService;
     private final BasicJoinService basicJoinService;
-    private final AccountService accountService;
-    private final AuthService authService;
-    private final InputValidate inputValidate;
-    private final EncryptUtil encryptUtil;
-    private final Validator validator;
-    private final PasswordConfig passwordConfig;
-
-    private final String API_SECRET_KEY;
 
     @Autowired
-    public JoinController(Environment environment,
-                          JoinService joinService,
-                          BasicJoinService basicJoinService,
-                          AccountService accountService,
-                          AuthService authService,
-                          InputValidate inputValidate,
-                          EncryptUtil encryptUtil,
-                          Validator validator,
-                          PasswordConfig passwordConfig) {
-        this.API_SECRET_KEY = environment.getProperty("api.secret-key");
-        this.joinService = joinService;
+    public JoinController(BasicJoinService basicJoinService) {
         this.basicJoinService = basicJoinService;
-        this.accountService = accountService;
-        this.authService = authService;
-        this.inputValidate = inputValidate;
-        this.encryptUtil = encryptUtil;
-        this.validator = validator;
-        this.passwordConfig = passwordConfig;
     }
 
     @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.",

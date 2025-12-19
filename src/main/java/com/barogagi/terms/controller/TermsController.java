@@ -5,8 +5,6 @@ import com.barogagi.terms.dto.*;
 import com.barogagi.terms.service.TermsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,8 +12,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/terms")
 public class TermsController {
-    private static final Logger logger = LoggerFactory.getLogger(TermsController.class);
-
     private final TermsService termsService;
 
     @Autowired

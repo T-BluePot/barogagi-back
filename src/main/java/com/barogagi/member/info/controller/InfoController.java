@@ -1,16 +1,11 @@
 package com.barogagi.member.info.controller;
 
-import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.response.ApiResponse;
-import com.barogagi.util.EncryptUtil;
-import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "회원 정보", description = "회원 정보 관련 API")
