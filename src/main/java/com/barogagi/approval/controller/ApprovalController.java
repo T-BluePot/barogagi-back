@@ -1,49 +1,24 @@
 package com.barogagi.approval.controller;
 
 import com.barogagi.approval.service.ApprovalService;
-import com.barogagi.approval.service.AuthCodeService;
 import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
-import com.barogagi.approval.vo.ApprovalVO;
 import com.barogagi.response.ApiResponse;
-import com.barogagi.sendSms.dto.SendSmsVO;
-import com.barogagi.sendSms.service.SendSmsService;
-import com.barogagi.util.EncryptUtil;
-import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "인증", description = "인증 API")
 @RestController
 @RequestMapping("/api/v1/verification-codes")
 public class ApprovalController {
-    private static final Logger logger = LoggerFactory.getLogger(ApprovalController.class);
+
+    private final ApprovalService approvalService;
 
     @Autowired
-    private InputValidate inputValidate;
-
-    @Autowired
-    private EncryptUtil encryptUtil;
-
-    @Autowired
-    private AuthCodeService authCodeService;
-
-    @Autowired
-    private ApprovalService approvalService;
-
-    @Autowired
-    private SendSmsService sendSmsService;
-
-    private final String API_SECRET_KEY;
-
-    @Autowired
-    public ApprovalController(Environment environment){
-        this.API_SECRET_KEY = environment.getProperty("api.secret-key");
+    public ApprovalController(ApprovalService approvalService){
+        this.approvalService = approvalService;
     }
 
     @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다. <br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
