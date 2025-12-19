@@ -8,19 +8,19 @@ import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
+import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @Tag(name = "회원 정보", description = "회원 정보 관련 API")
 @RestController
-@RequestMapping("/info")
+@RequestMapping("/api/v1/members")
 public class InfoController {
 
     private static final Logger logger = LoggerFactory.getLogger(InfoController.class);
@@ -29,14 +29,17 @@ public class InfoController {
     private final JoinService joinService;
 
     private final EncryptUtil encryptUtil;
+    private final MembershipUtil membershipUtil;
 
     public InfoController(MemberService memberService,
                           JoinService joinService,
-                          EncryptUtil encryptUtil) {
+                          EncryptUtil encryptUtil,
+                          MembershipUtil membershipUtil) {
 
         this.memberService = memberService;
         this.joinService = joinService;
         this.encryptUtil = encryptUtil;
+        this.membershipUtil = membershipUtil;
     }
 
     @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
@@ -46,9 +49,9 @@ public class InfoController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "회원 정보 조회가 완료되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/member")
+    @GetMapping
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
-        logger.info("CALL /info/member");
+        logger.info("CALL /api/v1/members");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -56,12 +59,14 @@ public class InfoController {
 
         try {
 
-            Object membershipNoAttr = request.getAttribute("membershipNo");
-            if(membershipNoAttr == null) {
-                throw new MemberInfoException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MemberInfoException(String.valueOf(membershipNoInfo.get("resultCode")),
+                        String.valueOf(membershipNoInfo.get("message")));
             }
 
-            String membershipNo = String.valueOf(membershipNoAttr);
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);
@@ -107,9 +112,9 @@ public class InfoController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "사용자 정보 수정 완료하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
-    @PostMapping("/member/update")
+    @PatchMapping
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDto) {
-        logger.info("CALL /info/member/update");
+        logger.info("CALL /api/v1/members");
 
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
@@ -120,11 +125,15 @@ public class InfoController {
             logger.info("param gender={}", memberRequestDto.getGender());
             logger.info("param nickName={}", memberRequestDto.getNickName());
 
-            String membershipNo = String.valueOf(request.getAttribute("membershipNo"));
-            logger.info("@@ membershipNo.isEmpty()={}", membershipNo.isEmpty());
-            if (membershipNo.isEmpty()) {
-                throw new MemberInfoException("401", "접근 권한이 존재하지 않습니다.");
+            // 회원번호 구하기
+            Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
+            if(!membershipNoInfo.get("resultCode").equals("200")) {
+                throw new MemberInfoException(String.valueOf(membershipNoInfo.get("resultCode")),
+                        String.valueOf(membershipNoInfo.get("message")));
             }
+
+            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
+            logger.info("@@ membershipNo={}", membershipNo);
 
             // 회원 정보 조회
             Member memberInfo = memberService.findByMembershipNo(membershipNo);

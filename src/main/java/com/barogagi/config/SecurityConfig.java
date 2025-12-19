@@ -38,14 +38,11 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/login/**",
-            "/membership/join/**",
-            "/terms/**",
-            "/main/page/popular/tag/list",
-            "/main/page/popular/region/list",
-            "/approval/tel/authCode/send",
-            "/approval/tel/authCode/check",
-            "/auth/**"
+            "/api/v1/auth/**",  //   ㄲ일반 회원가입 관련
+            "/api/v1/users/**",  // 로그인 관련
+            "/api/v1/terms/**",  // 약관 관련
+            "/api/v1/home/tags/popular",  // 인기 태그 조회
+            "/api/v1/home/regions/popular",  // 인기 지역 조회
     };
 
     @Bean
