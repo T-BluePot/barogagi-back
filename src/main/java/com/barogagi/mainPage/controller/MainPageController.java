@@ -180,7 +180,6 @@ public class MainPageController {
             })
     @GetMapping("/regions/popular")
     public ApiResponse selectPopularRegionList(@RequestHeader("API-KEY") String apiSecretKey) {
-
         logger.info("CALL /api/v1/home/regions/popular");
 
         ApiResponse apiResponse = new ApiResponse();

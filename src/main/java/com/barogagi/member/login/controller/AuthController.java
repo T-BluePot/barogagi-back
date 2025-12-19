@@ -31,8 +31,6 @@ public class AuthController {
         this.authService = authService;
         this.accountService = accountService;
     }
-
-
 }
 
 
