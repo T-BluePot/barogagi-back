@@ -29,7 +29,7 @@ import java.util.List;
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
-@RequestMapping("/schedule")
+@RequestMapping("/api/v1//schedule")
 public class ScheduleController {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
 
