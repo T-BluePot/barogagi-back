@@ -2,7 +2,7 @@ package com.barogagi.config;
 
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

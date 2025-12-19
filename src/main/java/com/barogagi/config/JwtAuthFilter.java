@@ -4,7 +4,7 @@ import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
@@ -17,7 +17,6 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import javax.xml.transform.Result;
 import java.io.IOException;
 
 @Component

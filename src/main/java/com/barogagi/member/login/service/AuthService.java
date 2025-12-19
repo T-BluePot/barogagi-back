@@ -1,6 +1,6 @@
 package com.barogagi.member.login.service;
 
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
@@ -128,8 +128,8 @@ public class AuthService {
         // 현재 리프레시가 DB에 VALID로 존재하는지 확인
         RefreshToken current = refreshRepo.findByTokenAndStatus(refreshToken, "VALID")
                 .orElseThrow(() -> new InvalidRefreshTokenException(
-                        MemberResultCode.REQUIRED_LOGIN.getResultCode(),
-                        MemberResultCode.REQUIRED_LOGIN.getMessage()
+                        ProcessResultCode.REQUIRED_LOGIN.getResultCode(),
+                        ProcessResultCode.REQUIRED_LOGIN.getMessage()
                 ));
 
         // 만료 체크
@@ -137,8 +137,8 @@ public class AuthService {
             current.setStatus("REVOKED");
             refreshRepo.save(current);
             throw new InvalidRefreshTokenException(
-                    MemberResultCode.REQUIRED_RE_LOGIN.getResultCode(),
-                    MemberResultCode.REQUIRED_RE_LOGIN.getMessage()
+                    ProcessResultCode.REQUIRED_RE_LOGIN.getResultCode(),
+                    ProcessResultCode.REQUIRED_RE_LOGIN.getMessage()
             );
         }
 
@@ -152,8 +152,8 @@ public class AuthService {
         // 새 토큰 발급
         UserMembership user = userRepo.findById(membershipNo)
                 .orElseThrow(() -> new InvalidRefreshTokenException(
-                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
                 ));
 
         String newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());

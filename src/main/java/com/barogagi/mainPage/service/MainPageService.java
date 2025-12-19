@@ -4,10 +4,10 @@ import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.mapper.MainPageMapper;
 import com.barogagi.mainPage.response.MainPageResponse;
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.MembershipUtil;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -15,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.transform.Result;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,12 +67,12 @@ public class MainPageService {
             userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
 
             if(null == userInfoResponseDTO) {
-                resultCode = MemberResultCode.NOT_FOUND_SCHEDULE.getResultCode();
-                message = MemberResultCode.NOT_FOUND_SCHEDULE.getMessage();
+                resultCode = ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode();
+                message = ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage();
 
             } else {
-                resultCode = MemberResultCode.FOUND_SCHEDULE.getResultCode();
-                message = MemberResultCode.FOUND_SCHEDULE.getMessage();
+                resultCode = ProcessResultCode.FOUND_SCHEDULE.getResultCode();
+                message = ProcessResultCode.FOUND_SCHEDULE.getMessage();
 
                 // 3. 해당 schedule에 대한 태그 목록 조회
                 userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
@@ -129,11 +127,11 @@ public class MainPageService {
             // 2. 인기 태그 조회
             List<TagRankInfoDTO> tagRankInfoList = this.selectTagRankList();
             if(tagRankInfoList.isEmpty()) {
-                resultCode = MemberResultCode.NOT_FOUND_POPULAR_TAG.getResultCode();
-                message = MemberResultCode.NOT_FOUND_POPULAR_TAG.getMessage();
+                resultCode = ProcessResultCode.NOT_FOUND_POPULAR_TAG.getResultCode();
+                message = ProcessResultCode.NOT_FOUND_POPULAR_TAG.getMessage();
             } else {
-                resultCode = MemberResultCode.FOUND_POPULAR_TAG.getResultCode();
-                message = MemberResultCode.FOUND_POPULAR_TAG.getMessage();
+                resultCode = ProcessResultCode.FOUND_POPULAR_TAG.getResultCode();
+                message = ProcessResultCode.FOUND_POPULAR_TAG.getMessage();
                 data = tagRankInfoList;
             }
 
@@ -168,11 +166,11 @@ public class MainPageService {
             List<RegionRankInfoDTO> regionRankInfoList = this.selectRegionRankList();
 
             if(regionRankInfoList.isEmpty()) {
-                resultCode = MemberResultCode.NOT_FOUND_POPULAR_REGION.getResultCode();
-                message = MemberResultCode.NOT_FOUND_POPULAR_REGION.getMessage();
+                resultCode = ProcessResultCode.NOT_FOUND_POPULAR_REGION.getResultCode();
+                message = ProcessResultCode.NOT_FOUND_POPULAR_REGION.getMessage();
             } else {
-                resultCode = MemberResultCode.FOUND_POPULAR_REGION.getResultCode();
-                message = MemberResultCode.FOUND_POPULAR_REGION.getMessage();
+                resultCode = ProcessResultCode.FOUND_POPULAR_REGION.getResultCode();
+                message = ProcessResultCode.FOUND_POPULAR_REGION.getMessage();
             }
 
         } catch (MainPageException ex) {

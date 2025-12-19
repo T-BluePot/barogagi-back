@@ -1,5 +1,6 @@
 package com.barogagi.util;
 
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.exception.BasicException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;

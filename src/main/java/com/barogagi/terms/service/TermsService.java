@@ -1,6 +1,6 @@
 package com.barogagi.terms.service;
 
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
@@ -8,7 +8,7 @@ import com.barogagi.terms.dto.*;
 import com.barogagi.terms.exception.TermsException;
 import com.barogagi.terms.mapper.TermsMapper;
 import com.barogagi.util.InputValidate;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,8 +59,8 @@ public class TermsService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(termsType)) {
                 throw new TermsException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -70,12 +70,12 @@ public class TermsService {
             List<TermsOutputDTO> termsList = this.selectTermsList(termsInputDTO);
 
             if(termsList.isEmpty()) {
-                resultCode = MemberResultCode.NOT_FOUND_TERMS.getResultCode();
-                message = MemberResultCode.NOT_FOUND_TERMS.getMessage();
+                resultCode = ProcessResultCode.NOT_FOUND_TERMS.getResultCode();
+                message = ProcessResultCode.NOT_FOUND_TERMS.getMessage();
 
             } else {
-                resultCode = MemberResultCode.FOUND_TERMS.getResultCode();
-                message = MemberResultCode.FOUND_TERMS.getMessage();
+                resultCode = ProcessResultCode.FOUND_TERMS.getResultCode();
+                message = ProcessResultCode.FOUND_TERMS.getMessage();
                 data = termsList;
             }
 
@@ -108,8 +108,8 @@ public class TermsService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(termsDTO.getUserId()) || termsDTO.getTermsAgreeList().isEmpty()) {
                 throw new TermsException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -118,8 +118,8 @@ public class TermsService {
             LoginVO loginVO = loginService.findMembershipNo(lvo);
             if(null == loginVO) {
                 throw new TermsException(
-                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
                 );
             }
 
@@ -138,11 +138,11 @@ public class TermsService {
             String resCode = this.insertTermsAgreeList(termsAgreeDTOList);
 
             if(resCode.equals("200")) {
-                resultCode = MemberResultCode.SUCCESS_INSERT_TERMS.getResultCode();
-                message = MemberResultCode.SUCCESS_INSERT_TERMS.getMessage();
+                resultCode = ProcessResultCode.SUCCESS_INSERT_TERMS.getResultCode();
+                message = ProcessResultCode.SUCCESS_INSERT_TERMS.getMessage();
             } else {
-                resultCode = MemberResultCode.FAIL_INSERT_TERMS.getResultCode();
-                message = MemberResultCode.FAIL_INSERT_TERMS.getMessage();
+                resultCode = ProcessResultCode.FAIL_INSERT_TERMS.getResultCode();
+                message = ProcessResultCode.FAIL_INSERT_TERMS.getMessage();
             }
 
         } catch (TermsException ex) {

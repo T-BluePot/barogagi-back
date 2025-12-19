@@ -1,11 +1,11 @@
-package com.barogagi.member;
+package com.barogagi.config.resultCode;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum MemberResultCode {
+public enum ProcessResultCode {
 
     EMPTY_DATA("101", "정보를 입력해주세요."),
 
@@ -67,7 +67,14 @@ public enum MemberResultCode {
     NOT_FOUND_POPULAR_TAG("201", "인기 태그 목록이 존재하지 않습니다."),
     FOUND_POPULAR_TAG("200", "인기 태그 조회 완료하였습니다."),
     NOT_FOUND_POPULAR_REGION("201", "인기 지역 목록이 존재하지 않습니다."),
-    FOUND_POPULAR_REGION("200", "인기 지역 조회 완료하였습니다.");
+    FOUND_POPULAR_REGION("200", "인기 지역 조회 완료하였습니다."),
+
+    // approval
+    SUCCESS_SEND_SMS("200", "인증번호 발송에 성공하었습니다."),
+    FAIL_SEND_SMS("103", "인증번호 발송에 실패하였습니다."),
+    ERROR_SEND_SMS("102", "오류가 발생하였습니다."),
+    SUCCESS_CHECK_SMS("200", "인증이 완료되었습니다."),
+    FAIL_CHECK_SMS("300", "인증에 실패하였습니다.");
 
     private final String resultCode;
     private final String message;

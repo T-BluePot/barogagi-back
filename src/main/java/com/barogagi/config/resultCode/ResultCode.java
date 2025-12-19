@@ -1,4 +1,4 @@
-package com.barogagi.util;
+package com.barogagi.config.resultCode;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

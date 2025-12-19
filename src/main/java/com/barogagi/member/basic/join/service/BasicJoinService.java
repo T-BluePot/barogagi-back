@@ -1,7 +1,7 @@
 package com.barogagi.member.basic.join.service;
 
 import com.barogagi.config.PasswordConfig;
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.basic.join.dto.JoinDTO;
 import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
@@ -13,7 +13,7 @@ import com.barogagi.member.login.service.AuthService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,16 +67,16 @@ public class BasicJoinService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(nickname)) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
             // 3. 적합한 닉네임인지 확인
             if(!validator.isValidNickname(nickname)) {
                 throw new JoinException(
-                        MemberResultCode.INVALID_NICKNAME.getResultCode(),
-                        MemberResultCode.INVALID_NICKNAME.getMessage()
+                        ProcessResultCode.INVALID_NICKNAME.getResultCode(),
+                        ProcessResultCode.INVALID_NICKNAME.getMessage()
                 );
             }
 
@@ -86,11 +86,11 @@ public class BasicJoinService {
 
             int nickNameCnt = joinService.selectNicknameCnt(nickNameDTO);
             if(nickNameCnt > 0) {
-                resultCode = MemberResultCode.UNAVAILABLE_NICKNAME.getResultCode();
-                message = MemberResultCode.UNAVAILABLE_NICKNAME.getMessage();
+                resultCode = ProcessResultCode.UNAVAILABLE_NICKNAME.getResultCode();
+                message = ProcessResultCode.UNAVAILABLE_NICKNAME.getMessage();
             } else {
-                resultCode = MemberResultCode.AVAILABLE_NICKNAME.getResultCode();
-                message = MemberResultCode.AVAILABLE_NICKNAME.getMessage();
+                resultCode = ProcessResultCode.AVAILABLE_NICKNAME.getResultCode();
+                message = ProcessResultCode.AVAILABLE_NICKNAME.getMessage();
             }
 
         } catch (JoinException ex) {
@@ -125,16 +125,16 @@ public class BasicJoinService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(userId)) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
             // 3. 적합한 아이디인지 확인
             if(!validator.isValidId(userId)) {
                 throw new JoinException(
-                        MemberResultCode.INVALID_USER_ID.getResultCode(),
-                        MemberResultCode.INVALID_USER_ID.getMessage()
+                        ProcessResultCode.INVALID_USER_ID.getResultCode(),
+                        ProcessResultCode.INVALID_USER_ID.getMessage()
                 );
             }
 
@@ -145,12 +145,12 @@ public class BasicJoinService {
             int checkUserId = joinService.selectUserIdCnt(joinDTO);
 
             if(checkUserId > 0){
-                resultCode = MemberResultCode.UNAVAILABLE_USER_ID.getResultCode();
-                message = MemberResultCode.UNAVAILABLE_USER_ID.getMessage();
+                resultCode = ProcessResultCode.UNAVAILABLE_USER_ID.getResultCode();
+                message = ProcessResultCode.UNAVAILABLE_USER_ID.getMessage();
 
             } else{
-                resultCode = MemberResultCode.AVAILABLE_USER_ID.getResultCode();
-                message = MemberResultCode.AVAILABLE_USER_ID.getMessage();
+                resultCode = ProcessResultCode.AVAILABLE_USER_ID.getResultCode();
+                message = ProcessResultCode.AVAILABLE_USER_ID.getMessage();
             }
 
         } catch (JoinException ex) {
@@ -188,8 +188,8 @@ public class BasicJoinService {
                     || inputValidate.isEmpty(joinRequestDTO.getTel()))
             {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -200,8 +200,8 @@ public class BasicJoinService {
                             && validator.isValidPassword(joinRequestDTO.getPassword()))
             ) {
                 throw new JoinException(
-                        MemberResultCode.INVALID_SIGN_UP.getResultCode(),
-                        MemberResultCode.INVALID_SIGN_UP.getMessage()
+                        ProcessResultCode.INVALID_SIGN_UP.getResultCode(),
+                        ProcessResultCode.INVALID_SIGN_UP.getMessage()
                 );
             }
 
@@ -232,8 +232,8 @@ public class BasicJoinService {
             // 5. 아이디 중복 검증
             if(duplicateUserId > 0) {
                 throw new JoinException(
-                        MemberResultCode.UNAVAILABLE_USER_ID.getResultCode(),
-                        MemberResultCode.UNAVAILABLE_USER_ID.getMessage()
+                        ProcessResultCode.UNAVAILABLE_USER_ID.getResultCode(),
+                        ProcessResultCode.UNAVAILABLE_USER_ID.getMessage()
                 );
             }
 
@@ -243,8 +243,8 @@ public class BasicJoinService {
                 // 닉네임 적합성 검사
                 if(!validator.isValidNickname(joinRequestDTO.getNickName())) {
                     throw new JoinException(
-                            MemberResultCode.INVALID_NICKNAME.getResultCode(),
-                            MemberResultCode.INVALID_NICKNAME.getMessage()
+                            ProcessResultCode.INVALID_NICKNAME.getResultCode(),
+                            ProcessResultCode.INVALID_NICKNAME.getMessage()
                     );
                 }
 
@@ -254,8 +254,8 @@ public class BasicJoinService {
 
                 if(selectNicknameCnt > 0) {
                     throw new JoinException(
-                            MemberResultCode.UNAVAILABLE_NICKNAME.getResultCode(),
-                            MemberResultCode.UNAVAILABLE_NICKNAME.getMessage()
+                            ProcessResultCode.UNAVAILABLE_NICKNAME.getResultCode(),
+                            ProcessResultCode.UNAVAILABLE_NICKNAME.getMessage()
                     );
                 }
             }
@@ -263,12 +263,12 @@ public class BasicJoinService {
             // 6. 회원 정보 저장
             int insertResult = joinService.insertMembershipInfo(joinDTO);
             if(insertResult > 0){
-                resultCode = MemberResultCode.SUCCESS_SIGN_UP.getResultCode();
-                message = MemberResultCode.SUCCESS_SIGN_UP.getMessage();
+                resultCode = ProcessResultCode.SUCCESS_SIGN_UP.getResultCode();
+                message = ProcessResultCode.SUCCESS_SIGN_UP.getMessage();
 
             } else {
-                resultCode = MemberResultCode.FAIL_SIGN_UP.getResultCode();
-                message = MemberResultCode.FAIL_SIGN_UP.getMessage();
+                resultCode = ProcessResultCode.FAIL_SIGN_UP.getResultCode();
+                message = ProcessResultCode.FAIL_SIGN_UP.getMessage();
             }
 
         } catch (JoinException ex) {
@@ -293,8 +293,8 @@ public class BasicJoinService {
             // 1. refresh token이 공백 또는 null인지 확인
             if(refreshTokenRequestDTO.getRefreshToken().isEmpty()) {
                 throw new JoinException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage());
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage());
             }
 
             // 2. refresh token을 이용해서 membershipNo 구하기
@@ -308,11 +308,11 @@ public class BasicJoinService {
 
             int deleteResult = accountService.deleteMyAccount(resultMap.get("membershipNo"));
             if(deleteResult > 0) {
-                resultCode = MemberResultCode.SUCCESS_DELETE_ACCOUNT.getResultCode();
-                message = MemberResultCode.SUCCESS_DELETE_ACCOUNT.getMessage();
+                resultCode = ProcessResultCode.SUCCESS_DELETE_ACCOUNT.getResultCode();
+                message = ProcessResultCode.SUCCESS_DELETE_ACCOUNT.getMessage();
             } else {
-                resultCode = MemberResultCode.FAIL_DELETE_ACCOUNT.getResultCode();
-                message = MemberResultCode.FAIL_DELETE_ACCOUNT.getMessage();
+                resultCode = ProcessResultCode.FAIL_DELETE_ACCOUNT.getResultCode();
+                message = ProcessResultCode.FAIL_DELETE_ACCOUNT.getMessage();
             }
 
         } catch (JoinException ex) {

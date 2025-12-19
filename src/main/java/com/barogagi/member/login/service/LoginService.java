@@ -1,7 +1,7 @@
 package com.barogagi.member.login.service;
 
 import com.barogagi.config.PasswordConfig;
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.dto.*;
@@ -11,7 +11,7 @@ import com.barogagi.member.login.mapper.LoginMapper;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,8 +74,8 @@ public class LoginService {
             // 2. 필수 입력값 확인
             if(inputValidate.isEmpty(searchUserIdDTO.getTel())) {
                 throw new LoginException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -83,11 +83,11 @@ public class LoginService {
             List<UserIdDTO> searchIdList = this.myUserIdList(searchUserIdDTO);
 
             if(searchIdList.isEmpty()) {
-                resultCode = MemberResultCode.NOT_FOUND_ACCOUNT.getResultCode();
-                message = MemberResultCode.NOT_FOUND_ACCOUNT.getMessage();
+                resultCode = ProcessResultCode.NOT_FOUND_ACCOUNT.getResultCode();
+                message = ProcessResultCode.NOT_FOUND_ACCOUNT.getMessage();
             } else {
-                resultCode = MemberResultCode.FOUND_ACCOUNT.getResultCode();
-                message = MemberResultCode.FOUND_ACCOUNT.getMessage();
+                resultCode = ProcessResultCode.FOUND_ACCOUNT.getResultCode();
+                message = ProcessResultCode.FOUND_ACCOUNT.getMessage();
                 userIdList = searchIdList;
             }
 
@@ -123,8 +123,8 @@ public class LoginService {
                             || inputValidate.isEmpty(loginDTO.getPassword())
             ) {
                 throw new LoginException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -134,11 +134,11 @@ public class LoginService {
             // 4. 비밀번호 update
             int updatePassword = this.updatePassword(loginDTO);
             if(updatePassword > 0) {
-                resultCode = MemberResultCode.SUCCESS_UPDATE_PASSWORD.getResultCode();
-                message = MemberResultCode.SUCCESS_UPDATE_PASSWORD.getMessage();
+                resultCode = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getResultCode();
+                message = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getMessage();
             } else {
-                resultCode = MemberResultCode.FAIL_UPDATE_PASSWORD.getResultCode();
-                message = MemberResultCode.FAIL_UPDATE_PASSWORD.getMessage();
+                resultCode = ProcessResultCode.FAIL_UPDATE_PASSWORD.getResultCode();
+                message = ProcessResultCode.FAIL_UPDATE_PASSWORD.getMessage();
             }
 
         } catch (LoginException ex) {
@@ -175,8 +175,8 @@ public class LoginService {
             )
             {
                 throw new LoginException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -184,8 +184,8 @@ public class LoginService {
             Member member = memberService.selectUserMembershipInfo(loginDTO.getUserId());
             if (null == member) {
                 throw new LoginException(
-                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
                 );
             }
 
@@ -193,16 +193,16 @@ public class LoginService {
             boolean ok = passwordEncoder.matches(loginDTO.getPassword(), member.getPassword());
             if(!ok) {
                 throw new LoginException(
-                        MemberResultCode.FAIL_LOGIN.getResultCode(),
-                        MemberResultCode.FAIL_LOGIN.getMessage()
+                        ProcessResultCode.FAIL_LOGIN.getResultCode(),
+                        ProcessResultCode.FAIL_LOGIN.getMessage()
                 );
             }
 
             // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
             LoginResponse loginResponse = authService.loginAfterSignup(member.getUserId(), "web-basic");
 
-            resultCode = MemberResultCode.SUCCESS_LOGIN.getResultCode();
-            message = MemberResultCode.SUCCESS_LOGIN.getMessage();
+            resultCode = ProcessResultCode.SUCCESS_LOGIN.getResultCode();
+            message = ProcessResultCode.SUCCESS_LOGIN.getMessage();
 
             dataMap = Map.of(
                     "accessToken", loginResponse.tokens().accessToken(),
@@ -217,8 +217,8 @@ public class LoginService {
             resultCode = ex.getCode();
             message = ex.getMessage();
         } catch (Exception e) {
-            resultCode = MemberResultCode.FAIL_LOGIN.getResultCode();
-            message = MemberResultCode.FAIL_LOGIN.getMessage();
+            resultCode = ProcessResultCode.FAIL_LOGIN.getResultCode();
+            message = ProcessResultCode.FAIL_LOGIN.getMessage();
         }
 
         return ApiResponse.resultData(dataMap, resultCode, message);
@@ -235,8 +235,8 @@ public class LoginService {
             // 1. 필수 입력값 확인
             if (inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
                 throw new LoginException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
@@ -248,8 +248,8 @@ public class LoginService {
                 data.put("refreshToken", pair.refreshToken());
                 data.put("refreshTokenExpiresIn", pair.refreshTokenExpiresIn());
 
-                resultCode = MemberResultCode.SUCCESS_REFRESH_TOKEN.getResultCode();
-                message = MemberResultCode.SUCCESS_REFRESH_TOKEN.getMessage();
+                resultCode = ProcessResultCode.SUCCESS_REFRESH_TOKEN.getResultCode();
+                message = ProcessResultCode.SUCCESS_REFRESH_TOKEN.getMessage();
             }
 
         } catch (InvalidRefreshTokenException e) {
@@ -275,16 +275,16 @@ public class LoginService {
             // 1. 필수 입력값 확인
             if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
                 throw new LoginException(
-                        MemberResultCode.EMPTY_DATA.getResultCode(),
-                        MemberResultCode.EMPTY_DATA.getMessage()
+                        ProcessResultCode.EMPTY_DATA.getResultCode(),
+                        ProcessResultCode.EMPTY_DATA.getMessage()
                 );
             }
 
             // 2. 로그아웃
             authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
 
-            resultCode = MemberResultCode.SUCCESS_LOGOUT.getResultCode();
-            message = MemberResultCode.SUCCESS_LOGOUT.getMessage();
+            resultCode = ProcessResultCode.SUCCESS_LOGOUT.getResultCode();
+            message = ProcessResultCode.SUCCESS_LOGOUT.getMessage();
 
         } catch (LoginException ex) {
             resultCode = ex.getCode();

@@ -1,6 +1,6 @@
 package com.barogagi.member.info.service;
 
-import com.barogagi.member.MemberResultCode;
+import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.dto.Member;
@@ -10,7 +10,7 @@ import com.barogagi.member.info.mapper.MemberMapper;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.MembershipUtil;
-import com.barogagi.util.ResultCode;
+import com.barogagi.config.resultCode.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,8 +59,8 @@ public class MemberService {
             Member memberInfo = this.findByMembershipNo(membershipNo);
             if(null == memberInfo) {
                 throw new MemberInfoException(
-                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
                 );
             }
 
@@ -73,8 +73,8 @@ public class MemberService {
             // 비밀번호는 보내주지 않는다
             memberInfo.setPassword("");
 
-            resultCode = MemberResultCode.FOUND_USER_INFO.getResultCode();
-            message = MemberResultCode.FOUND_USER_INFO.getMessage();
+            resultCode = ProcessResultCode.FOUND_USER_INFO.getResultCode();
+            message = ProcessResultCode.FOUND_USER_INFO.getMessage();
             data = memberInfo;
 
         } catch (MemberInfoException ex) {
@@ -109,8 +109,8 @@ public class MemberService {
             Member memberInfo = this.findByMembershipNo(membershipNo);
             if(null == memberInfo) {
                 throw new MemberInfoException(
-                        MemberResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        MemberResultCode.NOT_FOUND_USER_INFO.getMessage()
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
                 );
             }
 
@@ -133,8 +133,8 @@ public class MemberService {
 
                 if(nickNameCnt > 0) {
                     throw new MemberInfoException(
-                            MemberResultCode.UNAVAILABLE_NICKNAME.getResultCode(),
-                            MemberResultCode.UNAVAILABLE_NICKNAME.getMessage()
+                            ProcessResultCode.UNAVAILABLE_NICKNAME.getResultCode(),
+                            ProcessResultCode.UNAVAILABLE_NICKNAME.getMessage()
                     );
                 }
 
@@ -144,13 +144,13 @@ public class MemberService {
             int updateMemberInfo = this.updateMemberInfo(memberInfo);
             if(updateMemberInfo <= 0) {
                 throw new MemberInfoException(
-                        MemberResultCode.FAIL_UPDATE_USER_INFO.getResultCode(),
-                        MemberResultCode.FAIL_UPDATE_USER_INFO.getMessage()
+                        ProcessResultCode.FAIL_UPDATE_USER_INFO.getResultCode(),
+                        ProcessResultCode.FAIL_UPDATE_USER_INFO.getMessage()
                 );
             }
 
-            resultCode = MemberResultCode.SUCCESS_UPDATE_USER_INFO.getResultCode();
-            message = MemberResultCode.SUCCESS_UPDATE_USER_INFO.getMessage();
+            resultCode = ProcessResultCode.SUCCESS_UPDATE_USER_INFO.getResultCode();
+            message = ProcessResultCode.SUCCESS_UPDATE_USER_INFO.getMessage();
 
         } catch (MemberInfoException ex) {
             resultCode = ex.getResultCode();
