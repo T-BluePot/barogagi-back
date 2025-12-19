@@ -72,7 +72,6 @@ public class JoinController {
 
         logger.info("CALL /api/v1/users/userId/exists");
         logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
-
         ApiResponse apiResponse = new ApiResponse();
         String resultCode = "";
         String message = "";
