@@ -5,19 +5,16 @@ import com.barogagi.terms.dto.*;
 import com.barogagi.terms.service.TermsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "약관", description = "약관 관련 API")
 @RestController
 @RequestMapping("/api/v1/terms")
+@RequiredArgsConstructor
 public class TermsController {
-    private final TermsService termsService;
 
-    @Autowired
-    public TermsController(TermsService termsService){
-        this.termsService = termsService;
-    }
+    private final TermsService termsService;
 
     @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {

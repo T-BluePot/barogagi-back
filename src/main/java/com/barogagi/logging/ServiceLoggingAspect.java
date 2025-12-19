@@ -1,5 +1,7 @@
-package com.barogagi.config;
+package com.barogagi.logging;
 
+import com.barogagi.config.exception.BusinessException;
+import com.barogagi.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ServiceLoggingAspect {
 
-    @Around("execution(* com.example..service..*(..))")
+    @Around("execution(* com.barogagi..service..*(..))")
     public Object logService(ProceedingJoinPoint joinPoint) throws Throwable {
 
         String className = joinPoint.getTarget().getClass().getSimpleName();
@@ -29,6 +31,9 @@ public class ServiceLoggingAspect {
                     className, methodName, elapsedTime);
 
             return result;
+        } catch (BusinessException ex) {
+            log.error("Service BusinessException - {}.{} / resultCode - {} / message - {}", className, methodName, ex.getResultCode(), ex.getMessage(), ex);
+            return ApiResponse.result(ex.getResultCode(), ex.getMessage());
 
         } catch (Exception e) {
             log.error("Service Exception - {}.{}", className, methodName, e);

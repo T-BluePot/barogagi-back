@@ -61,43 +61,32 @@ public class LoginService {
         String message = "";
         List<UserIdDTO> userIdList = null;
 
-        try {
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(searchUserIdDTO.getApiSecretKey())) {
+            throw new LoginException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
+        }
 
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(searchUserIdDTO.getApiSecretKey())) {
-                throw new LoginException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
+        // 2. 필수 입력값 확인
+        if(inputValidate.isEmpty(searchUserIdDTO.getTel())) {
+            throw new LoginException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
+        }
 
-            // 2. 필수 입력값 확인
-            if(inputValidate.isEmpty(searchUserIdDTO.getTel())) {
-                throw new LoginException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
+        searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
+        List<UserIdDTO> searchIdList = this.myUserIdList(searchUserIdDTO);
 
-            searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
-            List<UserIdDTO> searchIdList = this.myUserIdList(searchUserIdDTO);
-
-            if(searchIdList.isEmpty()) {
-                resultCode = ProcessResultCode.NOT_FOUND_ACCOUNT.getResultCode();
-                message = ProcessResultCode.NOT_FOUND_ACCOUNT.getMessage();
-            } else {
-                resultCode = ProcessResultCode.FOUND_ACCOUNT.getResultCode();
-                message = ProcessResultCode.FOUND_ACCOUNT.getMessage();
-                userIdList = searchIdList;
-            }
-
-        } catch (LoginException ex) {
-            resultCode = ex.getCode();
-            message = ex.getMessage();
-
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        if(searchIdList.isEmpty()) {
+            resultCode = ProcessResultCode.NOT_FOUND_ACCOUNT.getResultCode();
+            message = ProcessResultCode.NOT_FOUND_ACCOUNT.getMessage();
+        } else {
+            resultCode = ProcessResultCode.FOUND_ACCOUNT.getResultCode();
+            message = ProcessResultCode.FOUND_ACCOUNT.getMessage();
+            userIdList = searchIdList;
         }
 
         return ApiResponse.resultData(userIdList, resultCode, message);
@@ -107,46 +96,38 @@ public class LoginService {
         String resultCode = "";
         String message = "";
 
-        try {
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
+            throw new LoginException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
+        }
 
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
-                throw new LoginException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
+        // 2. 필수 입력값 확인
+        if (
+                inputValidate.isEmpty(loginDTO.getUserId())
+                        || inputValidate.isEmpty(loginDTO.getPassword())
+        ) {
+            throw new LoginException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
+        }
 
-            // 2. 필수 입력값 확인
-            if (
-                    inputValidate.isEmpty(loginDTO.getUserId())
-                            || inputValidate.isEmpty(loginDTO.getPassword())
-            ) {
-                throw new LoginException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
+        // 3. 비밀번호 암호화
+        loginDTO.setPassword(passwordConfig.passwordEncoder().encode(loginDTO.getPassword()));
 
-            // 3. 비밀번호 암호화
-            loginDTO.setPassword(passwordConfig.passwordEncoder().encode(loginDTO.getPassword()));
-
-            // 4. 비밀번호 update
-            int updatePassword = this.updatePassword(loginDTO);
-            if(updatePassword > 0) {
-                resultCode = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getResultCode();
-                message = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getMessage();
-            } else {
-                resultCode = ProcessResultCode.FAIL_UPDATE_PASSWORD.getResultCode();
-                message = ProcessResultCode.FAIL_UPDATE_PASSWORD.getMessage();
-            }
-
-        } catch (LoginException ex) {
-            resultCode = ex.getCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 4. 비밀번호 update
+        int updatePassword = this.updatePassword(loginDTO);
+        if(updatePassword > 0) {
+            resultCode = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getResultCode();
+            message = ProcessResultCode.SUCCESS_UPDATE_PASSWORD.getMessage();
+        } else {
+            throw new LoginException(
+                    ProcessResultCode.FAIL_UPDATE_PASSWORD.getResultCode(),
+                    ProcessResultCode.FAIL_UPDATE_PASSWORD.getMessage()
+            );
         }
 
         return ApiResponse.result(resultCode, message);
@@ -158,68 +139,58 @@ public class LoginService {
         String message = "";
         Map<String, Object> dataMap = new HashMap<>();
 
-        try {
-
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
-                throw new LoginException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
-
-            // 2. 필수 입력값 확인
-            if(
-                    inputValidate.isEmpty(loginDTO.getUserId())
-                    || inputValidate.isEmpty(loginDTO.getPassword())
-            )
-            {
-                throw new LoginException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
-
-            // 3. 아이디로 회원정보 조회
-            Member member = memberService.selectUserMembershipInfo(loginDTO.getUserId());
-            if (null == member) {
-                throw new LoginException(
-                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-                );
-            }
-
-            // 4. 비밀번호 일치 여부
-            boolean ok = passwordEncoder.matches(loginDTO.getPassword(), member.getPassword());
-            if(!ok) {
-                throw new LoginException(
-                        ProcessResultCode.FAIL_LOGIN.getResultCode(),
-                        ProcessResultCode.FAIL_LOGIN.getMessage()
-                );
-            }
-
-            // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
-            LoginResponse loginResponse = authService.loginAfterSignup(member.getUserId(), "web-basic");
-
-            resultCode = ProcessResultCode.SUCCESS_LOGIN.getResultCode();
-            message = ProcessResultCode.SUCCESS_LOGIN.getMessage();
-
-            dataMap = Map.of(
-                    "accessToken", loginResponse.tokens().accessToken(),
-                    "accessTokenExpiresIn", loginResponse.tokens().accessTokenExpiresIn(),
-                    "userId", member.getUserId(),
-                    "membershipNo", loginResponse.membershipNo(),
-                    "refreshToken", loginResponse.tokens().refreshToken(),
-                    "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
+            throw new LoginException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
             );
-
-        } catch (LoginException ex) {
-            resultCode = ex.getCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ProcessResultCode.FAIL_LOGIN.getResultCode();
-            message = ProcessResultCode.FAIL_LOGIN.getMessage();
         }
+
+        // 2. 필수 입력값 확인
+        if(
+                inputValidate.isEmpty(loginDTO.getUserId())
+                        || inputValidate.isEmpty(loginDTO.getPassword())
+        )
+        {
+            throw new LoginException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
+        }
+
+        // 3. 아이디로 회원정보 조회
+        Member member = memberService.selectUserMembershipInfo(loginDTO.getUserId());
+        if (null == member) {
+            throw new LoginException(
+                    ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
+            );
+        }
+
+        // 4. 비밀번호 일치 여부
+        boolean ok = passwordEncoder.matches(loginDTO.getPassword(), member.getPassword());
+        if(!ok) {
+            throw new LoginException(
+                    ProcessResultCode.FAIL_LOGIN.getResultCode(),
+                    ProcessResultCode.FAIL_LOGIN.getMessage()
+            );
+        }
+
+        // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
+        LoginResponse loginResponse = authService.loginAfterSignup(member.getUserId(), "web-basic");
+
+        resultCode = loginResponse.tokens().resultCode();
+        message = loginResponse.tokens().message();
+
+        dataMap = Map.of(
+                "accessToken", loginResponse.tokens().accessToken(),
+                "accessTokenExpiresIn", loginResponse.tokens().accessTokenExpiresIn(),
+                "userId", member.getUserId(),
+                "membershipNo", loginResponse.membershipNo(),
+                "refreshToken", loginResponse.tokens().refreshToken(),
+                "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
+        );
 
         return ApiResponse.resultData(dataMap, resultCode, message);
     }
@@ -230,71 +201,49 @@ public class LoginService {
         String message = "";
         Map<String, Object> data = new HashMap<>();
 
-        try {
-
-            // 1. 필수 입력값 확인
-            if (inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
-                throw new LoginException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
-
-            // 2. ACCESS, REFRESH TOKEN 재생성
-            TokenPair pair = authService.rotate(refreshTokenRequestDTO.getRefreshToken());
-            if(null != pair) {
-                data.put("accessToken", pair.accessToken());
-                data.put("accessTokenExpiresIn", pair.accessTokenExpiresIn());
-                data.put("refreshToken", pair.refreshToken());
-                data.put("refreshTokenExpiresIn", pair.refreshTokenExpiresIn());
-
-                resultCode = ProcessResultCode.SUCCESS_REFRESH_TOKEN.getResultCode();
-                message = ProcessResultCode.SUCCESS_REFRESH_TOKEN.getMessage();
-            }
-
-        } catch (InvalidRefreshTokenException e) {
-            resultCode = e.getCode();
-            message = e.getMessage();
-        } catch (LoginException ex) {
-            resultCode = ex.getCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. 필수 입력값 확인
+        if (inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
+            throw new LoginException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
         }
+
+        // 2. ACCESS, REFRESH TOKEN 재생성
+        TokenPair pair = authService.rotate(refreshTokenRequestDTO.getRefreshToken());
+
+        resultCode = pair.resultCode();
+        message = pair.message();
+
+        if(!resultCode.equals("200")) {
+            throw new LoginException(resultCode, message);
+        }
+
+        data.put("accessToken", pair.accessToken());
+        data.put("accessTokenExpiresIn", pair.accessTokenExpiresIn());
+        data.put("refreshToken", pair.refreshToken());
+        data.put("refreshTokenExpiresIn", pair.refreshTokenExpiresIn());
 
         return ApiResponse.resultData(data, resultCode, message);
     }
 
     public ApiResponse logout(RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        String resultCode = "";
-        String message = "";
 
-        try {
-
-            // 1. 필수 입력값 확인
-            if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
-                throw new LoginException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
-
-            // 2. 로그아웃
-            authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
-
-            resultCode = ProcessResultCode.SUCCESS_LOGOUT.getResultCode();
-            message = ProcessResultCode.SUCCESS_LOGOUT.getMessage();
-
-        } catch (LoginException ex) {
-            resultCode = ex.getCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. 필수 입력값 확인
+        if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
+            throw new LoginException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
         }
 
-        return ApiResponse.result(resultCode, message);
+        // 2. 로그아웃
+        authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
+
+        return ApiResponse.result(
+                ProcessResultCode.SUCCESS_LOGOUT.getResultCode(),
+                ProcessResultCode.SUCCESS_LOGOUT.getMessage()
+        );
     }
 
     public int selectMemberCnt(LoginDTO loginDTO){
@@ -307,9 +256,7 @@ public class LoginService {
 
     public List<UserIdDTO> myUserIdList(SearchUserIdDTO searchUserIdDTO){ return loginMapper.myUserIdList(searchUserIdDTO);}
 
-    public int updatePassword(LoginDTO loginDTO){
-        return loginMapper.updatePassword(loginDTO);
-    }
+    public int updatePassword(LoginDTO loginDTO){return loginMapper.updatePassword(loginDTO);}
 
     public LoginVO findMembershipNo(LoginVO vo) {
         return loginMapper.findMembershipNo(vo);

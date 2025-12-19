@@ -44,7 +44,8 @@ public enum ProcessResultCode {
     // refreshToken
     REQUIRED_LOGIN("110", "로그인을 진행해주세요."),
     REQUIRED_RE_LOGIN("120", "로그인을 다시 진행해주세요."),
-    SUCCESS_REFRESH_TOKEN("200", "토큰이 재발급되었습니다."),
+    SUCCESS_REFRESH_TOKEN("200", "토큰이 발급되었습니다."),
+    FAIL_REFRESH_TOKEN("130", "토큰 발급에 실패하였습니다."),
 
     // logout
     FAIL_LOGOUT("300", "로그아웃 실패하였습니다."),

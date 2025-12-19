@@ -1,4 +1,4 @@
-package com.barogagi.config;
+package com.barogagi.logging;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,13 +19,9 @@ public class ControllerLoggingAspect {
 
         log.info("Controller Start - {}.{}", className, methodName);
 
-        try {
-            Object result = joinPoint.proceed();
-            log.info("Controller End - {}.{}", className, methodName);
-            return result;
-        } catch (Exception e) {
-            log.error("Controller Exception - {}.{}", className, methodName, e);
-            throw e;
-        }
+        Object result = joinPoint.proceed();
+        log.info("Controller End - {}.{}", className, methodName);
+
+        return result;
     }
 }

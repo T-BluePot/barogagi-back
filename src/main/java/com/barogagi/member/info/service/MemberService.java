@@ -163,15 +163,15 @@ public class MemberService {
         return ApiResponse.result(resultCode, message);
     }
 
-    public Member findByMembershipNo(String membershipNo) throws Exception {
+    public Member findByMembershipNo(String membershipNo) {
         return memberMapper.findByMembershipNo(membershipNo);
     }
 
-    public Member selectUserMembershipInfo(String userId) throws Exception {
+    public Member selectUserMembershipInfo(String userId) {
         return memberMapper.selectUserMembershipInfo(userId);
     }
 
-    public int updateMemberInfo(Member member) throws Exception {
+    public int updateMemberInfo(Member member) {
         return memberMapper.updateMemberInfo(member);
     }
 }
