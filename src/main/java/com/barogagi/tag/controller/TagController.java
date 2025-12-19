@@ -17,7 +17,7 @@ import java.util.List;
 
 @Tag(name = "태그", description = "태그 관련 API")
 @RestController
-@RequestMapping("/tag")
+@RequestMapping("/api/v1/tag")
 public class TagController {
     private static final Logger logger = LoggerFactory.getLogger(TagController.class);
 
@@ -41,7 +41,7 @@ public class TagController {
                     "- 상세 일정 태그(P): 해당 일정의 카테고리 번호(categoryNum)를 전달하세요.<br>" +
                     "검색 결과는 최대 10개의 태그를 반환합니다."
     )
-    @PostMapping("/searchList")
+    @PostMapping("/search-list")
     public ApiResponse searchList(@RequestBody TagSearchReqDTO tagSearchReqDTO) {
 
         logger.info("CALL /tag/searchList");

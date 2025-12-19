@@ -26,7 +26,7 @@ import java.util.List;
 
 @Tag(name = "지역", description = "지역 관련 API")
 @RestController
-@RequestMapping("/region")
+@RequestMapping("/api/v1/region")
 public class RegionController {
     private static final Logger logger = LoggerFactory.getLogger(RegionController.class);
 
@@ -102,7 +102,7 @@ public class RegionController {
     @Operation(summary = "주소 목록을 검색하는 기능", description = "주소 목록을 검색하는 기능입니다.<br>" +
             "REGION table에 저장된 값 중, level 1부터 4까지 가장 정확도 높은 순으로 지역명 최대 10개를 리턴합니다.<br>" +
             "행정구역 단계(시/도, 시/군/구, 동/면/리)를 조합하여 결과를 반환하며, 중복되는 상위 주소(예: '서울특별시 강남구')는 한 번만 표시됩니다.")
-    @GetMapping("/searchList")
+    @GetMapping("/search-list")
     public ApiResponse searchList(@Parameter(description = "검색할 주소명", example = "강남") @RequestParam String regionQuery) {
 
         logger.info("CALL /region/searchList");
