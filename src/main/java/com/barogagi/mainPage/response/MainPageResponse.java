@@ -21,4 +21,24 @@ public class MainPageResponse {
     private UserInfoResponseDTO userInfoResponseDTO;
     private List<TagInfoDTO> tagInfoList;
     private RegionInfoDTO regionInfoDTO;
+
+    public static MainPageResponse resultData(
+                                                UserInfoResponseDTO userInfoResponseDTO,
+                                                List<TagInfoDTO> tagInfoList,
+                                                RegionInfoDTO regionInfoDTO,
+                                                String resultCode,
+                                                String message
+                                              )
+    {
+        MainPageResponse mainPageResponse = new MainPageResponse();
+
+        mainPageResponse.userInfoResponseDTO = userInfoResponseDTO;
+        mainPageResponse.tagInfoList = tagInfoList;
+        mainPageResponse.regionInfoDTO = regionInfoDTO;
+
+        mainPageResponse.resultCode = resultCode;
+        mainPageResponse.message = message;
+
+        return mainPageResponse;
+    }
 }

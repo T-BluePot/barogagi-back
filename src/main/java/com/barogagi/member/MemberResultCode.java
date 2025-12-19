@@ -59,7 +59,15 @@ public enum MemberResultCode {
     // memberInfo
     FOUND_USER_INFO("200", "회원 정보 조회가 완료되었습니다."),
     FAIL_UPDATE_USER_INFO("404", "사용자 정보 수정 실패하였습니다."),
-    SUCCESS_UPDATE_USER_INFO("200", "사용자 정보 수정 완료하였습니다.");
+    SUCCESS_UPDATE_USER_INFO("200", "사용자 정보 수정 완료하였습니다."),
+
+    // mainPage
+    NOT_FOUND_SCHEDULE("201", "일정이 존재하지 않습니다."),
+    FOUND_SCHEDULE("v", "조회 성공하였습니다."),
+    NOT_FOUND_POPULAR_TAG("201", "인기 태그 목록이 존재하지 않습니다."),
+    FOUND_POPULAR_TAG("200", "인기 태그 조회 완료하였습니다."),
+    NOT_FOUND_POPULAR_REGION("201", "인기 지역 목록이 존재하지 않습니다."),
+    FOUND_POPULAR_REGION("200", "인기 지역 조회 완료하였습니다.");
 
     private final String resultCode;
     private final String message;
