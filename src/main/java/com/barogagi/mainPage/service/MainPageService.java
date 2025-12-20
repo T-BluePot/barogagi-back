@@ -41,70 +41,43 @@ public class MainPageService {
 
     public MainPageResponse selectUserScheduleInfoProcess(HttpServletRequest request) {
 
-        String resultCode = "";
-        String message = "";
-
-        UserInfoResponseDTO userInfoResponseDTO = null;
-        List<TagInfoDTO> tagInfoList = null;
-        RegionInfoDTO regionInfoDTO = null;
-
-        try {
-
-            // 1. 회원번호 구하기
-            Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
-            if(!membershipNoInfo.get("resultCode").equals("200")) {
-                throw new MainPageException(
-                        String.valueOf(membershipNoInfo.get("resultCode")),
-                        String.valueOf(membershipNoInfo.get("message"))
-                );
-            }
-
-            String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
-
-            // 2. 유저 일정 정보 조회
-            UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
-            userInfoRequestDTO.setMembershipNo(membershipNo);
-            userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
-
-            if(null == userInfoResponseDTO) {
-                resultCode = ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode();
-                message = ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage();
-
-            } else {
-                resultCode = ProcessResultCode.FOUND_SCHEDULE.getResultCode();
-                message = ProcessResultCode.FOUND_SCHEDULE.getMessage();
-
-                // 3. 해당 schedule에 대한 태그 목록 조회
-                userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
-                List<TagInfoDTO> tagList = this.selectScheduleTag(userInfoRequestDTO);
-
-                if(!tagList.isEmpty()) {
-                    tagInfoList = tagList;
-                }
-
-                // 4. 해당 plan에 대한 region 정보 조회
-                userInfoRequestDTO.setPlanNum(userInfoResponseDTO.getPlanNum());
-                RegionInfoDTO regionInfo = this.selectScheduleRegionInfo(userInfoRequestDTO);
-
-                if(null != regionInfo) {
-                    regionInfoDTO = regionInfo;
-                }
-            }
-
-        } catch (MainPageException ex) {
-            resultCode = ex.getResultCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. 회원번호 구하기
+        Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
+        if(!membershipNoInfo.get("resultCode").equals("200")) {
+            throw new MainPageException(
+                    String.valueOf(membershipNoInfo.get("resultCode")),
+                    String.valueOf(membershipNoInfo.get("message"))
+            );
         }
+
+        String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
+
+        // 2. 유저 일정 정보 조회
+        UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
+        userInfoRequestDTO.setMembershipNo(membershipNo);
+        UserInfoResponseDTO userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
+
+        if(null == userInfoResponseDTO) {
+            throw new MainPageException(
+                    ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage()
+            );
+        }
+
+        // 3. 해당 schedule에 대한 태그 목록 조회
+        userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
+        List<TagInfoDTO> tagList = this.selectScheduleTag(userInfoRequestDTO);
+
+        // 4. 해당 plan에 대한 region 정보 조회
+        userInfoRequestDTO.setPlanNum(userInfoResponseDTO.getPlanNum());
+        RegionInfoDTO regionInfo = this.selectScheduleRegionInfo(userInfoRequestDTO);
 
         return MainPageResponse.resultData(
                 userInfoResponseDTO,
-                tagInfoList,
-                regionInfoDTO,
-                resultCode,
-                message
+                tagList,
+                regionInfo,
+                ProcessResultCode.FOUND_SCHEDULE.getResultCode(),
+                ProcessResultCode.FOUND_SCHEDULE.getMessage()
         );
     }
 
@@ -185,27 +158,27 @@ public class MainPageService {
     }
 
     // 유저 일정 조회
-    public UserInfoResponseDTO selectUserScheduleInfo(UserInfoRequestDTO userInfoRequestDTO) throws Exception {
+    public UserInfoResponseDTO selectUserScheduleInfo(UserInfoRequestDTO userInfoRequestDTO) {
         return mainPageMapper.selectUserScheduleInfo(userInfoRequestDTO);
     }
 
     // 해당 schedule에 대한 태그 목록 조회
-    public List<TagInfoDTO> selectScheduleTag(UserInfoRequestDTO userInfoRequestDTO) throws Exception {
+    public List<TagInfoDTO> selectScheduleTag(UserInfoRequestDTO userInfoRequestDTO) {
         return  mainPageMapper.selectScheduleTag(userInfoRequestDTO);
     }
 
     // 해당 plan에 대한 region 정보 조회
-    public RegionInfoDTO selectScheduleRegionInfo(UserInfoRequestDTO userInfoRequestDTO) throws Exception {
+    public RegionInfoDTO selectScheduleRegionInfo(UserInfoRequestDTO userInfoRequestDTO) {
         return mainPageMapper.selectScheduleRegionInfo(userInfoRequestDTO);
     }
 
     // 인기 지역 조회
-    public List<RegionRankInfoDTO> selectRegionRankList() throws Exception {
+    public List<RegionRankInfoDTO> selectRegionRankList() {
         return mainPageMapper.selectRegionRankList();
     }
 
     // 인기 태그 조회
-    public List<TagRankInfoDTO> selectTagRankList() throws Exception {
+    public List<TagRankInfoDTO> selectTagRankList() {
         return mainPageMapper.selectTagRankList();
     }
 }
