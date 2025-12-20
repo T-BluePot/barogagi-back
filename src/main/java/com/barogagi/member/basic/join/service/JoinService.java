@@ -3,8 +3,6 @@ package com.barogagi.member.basic.join.service;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.mapper.JoinMapper;
 import com.barogagi.member.basic.join.dto.JoinDTO;
-import com.barogagi.util.InputValidate;
-import com.barogagi.util.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,7 @@ public class JoinService {
     }
 
     // 닉네임 개수 구하기
-    public int selectNicknameCnt(NickNameDTO nickNameDTO) throws Exception{
+    public int selectNicknameCnt(NickNameDTO nickNameDTO) {
         return joinMapper.selectNicknameCnt(nickNameDTO);
     }
 
@@ -71,7 +69,7 @@ public class JoinService {
     }
 
     // 회원번호 중복 체크
-    public boolean checkDuplicateMemberNo(String membershipNo) throws Exception {
+    public boolean checkDuplicateMemberNo(String membershipNo) {
         boolean duplicateFlag = false;
 
         int membershipNoCnt = joinMapper.checkDuplicateMembershipNo(membershipNo);
@@ -85,7 +83,7 @@ public class JoinService {
     }
 
     // 회원가입 정보 저장 service
-    public int insertMembershipInfo(JoinDTO vo) throws Exception {
+    public int insertMembershipInfo(JoinDTO vo) {
 
         int result = 0;
 
@@ -118,12 +116,12 @@ public class JoinService {
     }
 
     // 회원가입 정보 저장 기능
-    public int insertMemberInfo(JoinDTO vo) throws Exception{
+    public int insertMemberInfo(JoinDTO vo) {
         return joinMapper.insertMemberInfo(vo);
     }
 
     // 아이디 개수 구하기
-    public int selectUserIdCnt(JoinDTO vo) throws Exception{
+    public int selectUserIdCnt(JoinDTO vo) {
         return joinMapper.selectUserIdCnt(vo);
     }
 }
