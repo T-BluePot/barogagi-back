@@ -42,127 +42,102 @@ public class TermsService {
 
     public ApiResponse termsListProcess(String apiSecretKey, String termsType) {
 
-        String resultCode = "";
-        String message = "";
-        List<TermsOutputDTO> data = null;
-
-        try {
-
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-                throw new TermsException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
-
-            // 2. 필수 입력값 확인
-            if(inputValidate.isEmpty(termsType)) {
-                throw new TermsException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
-
-            // 3. 약관 조회
-            TermsInputDTO termsInputDTO = new TermsInputDTO();
-            termsInputDTO.setTermsType(termsType);
-            List<TermsOutputDTO> termsList = this.selectTermsList(termsInputDTO);
-
-            if(termsList.isEmpty()) {
-                resultCode = ProcessResultCode.NOT_FOUND_TERMS.getResultCode();
-                message = ProcessResultCode.NOT_FOUND_TERMS.getMessage();
-
-            } else {
-                resultCode = ProcessResultCode.FOUND_TERMS.getResultCode();
-                message = ProcessResultCode.FOUND_TERMS.getMessage();
-                data = termsList;
-            }
-
-        } catch (TermsException ex) {
-            resultCode = ex.getResultCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new TermsException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
         }
 
-        return ApiResponse.resultData(data, resultCode, message);
+        // 2. 필수 입력값 확인
+        if(inputValidate.isEmpty(termsType)) {
+            throw new TermsException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
+        }
+
+        // 3. 약관 조회
+        TermsInputDTO termsInputDTO = new TermsInputDTO();
+        termsInputDTO.setTermsType(termsType);
+        List<TermsOutputDTO> termsList = this.selectTermsList(termsInputDTO);
+
+        if(termsList.isEmpty()) {
+            throw new TermsException(
+                    ProcessResultCode.NOT_FOUND_TERMS.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_TERMS.getMessage()
+            );
+
+        }
+
+        return ApiResponse.resultData(
+                termsList,
+                ProcessResultCode.FOUND_TERMS.getResultCode(),
+                ProcessResultCode.FOUND_TERMS.getMessage()
+        );
     }
 
     public ApiResponse termsAgreementsProcess(TermsDTO termsDTO) {
 
-        String resultCode = "";
-        String message = "";
-
-        try {
-
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(termsDTO.getApiSecretKey())) {
-                throw new TermsException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
-
-            // 2. 필수 입력값 확인
-            if(inputValidate.isEmpty(termsDTO.getUserId()) || termsDTO.getTermsAgreeList().isEmpty()) {
-                throw new TermsException(
-                        ProcessResultCode.EMPTY_DATA.getResultCode(),
-                        ProcessResultCode.EMPTY_DATA.getMessage()
-                );
-            }
-
-            LoginVO lvo = new LoginVO();
-            lvo.setUserId(termsDTO.getUserId());
-            LoginVO loginVO = loginService.findMembershipNo(lvo);
-            if(null == loginVO) {
-                throw new TermsException(
-                        ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                        ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-                );
-            }
-
-            List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
-            List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
-
-            for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
-
-                TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
-                termsAgreeDTO.setMembershipNo(loginVO.getMembershipNo());
-                termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
-                termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
-
-                termsAgreeDTOList.add(termsAgreeDTO);
-            }
-            String resCode = this.insertTermsAgreeList(termsAgreeDTOList);
-
-            if(resCode.equals("200")) {
-                resultCode = ProcessResultCode.SUCCESS_INSERT_TERMS.getResultCode();
-                message = ProcessResultCode.SUCCESS_INSERT_TERMS.getMessage();
-            } else {
-                resultCode = ProcessResultCode.FAIL_INSERT_TERMS.getResultCode();
-                message = ProcessResultCode.FAIL_INSERT_TERMS.getMessage();
-            }
-
-        } catch (TermsException ex) {
-            resultCode = ex.getResultCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(termsDTO.getApiSecretKey())) {
+            throw new TermsException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
         }
 
-        return ApiResponse.result(resultCode, message);
+        // 2. 필수 입력값 확인
+        if(inputValidate.isEmpty(termsDTO.getUserId()) || termsDTO.getTermsAgreeList().isEmpty()) {
+            throw new TermsException(
+                    ProcessResultCode.EMPTY_DATA.getResultCode(),
+                    ProcessResultCode.EMPTY_DATA.getMessage()
+            );
+        }
+
+        LoginVO lvo = new LoginVO();
+        lvo.setUserId(termsDTO.getUserId());
+        LoginVO loginVO = loginService.findMembershipNo(lvo);
+        if(null == loginVO) {
+            throw new TermsException(
+                    ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
+            );
+        }
+
+        List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
+        List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
+
+        for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
+            TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
+            termsAgreeDTO.setMembershipNo(loginVO.getMembershipNo());
+            termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
+            termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
+            termsAgreeDTOList.add(termsAgreeDTO);
+        }
+        String resCode = this.insertTermsAgreeList(termsAgreeDTOList);
+
+        if(!resCode.equals("200")) {
+            throw new TermsException(
+                    ProcessResultCode.FAIL_INSERT_TERMS.getResultCode(),
+                    ProcessResultCode.FAIL_INSERT_TERMS.getMessage()
+            );
+        }
+
+        return ApiResponse.result(
+                ProcessResultCode.SUCCESS_INSERT_TERMS.getResultCode(),
+                ProcessResultCode.SUCCESS_INSERT_TERMS.getMessage()
+        );
     }
 
     // 사용중인 약관 목록 조회
-    public List<TermsOutputDTO> selectTermsList(TermsInputDTO termsInputDTO) throws Exception {
+    public List<TermsOutputDTO> selectTermsList(TermsInputDTO termsInputDTO) {
         return termsMapper.selectTermsList(termsInputDTO);
     }
 
     // 약관 동의 여부 저장
-    public int insertTermsAgreeInfo(TermsAgreeDTO vo) throws Exception {
+    public int insertTermsAgreeInfo(TermsAgreeDTO vo) {
         return termsMapper.insertTermsAgreeInfo(vo);
     }
 
