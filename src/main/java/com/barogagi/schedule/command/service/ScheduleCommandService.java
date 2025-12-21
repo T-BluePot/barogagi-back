@@ -17,6 +17,7 @@ import com.barogagi.plan.command.repository.PlanTagRepository;
 import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.dto.UserAddedPlaceDTO;
+import com.barogagi.plan.enums.PLAN_SOURCE;
 import com.barogagi.plan.query.mapper.CategoryMapper;
 import com.barogagi.plan.query.mapper.ItemMapper;
 import com.barogagi.region.command.entity.Place;
@@ -28,7 +29,6 @@ import com.barogagi.region.command.repository.PlanRegionRepository;
 import com.barogagi.region.command.repository.RegionRepository;
 import com.barogagi.region.dto.RegionGeoCodeResDTO;
 import com.barogagi.region.dto.RegionRegistReqDTO;
-import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.region.query.service.RegionGeoCodeService;
 import com.barogagi.region.query.service.RegionQueryService;
 import com.barogagi.region.query.vo.RegionDetailVO;
@@ -52,7 +52,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -143,19 +142,16 @@ public class ScheduleCommandService {
 
             if (plan.getIsUserAdded().equals("Y")) {
                 // ➜ A. 사용자가 직접 입력한 플랜
-                logger.info("#$# ➜ A. 사용자가 직접 입력한 플랜 plan={}", plan);
+                logger.info("A. 사용자가 직접 입력한 플랜 plan={}", plan);
                 PlanRegistResDTO planRes = handleUserPlan(plan);
                 planResList.add(planRes);
 
             } else {
                 // ➜ B. AI가 추천해줘야 하는 플랜
-                logger.info("#$# ➜ B. AI가 추천해줘야 하는 플랜 plan={}", plan);
+                logger.info("B. AI가 추천해줘야 하는 플랜 plan={}", plan);
                 PlanRegistResDTO planRes = handleAIPlan(scheduleRegistReqDTO, plan);
                 planResList.add(planRes);
             }
-            logger.info("#$# for문 도는중 planResList={}", planResList);
-
-
         }
 
         // ---------- 6) ScheduleRegistResDTO 묶어서 리턴 ----------
@@ -170,7 +166,7 @@ public class ScheduleCommandService {
     private PlanRegistResDTO handleAIPlan(ScheduleRegistReqDTO scheduleRegistReqDTO, PlanRegistReqDTO plan) {
         // ---------- 1) 지역 번호로 x, y 좌표 검색 & Kakao 후보장소 수집(평탄화) ----------
         if (plan.getRegionRegistReqDTOList() == null || plan.getRegionRegistReqDTOList().isEmpty()) {
-            logger.info("#$# skip: plan has no regions. plan={}", plan);
+            logger.info("skip: plan has no regions. plan={}", plan);
             return null;
         }
 
@@ -183,7 +179,7 @@ public class ScheduleCommandService {
             plan = plan.toBuilder()
                     .categoryNum(categoryMapper.selectRandomCategoryNum())
                     .build();
-            logger.info("#$# getCategoryNum={}", plan.getCategoryNum());
+            logger.info("getCategoryNum={}", plan.getCategoryNum());
         }
 
         String categoryNm = categoryMapper.selectCategoryNmBy(plan.getCategoryNum());
@@ -195,7 +191,7 @@ public class ScheduleCommandService {
             // regionNum으로 좌표 가져오기
             RegionGeoCodeResDTO geo = regionGeoCodeService.getGeocode(region.getRegionNum());
             if (geo == null) {
-                logger.warn("#$# regionNum={} not found in DB, skip.", region.getRegionNum());
+                logger.warn("regionNum={} not found in DB, skip.", region.getRegionNum());
                 continue;
             }
 
@@ -227,7 +223,7 @@ public class ScheduleCommandService {
                 oneRegionPlaces.forEach(k -> k.setRegionNum(region.getRegionNum()));
             }
 
-            logger.info("#$# resolved regionName={} for regionNum={}", regionName, updatedRegion.getRegionNum());
+            logger.info("resolved regionName={} for regionNum={}", regionName, updatedRegion.getRegionNum());
 
         }
 
@@ -241,7 +237,7 @@ public class ScheduleCommandService {
                 .collect(Collectors.toList());
 
         if (flatKakao.isEmpty()) {
-            logger.info("#$# no kakao results. plan={}", plan);
+            logger.info("no kakao results. plan={}", plan);
             return null;
         }
 
@@ -321,6 +317,7 @@ public class ScheduleCommandService {
         }
 
         return PlanRegistResDTO.builder()
+                .planSource(PLAN_SOURCE.AI)
                 .startTime(plan.getStartTime())
                 .endTime(plan.getEndTime())
                 .planNm(aiChosen.getPlaceName())
@@ -352,15 +349,16 @@ public class ScheduleCommandService {
 
         // CASE 1: 카카오 장소 ID로 선택한 경우
         if (plan.getUserAddedPlaceDTO() != null) {
-            logger.info("#$# ➜ A-1. 사용자가 직접 입력한 플랜 plan={}", plan);
+            logger.info("➜ A-1. 사용자가 직접 입력한 플랜 plan={}", plan);
             UserAddedPlaceDTO userAddedPlaceDTO = plan.getUserAddedPlaceDTO();
 
             RegionDetailVO regionDetailVO = regionQueryService.getRegionNumByAddress(userAddedPlaceDTO.getAddressName());
             String regionNm = resolveRegionName(regionDetailVO);
 
-            logger.info("#$# 사용자가 선택한 장소 userAddedPlaceDTO addressName={}, resolved regionNum={}", userAddedPlaceDTO.getAddressName(), regionDetailVO.getRegionNum());
+            logger.info("사용자가 선택한 장소 userAddedPlaceDTO addressName={}, resolved regionNum={}", userAddedPlaceDTO.getAddressName(), regionDetailVO.getRegionNum());
 
             return PlanRegistResDTO.builder()
+                    .planSource(PLAN_SOURCE.USER_PLACE)
                     .startTime(plan.getStartTime())
                     .endTime(plan.getEndTime())
                     .planNm(userAddedPlaceDTO.getPlaceName())
@@ -378,13 +376,12 @@ public class ScheduleCommandService {
         } else {
 
             // CASE 2: 텍스트로 직접 입력한 경우
-            logger.info("#$# ➜ A-2. 사용자가 직접 입력한 플랜 plan={}", plan);
+            logger.info("➜ A-2. 사용자가 직접 입력한 플랜 plan={}", plan);
 
-            logger.info("#$# plan.getRegionRegistReqDTOList().get(0).getRegionNum()={}", plan.getRegionRegistReqDTOList().get(0).getRegionNum());
             RegionDetailVO region = regionQueryService.getRegionByRegionNum(plan.getRegionRegistReqDTOList().get(0).getRegionNum());
-            logger.info("#$# regionNm={} {}", region.getRegionLevel2(), region.getRegionLevel3());
 
             return PlanRegistResDTO.builder()
+                    .planSource(PLAN_SOURCE.USER_CUSTOM)
                     .startTime(plan.getStartTime())
                     .endTime(plan.getEndTime())
                     .planNm(plan.getPlanNm())
