@@ -1,6 +1,7 @@
 package com.barogagi.plan.dto;
 
 import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
+import com.barogagi.plan.enums.PLAN_SOURCE;
 import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
@@ -16,6 +17,10 @@ import java.util.List;
 @Builder(toBuilder = true)
 @Schema(description = "계획 등록 응답 DTO")
 public class PlanRegistResDTO {
+
+
+    @Schema(description = "계획 타입(USER_PLACE/USER_CUSTOM/AI)", example = "AI")
+    public PLAN_SOURCE planSource;
 
     @Schema(description = "시작 시간", example = "08:00")
     public String startTime;

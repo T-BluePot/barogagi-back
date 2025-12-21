@@ -221,8 +221,9 @@ public class ScheduleController {
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "일정 등록 요청 예시",
+                            examples = {
+                            @ExampleObject(
+                                    name = "AI 추천 일정만 저장 요청 예시",
                                     value = "{\n" +
                                             "    \"scheduleNum\": null,\n" +
                                             "    \"scheduleNm\": \"서울 데이트 코스\",\n" +
@@ -234,6 +235,7 @@ public class ScheduleController {
                                             "    ],\n" +
                                             "    \"planRegistResDTOList\": [\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"08:30\",\n" +
                                             "        \"endTime\": \"09:00\",\n" +
                                             "        \"itemNum\": 10,\n" +
@@ -252,6 +254,7 @@ public class ScheduleController {
                                             "        ]\n" +
                                             "      },\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"14:00\",\n" +
                                             "        \"endTime\": \"15:00\",\n" +
                                             "        \"itemNum\": 2,\n" +
@@ -269,6 +272,7 @@ public class ScheduleController {
                                             "        ]\n" +
                                             "      },\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"15:30\",\n" +
                                             "        \"endTime\": \"19:00\",\n" +
                                             "        \"itemNum\": 15,\n" +
@@ -287,7 +291,74 @@ public class ScheduleController {
                                             "      }\n" +
                                             "    ]\n" +
                                             "}"
+                            ),
+                            @ExampleObject(
+                                    name = "AI 추천 + 사용자 추가 일정 저장 요청 예시",
+                                    value = "{\n" +
+                                            "    \"scheduleNum\": null,\n" +
+                                            "    \"scheduleNm\": \"3월 여행 일정\",\n" +
+                                            "    \"startDate\": \"2026-03-11\",\n" +
+                                            "    \"endDate\": \"2026-03-11\",\n" +
+                                            "    \"scheduleTagRegistResDTOList\": [\n" +
+                                            "      { \"tagNm\": \"즐거운\", \"tagNum\": 6 },\n" +
+                                            "      { \"tagNm\": \"저렴한\", \"tagNum\": 4 }\n" +
+                                            "    ],\n" +
+                                            "    \"planRegistResDTOList\": [\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
+                                            "        \"startTime\": \"08:30\",\n" +
+                                            "        \"endTime\": \"09:00\",\n" +
+                                            "        \"itemNum\": 10,\n" +
+                                            "        \"itemNm\": \"프랜차이즈카페\",\n" +
+                                            "        \"categoryNum\": 2,\n" +
+                                            "        \"categoryNm\": \"카페\",\n" +
+                                            "        \"planNm\": \"부빙\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/20459372\",\n" +
+                                            "        \"planDescription\": \"'부빙'은 계절마다 변하는 감성 빙수를 판매하는 디저트 카페입니다.\",\n" +
+                                            "        \"planAddress\": \"서울 종로구 창의문로 136\",\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": [\n" +
+                                            "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
+                                            "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
+                                            "        ]\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"USER_PLACE\",\n" +
+                                            "        \"startTime\": \"14:00\",\n" +
+                                            "        \"endTime\": \"15:00\",\n" +
+                                            "        \"itemNum\": 2,\n" +
+                                            "        \"itemNm\": \"한식\",\n" +
+                                            "        \"categoryNum\": 1,\n" +
+                                            "        \"categoryNm\": \"식사\",\n" +
+                                            "        \"planNm\": \"카카오프렌즈 코엑스점\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/26338954\",\n" +
+                                            "        \"planDescription\": null,\n" +
+                                            "        \"planAddress\": \"서울 강남구 삼성동 159\",\n" +
+                                            "        \"regionNm\": \"강남구\",\n" +
+                                            "        \"regionNum\": 9,\n" +
+                                            "        \"planTagRegistResDTOList\": []\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"USER_CUSTOM\",\n" +
+                                            "        \"startTime\": \"15:30\",\n" +
+                                            "        \"endTime\": \"19:00\",\n" +
+                                            "        \"itemNum\": 15,\n" +
+                                            "        \"itemNm\": \"놀이공원\",\n" +
+                                            "        \"categoryNum\": 4,\n" +
+                                            "        \"categoryNm\": \"놀거리\",\n" +
+                                            "        \"planNm\": \"친구집 방문\",\n" +
+                                            "        \"planLink\": null,\n" +
+                                            "        \"planDescription\": null,\n" +
+                                            "        \"planAddress\": null,\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": []\n" +
+                                            "      }\n" +
+                                            "    ]\n" +
+                                            "}"
                             )
+                            }
                     )
             )
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
