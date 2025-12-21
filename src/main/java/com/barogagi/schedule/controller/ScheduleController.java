@@ -6,20 +6,28 @@ import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.*;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.util.InputValidate;
+import com.barogagi.util.MembershipUtil;
+import com.barogagi.util.exception.BasicException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
-@RequestMapping("/api/v1//schedule")
+@RequestMapping("/api/v1/schedule")
+@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "apiKeyAuth")
 public class ScheduleController {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
 
@@ -30,31 +38,46 @@ public class ScheduleController {
     private final PlanQueryService planQueryService;
 
     private final String API_SECRET_KEY;
+    private final MembershipUtil membershipUtil;
 
     public ScheduleController(Environment environment,
                               InputValidate inputValidate,
                               ScheduleQueryService scheduleQueryService,
                               ScheduleCommandService scheduleCommandService,
-                              PlanQueryService planQueryService) {
+                              PlanQueryService planQueryService, MembershipUtil membershipUtil) {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.inputValidate = inputValidate;
         this.scheduleQueryService = scheduleQueryService;
         this.scheduleCommandService = scheduleCommandService;
         this.planQueryService = planQueryService;
+        this.membershipUtil = membershipUtil;
     }
 
     @Operation(summary = "내 일정 목록 조회 기능", description = "일정 목록을 조회하는 기능입니다.")
     @GetMapping("/list")
-    public ApiResponse getScheduleList() {
+    public ApiResponse getScheduleList(HttpServletRequest request) {
 
-        logger.info("CALL /schedule/list");
+        logger.info("CALL /api/v1/schedule/list");
 
         ScheduleListGroupResDTO result;
         try {
-            // TODO. token으로 사용자 확인 후, 해당 사용자의 일정만 조회하도록 수정해야 함
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleQueryService.getScheduleList(1);
 
+            // token으로 membershipNo 조회
+            Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+            String resultCode = String.valueOf(resultMap.get("resultCode"));
+            if (!"200".equals(resultCode)) {
+                throw new BasicException(
+                        resultCode,
+                        String.valueOf(resultMap.get("message"))
+                );
+            }
+            String membershipNo = String.valueOf(resultMap.get("membershipNo"));
+
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            result = scheduleQueryService.getScheduleList(membershipNo);
+
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 목록 조회 실패");
         }
@@ -66,22 +89,25 @@ public class ScheduleController {
     @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.")
     @GetMapping("/detail")
     public ApiResponse getScheduleDetail(@Parameter(description = "조회할 일정 번호", example = "1")
-                                         @RequestParam Integer scheduleNum) {
+                                         @RequestParam Integer scheduleNum, HttpServletRequest request) {
 
 
-        logger.info("CALL /schedule/detail");
+        logger.info("CALL /api/v1/schedule/detail");
         logger.info("[input] scheduleNum={}", scheduleNum);
 
-        ScheduleDetailResDTO result;
-        try {
-            // TODO. 해당 사용자의 일정이 맞는지도 체크해야 함
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleQueryService.getScheduleDetail(scheduleNum);
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 조회 실패");
+        // token으로 membershipNo 조회
+        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+        if (!"200".equals(resultCode)) {
+            throw new BasicException(
+                    resultCode,
+                    String.valueOf(resultMap.get("message"))
+            );
         }
+        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+
+        ScheduleDetailResDTO result = scheduleQueryService.getScheduleDetail(scheduleNum, membershipNo);
 
         return ApiResponse.success(result, "일정 조회 성공");
     }
@@ -164,7 +190,7 @@ public class ScheduleController {
             @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO
     ) {
 
-        logger.info("CALL /schedule/create");
+        logger.info("CALL /api/v1/schedule/create");
         logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO);
 
         ScheduleRegistResDTO result;
@@ -172,6 +198,8 @@ public class ScheduleController {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleCommandService.createSchedule(scheduleRegistReqDTO);
 
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 생성 실패");
         }
@@ -187,6 +215,7 @@ public class ScheduleController {
                     "- '일정 생성' API로 받은 응답 DTO를 그대로 보내주세요.")
     @PostMapping("/save")
     public ApiResponse saveSchedule(
+            HttpServletRequest request,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "일정 등록 요청",
                     required = true,
@@ -264,14 +293,26 @@ public class ScheduleController {
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
     ) {
 
-        logger.info("CALL /schedule/save");
+        logger.info("CALL api/v1/schedule/save");
         logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
 
         int result;
         try {
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleCommandService.saveSchedule(scheduleRegistResDTO);
+            // token으로 membershipNo 조회
+            Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+            String resultCode = String.valueOf(resultMap.get("resultCode"));
+            if (!"200".equals(resultCode)) {
+                throw new BasicException(
+                        resultCode,
+                        String.valueOf(resultMap.get("message"))
+                );
+            }
+            String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+            result = scheduleCommandService.saveSchedule(scheduleRegistResDTO, membershipNo);
+
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -360,7 +401,7 @@ public class ScheduleController {
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
     ) {
 
-        logger.info("CALL /schedule/update");
+        logger.info("CALL /api/v1/schedule/update");
         logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
 
         boolean result;
@@ -368,6 +409,8 @@ public class ScheduleController {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleCommandService.updateSchedule(scheduleRegistResDTO);
 
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -380,24 +423,22 @@ public class ScheduleController {
             description = "일정 전체를 DB에서 삭제하는 기능입니다.")
     @DeleteMapping("/")
     public ApiResponse deleteSchedule(@Parameter(description = "삭제할 일정 번호", example = "1")
-                                      @RequestParam Integer scheduleNum) {
+             @RequestParam Integer scheduleNum, HttpServletRequest request) {
 
-        logger.info("CALL /schedule/delete");
+        logger.info("CALL /api/v1/schedule/delete");
         logger.info("[input] scheduleNum={}", scheduleNum);
 
-        boolean result;
-        try {
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            // TODO. membershipNo를 토큰으로부터 받아와야 함
-            result = scheduleCommandService.deleteSchedule(scheduleNum, "1");
-
-            if (!result) return ApiResponse.error("404", "일정 삭제 실패");
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 삭제 실패");
+        // token으로 membershipNo 조회
+        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+        if (!"200".equals(resultCode)) {
+            throw new BasicException( resultCode,String.valueOf(resultMap.get("message")));
         }
+        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+        // 삭제 처리
+        scheduleCommandService.deleteSchedule(scheduleNum, membershipNo);
 
-        return ApiResponse.success(result, "일정 삭제 성공");
+        return ApiResponse.success(null, "일정 삭제 성공");
     }
 }
