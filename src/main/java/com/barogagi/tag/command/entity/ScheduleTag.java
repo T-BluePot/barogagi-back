@@ -26,6 +26,10 @@ public class ScheduleTag {
     @JoinColumn(name = "TAG_NUM")
     private Tag tag;
 
+    @Column(name = "MEMBERSHIP_NO", nullable = false)
+    private String membershipNo;
+
+
 }
 
 
