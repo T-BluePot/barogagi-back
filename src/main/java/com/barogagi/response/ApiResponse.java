@@ -18,7 +18,7 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> success(T data, String message) {
         ApiResponse<T> res = new ApiResponse<>();
-        res.resultCode = "200";
+        res.resultCode = "SUCCESS";
         res.message = message;
         res.data = data;
         return res;

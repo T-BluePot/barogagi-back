@@ -19,7 +19,7 @@ public class PlanQueryService {
         this.planMapper = planMapper;
     }
 
-    public List<PlanDetailVO> getPlanDetail(int scheduleNum) throws Exception{
+    public List<PlanDetailVO> getPlanDetail(int scheduleNum){
         return planMapper.selectPlanDetailByScheduleNum(scheduleNum);
     }
 }
