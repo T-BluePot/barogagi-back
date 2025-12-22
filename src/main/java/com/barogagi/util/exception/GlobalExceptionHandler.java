@@ -1,5 +1,6 @@
 package com.barogagi.util.exception;
 
+import com.barogagi.config.exception.BusinessException;
 import com.barogagi.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,5 +31,10 @@ public class GlobalExceptionHandler {
                         ErrorCode.INTERNAL_ERROR.getCode(),
                         ErrorCode.INTERNAL_ERROR.getMessage()
                 ));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ApiResponse<?> handleBusinessException(BusinessException e) {
+        return ApiResponse.result(e.getResultCode(), e.getMessage());
     }
 }
