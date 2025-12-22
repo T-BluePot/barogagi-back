@@ -1,5 +1,6 @@
 package com.barogagi.util;
 
+import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.exception.BasicException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
@@ -21,12 +22,15 @@ public class MembershipUtil {
         try {
             Object membershipNoAttr = request.getAttribute("membershipNo");
             if(membershipNoAttr == null) {
-                throw new BasicException("401", "접근 권한이 존재하지 않습니다.");
+                throw new BasicException(
+                        ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                        ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+                );
             }
 
             membershipNo = String.valueOf(membershipNoAttr);
-            resultCode = "200";
-            message = "회원 번호가 존재합니다.";
+            resultCode = ResultCode.EXIST_ACCESS_AUTH.getResultCode();
+            message = ResultCode.EXIST_ACCESS_AUTH.getMessage();
 
         } catch (BasicException ex) {
             resultCode = ex.getResultCode();
@@ -38,5 +42,18 @@ public class MembershipUtil {
         }
 
         return resultMap;
+    }
+
+    public String selectMembershipNo(HttpServletRequest request) {
+
+        Object membershipNoAttr = request.getAttribute("membershipNo");
+        if(null == membershipNoAttr) {
+            throw new BasicException(
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+            );
+        }
+
+        return String.valueOf(membershipNoAttr);
     }
 }

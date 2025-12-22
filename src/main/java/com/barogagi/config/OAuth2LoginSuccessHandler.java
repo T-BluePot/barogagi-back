@@ -42,6 +42,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         res.setContentType("application/json;charset=UTF-8");
         objectMapper.writeValue(res.getWriter(), Map.of(
+                "resultCode", login.tokens().resultCode(),
+                "message", login.tokens().message(),
                 "accessToken", login.tokens().accessToken(),
                 "accessTokenExpiresIn", login.tokens().accessTokenExpiresIn(),
                 "userId", userId,

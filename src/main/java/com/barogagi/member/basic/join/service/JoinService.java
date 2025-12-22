@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class JoinService {
@@ -21,55 +19,16 @@ public class JoinService {
     private static final SecureRandom random = new SecureRandom();
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+    private final JoinMapper joinMapper;
+
     @Autowired
-    private JoinMapper joinMapper;
-
-    // 회원가입 정보 저장 service
-    public int insertMembershipInfo(JoinDTO vo) throws Exception {
-
-        int result = 0;
-
-        String membershipNo = "";
-
-        while(true) {
-            // 랜덤 회원번호 생성
-            membershipNo = this.createRandomStr();
-
-            logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
-            if(membershipNo.isEmpty()) {
-                break;
-            }
-
-            // 회원번호 중복 체크
-            boolean checkDuplicateMembershipNo = this.checkDuplicateMemberNo(membershipNo);
-            logger.info("checkDuplicateMembershipNo={}", checkDuplicateMembershipNo);
-            if(!checkDuplicateMembershipNo) {
-                break;
-            }
-        }
-
-        logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
-        if(!membershipNo.isEmpty()) {  // 회원번호가 비어있을 경우 저장 X
-            vo.setMembershipNo(membershipNo);
-            result = this.insertMemberInfo(vo);
-        }
-
-        return result;
+    public JoinService(JoinMapper joinMapper) {
+        this.joinMapper = joinMapper;
     }
 
-    // 회원가입 정보 저장 기능
-    public int insertMemberInfo(JoinDTO vo) throws Exception{
-        return joinMapper.insertMemberInfo(vo);
-    }
-
-    // 아이디 중복 체크
-    public int checkUserId(JoinDTO vo) throws Exception{
-        return joinMapper.checkUserId(vo);
-    }
-
-    // 닉네임 중복 체크
-    public int checkNickName(NickNameDTO nickNameDTO) throws Exception{
-        return joinMapper.checkNickName(nickNameDTO);
+    // 닉네임 개수 구하기
+    public int selectNicknameCnt(NickNameDTO nickNameDTO) {
+        return joinMapper.selectNicknameCnt(nickNameDTO);
     }
 
     // 회원번호 랜덤값 생성
@@ -110,7 +69,7 @@ public class JoinService {
     }
 
     // 회원번호 중복 체크
-    public boolean checkDuplicateMemberNo(String membershipNo) throws Exception {
+    public boolean checkDuplicateMemberNo(String membershipNo) {
         boolean duplicateFlag = false;
 
         int membershipNoCnt = joinMapper.checkDuplicateMembershipNo(membershipNo);
@@ -121,5 +80,48 @@ public class JoinService {
         }
 
         return duplicateFlag;
+    }
+
+    // 회원가입 정보 저장 service
+    public int insertMembershipInfo(JoinDTO vo) {
+
+        int result = 0;
+
+        String membershipNo = "";
+
+        while(true) {
+            // 랜덤 회원번호 생성
+            membershipNo = this.createRandomStr();
+
+            logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
+            if(membershipNo.isEmpty()) {
+                break;
+            }
+
+            // 회원번호 중복 체크
+            boolean checkDuplicateMembershipNo = this.checkDuplicateMemberNo(membershipNo);
+            logger.info("checkDuplicateMembershipNo={}", checkDuplicateMembershipNo);
+            if(!checkDuplicateMembershipNo) {
+                break;
+            }
+        }
+
+        logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
+        if(!membershipNo.isEmpty()) {  // 회원번호가 비어있을 경우 저장 X
+            vo.setMembershipNo(membershipNo);
+            result = this.insertMemberInfo(vo);
+        }
+
+        return result;
+    }
+
+    // 회원가입 정보 저장 기능
+    public int insertMemberInfo(JoinDTO vo) {
+        return joinMapper.insertMemberInfo(vo);
+    }
+
+    // 아이디 개수 구하기
+    public int selectUserIdCnt(JoinDTO vo) {
+        return joinMapper.selectUserIdCnt(vo);
     }
 }
