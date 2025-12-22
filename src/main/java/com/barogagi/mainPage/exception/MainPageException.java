@@ -1,14 +1,12 @@
 package com.barogagi.mainPage.exception;
 
+import com.barogagi.config.exception.BusinessException;
 import lombok.Getter;
 
 @Getter
-public class MainPageException extends RuntimeException {
-
-    private final String resultCode;
+public class MainPageException extends BusinessException {
 
     public MainPageException(String resultCode, String message) {
-        super(message);
-        this.resultCode = resultCode;
+        super(resultCode, message);
     }
 }
