@@ -20,13 +20,14 @@
 
     <!-- Select Query -->
 
-    <select id="selectScheduleList" parameterType="int" resultMap="scheduleListResultMap">
+    <select id="selectScheduleList" parameterType="string" resultMap="scheduleListResultMap">
         <![CDATA[
             SELECT
                     a.SCHEDULE_NUM
                   , a.SCHEDULE_NM
                   , a.START_DATE
                   , a.END_DATE
+                  , a.DEL_YN
                   , b.TAG_NUM
                   , c.TAG_NM
             FROM    SCHEDULE a
@@ -36,7 +37,7 @@
         ]]>
     </select>
 
-    <select id="selectScheduleDetail" parameterType="int" resultType="com.barogagi.schedule.query.vo.ScheduleDetailVO">
+    <select id="selectScheduleDetail" parameterType="com.barogagi.schedule.query.vo.ScheduleMembershipNoVO" resultType="com.barogagi.schedule.query.vo.ScheduleDetailVO">
         <![CDATA[
             SELECT
                     SCHEDULE_NUM AS scheduleNum
@@ -44,8 +45,10 @@
                   , START_DATE AS startDate
                   , END_DATE AS endDate
                   , RADIUS AS radius
+                  , DEL_YN AS delYn
             FROM 	SCHEDULE
-            WHERE   SCHEDULE_NUM = #{scheduleNum};
+            WHERE   SCHEDULE_NUM = #{scheduleNum}
+            AND     MEMBERSHIP_NO = #{membershipNo};
         ]]>
     </select>
 </mapper>

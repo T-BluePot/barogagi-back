@@ -1,35 +1,33 @@
 package com.barogagi.schedule.controller;
 
-//import com.barogagi.member.join.vo.JoinVO;
-//import com.barogagi.member.join.vo.UserIdCheckVO;
-import com.barogagi.member.login.controller.LoginController;
-import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.query.service.PlanQueryService;
-import com.barogagi.plan.query.vo.PlanDetailVO;
-import com.barogagi.region.dto.RegionRegistReqDTO;
-import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
 import com.barogagi.schedule.dto.*;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
-import com.barogagi.schedule.query.vo.ScheduleDetailVO;
 import com.barogagi.util.InputValidate;
+import com.barogagi.util.MembershipUtil;
+import com.barogagi.util.exception.BasicException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Map;
+
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
-@RequestMapping("/schedule")
+@RequestMapping("/api/v1/schedule")
+@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "apiKeyAuth")
 public class ScheduleController {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
 
@@ -40,31 +38,46 @@ public class ScheduleController {
     private final PlanQueryService planQueryService;
 
     private final String API_SECRET_KEY;
+    private final MembershipUtil membershipUtil;
 
     public ScheduleController(Environment environment,
                               InputValidate inputValidate,
                               ScheduleQueryService scheduleQueryService,
                               ScheduleCommandService scheduleCommandService,
-                              PlanQueryService planQueryService) {
+                              PlanQueryService planQueryService, MembershipUtil membershipUtil) {
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
         this.inputValidate = inputValidate;
         this.scheduleQueryService = scheduleQueryService;
         this.scheduleCommandService = scheduleCommandService;
         this.planQueryService = planQueryService;
+        this.membershipUtil = membershipUtil;
     }
 
     @Operation(summary = "내 일정 목록 조회 기능", description = "일정 목록을 조회하는 기능입니다.")
     @GetMapping("/list")
-    public ApiResponse getScheduleList() {
+    public ApiResponse getScheduleList(HttpServletRequest request) {
 
-        logger.info("CALL /schedule/list");
+        logger.info("CALL /api/v1/schedule/list");
 
         ScheduleListGroupResDTO result;
         try {
-            // TODO. token으로 사용자 확인 후, 해당 사용자의 일정만 조회하도록 수정해야 함
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleQueryService.getScheduleList(1);
 
+            // token으로 membershipNo 조회
+            Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+            String resultCode = String.valueOf(resultMap.get("resultCode"));
+            if (!"200".equals(resultCode)) {
+                throw new BasicException(
+                        resultCode,
+                        String.valueOf(resultMap.get("message"))
+                );
+            }
+            String membershipNo = String.valueOf(resultMap.get("membershipNo"));
+
+            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
+            result = scheduleQueryService.getScheduleList(membershipNo);
+
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 목록 조회 실패");
         }
@@ -76,22 +89,25 @@ public class ScheduleController {
     @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.")
     @GetMapping("/detail")
     public ApiResponse getScheduleDetail(@Parameter(description = "조회할 일정 번호", example = "1")
-                                         @RequestParam Integer scheduleNum) {
+                                         @RequestParam Integer scheduleNum, HttpServletRequest request) {
 
 
-        logger.info("CALL /schedule/detail");
+        logger.info("CALL /api/v1/schedule/detail");
         logger.info("[input] scheduleNum={}", scheduleNum);
 
-        ScheduleDetailResDTO result;
-        try {
-            // TODO. 해당 사용자의 일정이 맞는지도 체크해야 함
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleQueryService.getScheduleDetail(scheduleNum);
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 조회 실패");
+        // token으로 membershipNo 조회
+        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+        if (!"200".equals(resultCode)) {
+            throw new BasicException(
+                    resultCode,
+                    String.valueOf(resultMap.get("message"))
+            );
         }
+        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+
+        ScheduleDetailResDTO result = scheduleQueryService.getScheduleDetail(scheduleNum, membershipNo);
 
         return ApiResponse.success(result, "일정 조회 성공");
     }
@@ -174,7 +190,7 @@ public class ScheduleController {
             @RequestBody ScheduleRegistReqDTO scheduleRegistReqDTO
     ) {
 
-        logger.info("CALL /schedule/create");
+        logger.info("CALL /api/v1/schedule/create");
         logger.info("[input] scheduleRegistReqDTO={}", scheduleRegistReqDTO);
 
         ScheduleRegistResDTO result;
@@ -182,6 +198,8 @@ public class ScheduleController {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleCommandService.createSchedule(scheduleRegistReqDTO);
 
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 생성 실패");
         }
@@ -197,13 +215,15 @@ public class ScheduleController {
                     "- '일정 생성' API로 받은 응답 DTO를 그대로 보내주세요.")
     @PostMapping("/save")
     public ApiResponse saveSchedule(
+            HttpServletRequest request,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "일정 등록 요청",
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "일정 등록 요청 예시",
+                            examples = {
+                            @ExampleObject(
+                                    name = "AI 추천 일정만 저장 요청 예시",
                                     value = "{\n" +
                                             "    \"scheduleNum\": null,\n" +
                                             "    \"scheduleNm\": \"서울 데이트 코스\",\n" +
@@ -215,6 +235,7 @@ public class ScheduleController {
                                             "    ],\n" +
                                             "    \"planRegistResDTOList\": [\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"08:30\",\n" +
                                             "        \"endTime\": \"09:00\",\n" +
                                             "        \"itemNum\": 10,\n" +
@@ -233,6 +254,7 @@ public class ScheduleController {
                                             "        ]\n" +
                                             "      },\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"14:00\",\n" +
                                             "        \"endTime\": \"15:00\",\n" +
                                             "        \"itemNum\": 2,\n" +
@@ -250,6 +272,7 @@ public class ScheduleController {
                                             "        ]\n" +
                                             "      },\n" +
                                             "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
                                             "        \"startTime\": \"15:30\",\n" +
                                             "        \"endTime\": \"19:00\",\n" +
                                             "        \"itemNum\": 15,\n" +
@@ -268,20 +291,99 @@ public class ScheduleController {
                                             "      }\n" +
                                             "    ]\n" +
                                             "}"
+                            ),
+                            @ExampleObject(
+                                    name = "AI 추천 + 사용자 추가 일정 저장 요청 예시",
+                                    value = "{\n" +
+                                            "    \"scheduleNum\": null,\n" +
+                                            "    \"scheduleNm\": \"3월 여행 일정\",\n" +
+                                            "    \"startDate\": \"2026-03-11\",\n" +
+                                            "    \"endDate\": \"2026-03-11\",\n" +
+                                            "    \"scheduleTagRegistResDTOList\": [\n" +
+                                            "      { \"tagNm\": \"즐거운\", \"tagNum\": 6 },\n" +
+                                            "      { \"tagNm\": \"저렴한\", \"tagNum\": 4 }\n" +
+                                            "    ],\n" +
+                                            "    \"planRegistResDTOList\": [\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"AI\",\n" +
+                                            "        \"startTime\": \"08:30\",\n" +
+                                            "        \"endTime\": \"09:00\",\n" +
+                                            "        \"itemNum\": 10,\n" +
+                                            "        \"itemNm\": \"프랜차이즈카페\",\n" +
+                                            "        \"categoryNum\": 2,\n" +
+                                            "        \"categoryNm\": \"카페\",\n" +
+                                            "        \"planNm\": \"부빙\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/20459372\",\n" +
+                                            "        \"planDescription\": \"'부빙'은 계절마다 변하는 감성 빙수를 판매하는 디저트 카페입니다.\",\n" +
+                                            "        \"planAddress\": \"서울 종로구 창의문로 136\",\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": [\n" +
+                                            "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
+                                            "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
+                                            "        ]\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"USER_PLACE\",\n" +
+                                            "        \"startTime\": \"14:00\",\n" +
+                                            "        \"endTime\": \"15:00\",\n" +
+                                            "        \"itemNum\": 2,\n" +
+                                            "        \"itemNm\": \"한식\",\n" +
+                                            "        \"categoryNum\": 1,\n" +
+                                            "        \"categoryNm\": \"식사\",\n" +
+                                            "        \"planNm\": \"카카오프렌즈 코엑스점\",\n" +
+                                            "        \"planLink\": \"http://place.map.kakao.com/26338954\",\n" +
+                                            "        \"planDescription\": null,\n" +
+                                            "        \"planAddress\": \"서울 강남구 삼성동 159\",\n" +
+                                            "        \"regionNm\": \"강남구\",\n" +
+                                            "        \"regionNum\": 9,\n" +
+                                            "        \"planTagRegistResDTOList\": []\n" +
+                                            "      },\n" +
+                                            "      {\n" +
+                                            "        \"planSource\": \"USER_CUSTOM\",\n" +
+                                            "        \"startTime\": \"15:30\",\n" +
+                                            "        \"endTime\": \"19:00\",\n" +
+                                            "        \"itemNum\": 15,\n" +
+                                            "        \"itemNm\": \"놀이공원\",\n" +
+                                            "        \"categoryNum\": 4,\n" +
+                                            "        \"categoryNm\": \"놀거리\",\n" +
+                                            "        \"planNm\": \"친구집 방문\",\n" +
+                                            "        \"planLink\": null,\n" +
+                                            "        \"planDescription\": null,\n" +
+                                            "        \"planAddress\": null,\n" +
+                                            "        \"regionNm\": \"종로구\",\n" +
+                                            "        \"regionNum\": 1,\n" +
+                                            "        \"planTagRegistResDTOList\": []\n" +
+                                            "      }\n" +
+                                            "    ]\n" +
+                                            "}"
                             )
+                            }
                     )
             )
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
     ) {
 
-        logger.info("CALL /schedule/save");
+        logger.info("CALL api/v1/schedule/save");
         logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
 
         int result;
         try {
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleCommandService.saveSchedule(scheduleRegistResDTO);
+            // token으로 membershipNo 조회
+            Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+            String resultCode = String.valueOf(resultMap.get("resultCode"));
+            if (!"200".equals(resultCode)) {
+                throw new BasicException(
+                        resultCode,
+                        String.valueOf(resultMap.get("message"))
+                );
+            }
+            String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+            result = scheduleCommandService.saveSchedule(scheduleRegistResDTO, membershipNo);
+
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -370,7 +472,7 @@ public class ScheduleController {
             @RequestBody ScheduleRegistResDTO scheduleRegistResDTO
     ) {
 
-        logger.info("CALL /schedule/update");
+        logger.info("CALL /api/v1/schedule/update");
         logger.info("[input] scheduleRegistResDTO={}", scheduleRegistResDTO);
 
         boolean result;
@@ -378,6 +480,8 @@ public class ScheduleController {
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleCommandService.updateSchedule(scheduleRegistResDTO);
 
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -390,24 +494,22 @@ public class ScheduleController {
             description = "일정 전체를 DB에서 삭제하는 기능입니다.")
     @DeleteMapping("/")
     public ApiResponse deleteSchedule(@Parameter(description = "삭제할 일정 번호", example = "1")
-                                      @RequestParam Integer scheduleNum) {
+             @RequestParam Integer scheduleNum, HttpServletRequest request) {
 
-        logger.info("CALL /schedule/delete");
+        logger.info("CALL /api/v1/schedule/delete");
         logger.info("[input] scheduleNum={}", scheduleNum);
 
-        boolean result;
-        try {
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            // TODO. membershipNo를 토큰으로부터 받아와야 함
-            result = scheduleCommandService.deleteSchedule(scheduleNum, "1");
-
-            if (!result) return ApiResponse.error("404", "일정 삭제 실패");
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 삭제 실패");
+        // token으로 membershipNo 조회
+        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
+        String resultCode = String.valueOf(resultMap.get("resultCode"));
+        if (!"200".equals(resultCode)) {
+            throw new BasicException( resultCode,String.valueOf(resultMap.get("message")));
         }
+        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
+        // 삭제 처리
+        scheduleCommandService.deleteSchedule(scheduleNum, membershipNo);
 
-        return ApiResponse.success(result, "일정 삭제 성공");
+        return ApiResponse.success(null, "일정 삭제 성공");
     }
 }

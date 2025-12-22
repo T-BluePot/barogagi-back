@@ -16,7 +16,7 @@ import java.util.List;
 
 @Tag(name = "장소", description = "장소 관련 API")
 @RestController
-@RequestMapping("/place")
+@RequestMapping("/api/v1/place")
 public class PlaceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
