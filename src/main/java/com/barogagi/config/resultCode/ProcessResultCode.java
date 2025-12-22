@@ -64,7 +64,7 @@ public enum ProcessResultCode {
 
     // mainPage
     NOT_FOUND_SCHEDULE("201", "일정이 존재하지 않습니다."),
-    FOUND_SCHEDULE("v", "조회 성공하였습니다."),
+    FOUND_SCHEDULE("200", "조회 성공하였습니다."),
     NOT_FOUND_POPULAR_TAG("201", "인기 태그 목록이 존재하지 않습니다."),
     FOUND_POPULAR_TAG("200", "인기 태그 조회 완료하였습니다."),
     NOT_FOUND_POPULAR_REGION("201", "인기 지역 목록이 존재하지 않습니다."),

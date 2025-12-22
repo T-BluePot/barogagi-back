@@ -41,6 +41,11 @@ public class MainPageService {
 
     public MainPageResponse selectUserScheduleInfoProcess(HttpServletRequest request) {
 
+        String resultCode = "";
+        String message = "";
+        List<TagInfoDTO> tagList = null;
+        RegionInfoDTO regionInfo = null;
+
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
         if(!membershipNoInfo.get("resultCode").equals("200")) {
@@ -58,103 +63,77 @@ public class MainPageService {
         UserInfoResponseDTO userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
 
         if(null == userInfoResponseDTO) {
-            throw new MainPageException(
-                    ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage()
-            );
+            resultCode = ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode();
+            message = ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage();
+        } else {
+
+            resultCode = ProcessResultCode.FOUND_SCHEDULE.getResultCode();
+            message = ProcessResultCode.FOUND_SCHEDULE.getMessage();
+
+            // 3. 해당 schedule에 대한 태그 목록 조회
+            userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
+            tagList = this.selectScheduleTag(userInfoRequestDTO);
+
+            // 4. 해당 plan에 대한 region 정보 조회
+            userInfoRequestDTO.setPlanNum(userInfoResponseDTO.getPlanNum());
+            regionInfo = this.selectScheduleRegionInfo(userInfoRequestDTO);
         }
 
-        // 3. 해당 schedule에 대한 태그 목록 조회
-        userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
-        List<TagInfoDTO> tagList = this.selectScheduleTag(userInfoRequestDTO);
-
-        // 4. 해당 plan에 대한 region 정보 조회
-        userInfoRequestDTO.setPlanNum(userInfoResponseDTO.getPlanNum());
-        RegionInfoDTO regionInfo = this.selectScheduleRegionInfo(userInfoRequestDTO);
-
-        return MainPageResponse.resultData(
-                userInfoResponseDTO,
-                tagList,
-                regionInfo,
-                ProcessResultCode.FOUND_SCHEDULE.getResultCode(),
-                ProcessResultCode.FOUND_SCHEDULE.getMessage()
-        );
+        return MainPageResponse.resultData(userInfoResponseDTO, tagList, regionInfo, resultCode, message);
     }
 
     public ApiResponse selectPopularTagList(String apiSecretKey) {
 
-        String resultCode = "";
-        String message = "";
-        List<TagRankInfoDTO> data = null;
-
-        try {
-
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-                throw new MainPageException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
-
-            // 2. 인기 태그 조회
-            List<TagRankInfoDTO> tagRankInfoList = this.selectTagRankList();
-            if(tagRankInfoList.isEmpty()) {
-                resultCode = ProcessResultCode.NOT_FOUND_POPULAR_TAG.getResultCode();
-                message = ProcessResultCode.NOT_FOUND_POPULAR_TAG.getMessage();
-            } else {
-                resultCode = ProcessResultCode.FOUND_POPULAR_TAG.getResultCode();
-                message = ProcessResultCode.FOUND_POPULAR_TAG.getMessage();
-                data = tagRankInfoList;
-            }
-
-        } catch (MainPageException ex) {
-            resultCode = ex.getResultCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new MainPageException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
         }
 
-        return ApiResponse.resultData(data, resultCode, message);
+        // 2. 인기 태그 조회
+        List<TagRankInfoDTO> tagRankInfoList = this.selectTagRankList();
+        if(tagRankInfoList.isEmpty()) {
+            throw new MainPageException(
+                    ProcessResultCode.NOT_FOUND_POPULAR_TAG.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_POPULAR_TAG.getMessage()
+            );
+
+        }
+
+        return ApiResponse.resultData(
+                tagRankInfoList,
+                ProcessResultCode.FOUND_POPULAR_TAG.getResultCode(),
+                ProcessResultCode.FOUND_POPULAR_TAG.getMessage()
+        );
     }
 
     public ApiResponse selectPopularRegionList(String apiSecretKey) {
 
-        String resultCode = "";
-        String message = "";
-        List<RegionRankInfoDTO> data = null;
-
-        try {
-
-            // 1. API SECRET KEY 일치 여부 확인
-            if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-                throw new MainPageException(
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                        ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-                );
-            }
-
-            // 2. 인기 지역 조회
-            List<RegionRankInfoDTO> regionRankInfoList = this.selectRegionRankList();
-
-            if(regionRankInfoList.isEmpty()) {
-                resultCode = ProcessResultCode.NOT_FOUND_POPULAR_REGION.getResultCode();
-                message = ProcessResultCode.NOT_FOUND_POPULAR_REGION.getMessage();
-            } else {
-                resultCode = ProcessResultCode.FOUND_POPULAR_REGION.getResultCode();
-                message = ProcessResultCode.FOUND_POPULAR_REGION.getMessage();
-            }
-
-        } catch (MainPageException ex) {
-            resultCode = ex.getResultCode();
-            message = ex.getMessage();
-        } catch (Exception e) {
-            resultCode = ResultCode.ERROR.getResultCode();
-            message = ResultCode.ERROR.getMessage();
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new MainPageException(
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
+                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
+            );
         }
 
-        return ApiResponse.resultData(data, resultCode, message);
+        // 2. 인기 지역 조회
+        List<RegionRankInfoDTO> regionRankInfoList = this.selectRegionRankList();
+
+        if(regionRankInfoList.isEmpty()) {
+            throw new MainPageException(
+                    ProcessResultCode.NOT_FOUND_POPULAR_REGION.getResultCode(),
+                    ProcessResultCode.NOT_FOUND_POPULAR_REGION.getMessage()
+            );
+        }
+
+        return ApiResponse.resultData(
+                regionRankInfoList,
+                ProcessResultCode.FOUND_POPULAR_REGION.getResultCode(),
+                ProcessResultCode.FOUND_POPULAR_REGION.getMessage()
+        );
     }
 
     // 유저 일정 조회

@@ -1,14 +1,12 @@
 package com.barogagi.util.exception;
 
+import com.barogagi.config.exception.BusinessException;
 import lombok.Getter;
 
 @Getter
-public class BasicException extends RuntimeException {
-
-    private final String resultCode;
+public class BasicException extends BusinessException {
 
     public BasicException(String resultCode, String message) {
-        super(message);
-        this.resultCode = resultCode;
+        super(resultCode, message);
     }
 }
