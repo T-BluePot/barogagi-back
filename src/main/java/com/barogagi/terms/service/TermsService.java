@@ -89,7 +89,9 @@ public class TermsService {
         }
 
         // 2. 필수 입력값 확인
-        if(inputValidate.isEmpty(termsDTO.getUserId()) || termsDTO.getTermsAgreeList().isEmpty()) {
+        if(inputValidate.isEmpty(termsDTO.getUserId()) ||
+                termsDTO.getTermsAgreeList() == null ||
+                termsDTO.getTermsAgreeList().isEmpty()) {
             throw new TermsException(
                     ProcessResultCode.EMPTY_DATA.getResultCode(),
                     ProcessResultCode.EMPTY_DATA.getMessage()

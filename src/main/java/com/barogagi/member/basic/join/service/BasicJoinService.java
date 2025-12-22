@@ -190,7 +190,11 @@ public class BasicJoinService {
         joinDTO.setUserId(joinRequestDTO.getUserId());
         joinDTO.setPassword(joinRequestDTO.getPassword());
         joinDTO.setEmail(joinRequestDTO.getEmail());
-        joinDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+        if(null != joinRequestDTO.getBirth()) {
+            joinRequestDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+        }
+        joinDTO.setBirth(joinRequestDTO.getBirth());
         joinDTO.setTel(joinRequestDTO.getTel());
         joinDTO.setGender(joinRequestDTO.getGender());
         joinDTO.setNickName(joinRequestDTO.getNickName());
@@ -248,7 +252,7 @@ public class BasicJoinService {
     public ApiResponse deleteAccount(RefreshTokenRequestDTO refreshTokenRequestDTO) {
 
         // 1. refresh token이 공백 또는 null인지 확인
-        if(refreshTokenRequestDTO.getRefreshToken().isEmpty()) {
+        if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
             throw new JoinException(
                     ProcessResultCode.EMPTY_DATA.getResultCode(),
                     ProcessResultCode.EMPTY_DATA.getMessage());

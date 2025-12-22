@@ -5,7 +5,6 @@ import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.dto.*;
-import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.exception.LoginException;
 import com.barogagi.member.login.mapper.LoginMapper;
 import com.barogagi.response.ApiResponse;
@@ -116,7 +115,7 @@ public class LoginService {
         }
 
         // 3. 비밀번호 암호화
-        loginDTO.setPassword(passwordConfig.passwordEncoder().encode(loginDTO.getPassword()));
+        loginDTO.setPassword(passwordEncoder.encode(loginDTO.getPassword()));
 
         // 4. 비밀번호 update
         int updatePassword = this.updatePassword(loginDTO);

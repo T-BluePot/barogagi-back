@@ -33,7 +33,7 @@ public class ServiceLoggingAspect {
             return result;
         } catch (BusinessException ex) {
             log.error("Service BusinessException - {}.{} / resultCode - {} / message - {}", className, methodName, ex.getResultCode(), ex.getMessage(), ex);
-            return ApiResponse.result(ex.getResultCode(), ex.getMessage());
+            throw ex;
 
         } catch (Exception e) {
             log.error("Service Exception - {}.{}", className, methodName, e);

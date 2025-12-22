@@ -9,6 +9,7 @@ import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.info.mapper.MemberMapper;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
+import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
 import com.barogagi.config.resultCode.ResultCode;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,17 +25,20 @@ public class MemberService {
     private final MembershipUtil membershipUtil;
     private final EncryptUtil encryptUtil;
     private final JoinService joinService;
+    private final InputValidate inputValidate;
 
     @Autowired
     public MemberService(MemberMapper memberMapper,
                          MembershipUtil membershipUtil,
                          EncryptUtil encryptUtil,
-                         JoinService joinService)
+                         JoinService joinService,
+                         InputValidate inputValidate)
     {
         this.memberMapper = memberMapper;
         this.membershipUtil = membershipUtil;
         this.encryptUtil = encryptUtil;
         this.joinService = joinService;
+        this.inputValidate = inputValidate;
     }
 
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
@@ -97,17 +101,17 @@ public class MemberService {
 
         // 3. 데이터 처리
         // 생년월일
-        if(!memberRequestDTO.getBirth().isEmpty()) {
+        if(!inputValidate.isEmpty(memberRequestDTO.getBirth())) {
             memberInfo.setBirth(memberRequestDTO.getBirth().replaceAll("[^0-9]", ""));
         }
 
         // 성별 (M : 남 / W : 여)
-        if(!memberRequestDTO.getGender().isEmpty()) {
+        if(!inputValidate.isEmpty(memberRequestDTO.getGender())) {
             memberInfo.setGender(memberRequestDTO.getGender());
         }
 
         // 닉네임(중복X)
-        if(!memberRequestDTO.getNickName().isEmpty()) {
+        if(!inputValidate.isEmpty(memberRequestDTO.getNickName())) {
             NickNameDTO nickNameRequest = new NickNameDTO();
             nickNameRequest.setNickName(memberRequestDTO.getNickName());
             int nickNameCnt = joinService.selectNicknameCnt(nickNameRequest);

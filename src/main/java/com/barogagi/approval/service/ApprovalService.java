@@ -45,7 +45,7 @@ public class ApprovalService {
         this.sendSmsService = sendSmsService;
     }
 
-    public ApiResponse approvalTelSend(@RequestBody ApprovalSendVO approvalSendVO) {
+    public ApiResponse approvalTelSend(ApprovalSendVO approvalSendVO) {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(approvalSendVO.getApiSecretKey())) {
