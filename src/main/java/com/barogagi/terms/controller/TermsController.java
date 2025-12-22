@@ -1,168 +1,44 @@
 package com.barogagi.terms.controller;
 
-import com.barogagi.member.login.dto.LoginVO;
-import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.dto.*;
 import com.barogagi.terms.service.TermsService;
-import com.barogagi.util.InputValidate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Tag(name = "약관", description = "약관 관련 API")
 @RestController
 @RequestMapping("/api/v1/terms")
+@RequiredArgsConstructor
 public class TermsController {
-    private static final Logger logger = LoggerFactory.getLogger(TermsController.class);
 
-    private final InputValidate inputValidate;
     private final TermsService termsService;
-    private final LoginService loginService;
-
-    private final String API_SECRET_KEY;
-
-    @Autowired
-    public TermsController(Environment environment, InputValidate inputValidate,
-                           TermsService termsService, LoginService loginService){
-        this.inputValidate = inputValidate;
-        this.termsService = termsService;
-        this.loginService = loginService;
-        this.API_SECRET_KEY = environment.getProperty("api.secret-key");
-    }
 
     @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 조회에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "조회하실 약관의 종류 값이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "약관이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping
     public ApiResponse termsList(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String termsType){
-        logger.info("CALL /api/v1/terms");
-        logger.info("[input] API_SECRET_KEY={}", apiSecretKey);
-
-        ApiResponse apiResponse = new ApiResponse();
-        String resultCode = "";
-        String message = "";
-
-        try {
-            if(apiSecretKey.equals(API_SECRET_KEY)) {
-
-                if(inputValidate.isEmpty(termsType)) {
-                    resultCode = "101";
-                    message = "조회하실 약관의 종류 값이 존재하지 않습니다.";
-                } else {
-                    TermsInputDTO termsInputDTO = new TermsInputDTO();
-                    termsInputDTO.setTermsType(termsType);
-                    List<TermsOutputDTO> termsList = termsService.selectTermsList(termsInputDTO);
-
-                    int termsCnt = termsList.size();
-                    logger.info("termsCnt={}", termsCnt);
-                    if(termsCnt > 0) {
-                        resultCode = "200";
-                        message = "약관 조회에 성공하였습니다.";
-                        apiResponse.setData(termsList);
-
-                    } else {
-                        resultCode = "102";
-                        message = "약관이 존재하지 않습니다.";
-                    }
-                }
-
-            } else {
-                resultCode = "100";
-                message = "잘못된 접근입니다.";
-            }
-
-        } catch (Exception e) {
-            resultCode = "400";
-            message = "오류가 발생하였습니다.";
-            throw new RuntimeException(e);
-        } finally {
-            apiResponse.setResultCode(resultCode);
-            apiResponse.setMessage(message);
-        }
-
-        return apiResponse;
+        return termsService.termsListProcess(apiSecretKey, termsType);
     }
 
     @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 저장에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "해당 사용자의 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "해당 사용자의 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "약관 저장에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/terms-agreements")
     public ApiResponse insertTermsAgree(@RequestBody TermsDTO termsDTO) {
-        logger.info("CALL /api/v1/terms/{userId}/terms-agreements");
-        logger.info("[input] API_SECRET_KEY={}", termsDTO.getApiSecretKey());
-
-        ApiResponse apiResponse = new ApiResponse();
-        String resultCode = "";
-        String message = "";
-
-        try {
-            if(termsDTO.getApiSecretKey().equals(API_SECRET_KEY)) {
-
-                String userId = termsDTO.getUserId();
-                LoginVO lvo = new LoginVO();
-                lvo.setUserId(userId);
-
-                LoginVO loginVO = loginService.findMembershipNo(lvo);
-                if(null != loginVO) {
-
-                    List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
-                    List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
-
-                    for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
-
-                        TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
-                        termsAgreeDTO.setMembershipNo(loginVO.getMembershipNo());
-                        termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
-                        termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
-
-                        termsAgreeDTOList.add(termsAgreeDTO);
-                    }
-                    String resCode = termsService.insertTermsAgreeList(termsAgreeDTOList);
-                    if(resCode.equals("200")) {
-                        resultCode = "200";
-                        message = "약관 저장에 성공하였습니다.";
-                    } else {
-                        resultCode = "300";
-                        message = "약관 저장에 실패하였습니다.";
-                    }
-
-                } else {
-                    resultCode = "101";
-                    message = "해당 사용자의 정보가 존재하지 않습니다.";
-                }
-
-            } else {
-                resultCode = "100";
-                message = "잘못된 접근입니다.";
-            }
-
-        } catch (Exception e) {
-            resultCode = "400";
-            message = "오류가 발생하였습니다.";
-            throw new RuntimeException(e);
-        } finally {
-            apiResponse.setResultCode(resultCode);
-            apiResponse.setMessage(message);
-        }
-
-        return apiResponse;
+        return termsService.termsAgreementsProcess(termsDTO);
     }
 }

@@ -8,7 +8,7 @@
         ]]>
     </insert>
 
-    <select id="checkUserId" parameterType="com.barogagi.member.basic.join.dto.JoinDTO" resultType="int">
+    <select id="selectUserIdCnt" parameterType="com.barogagi.member.basic.join.dto.JoinDTO" resultType="int">
         <![CDATA[
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO
@@ -16,7 +16,7 @@
         ]]>
     </select>
 
-    <select id="checkNickName" parameterType="com.barogagi.member.basic.join.dto.NickNameDTO" resultType="int">
+    <select id="selectNicknameCnt" parameterType="com.barogagi.member.basic.join.dto.NickNameDTO" resultType="int">
         <![CDATA[
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO

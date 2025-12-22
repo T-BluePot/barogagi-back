@@ -1,5 +1,7 @@
 package com.barogagi.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
@@ -9,6 +11,18 @@ public class Validator {
 
     // 금칙어 목록 예시 (확장 가능)
     private static final String[] BLOCKED_WORDS = {"admin", "운영자"};
+
+    private final String API_SECRET_KEY;
+
+    @Autowired
+    public Validator(Environment environment) {
+        this.API_SECRET_KEY = environment.getProperty("api.secret-key");
+    }
+
+    // API SECRET KEY 검증
+    public boolean apiSecretKeyCheck(String apiSecretKey) {
+        return apiSecretKey.equals(API_SECRET_KEY);
+    }
 
     // 아이디 검증
     public boolean isValidId(String userId) {

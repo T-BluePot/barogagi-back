@@ -2,33 +2,29 @@ package com.barogagi.config;
 
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
-import com.barogagi.member.login.repository.UserMembershipRepository;
+import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.util.JwtUtil;
+import com.barogagi.config.resultCode.ResultCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
-
     private final JwtUtil jwt;
-    private final UserMembershipRepository userRepo;
     private final MemberService memberService;
 
-    public JwtAuthFilter(JwtUtil jwt, UserMembershipRepository userRepo, MemberService memberService) {
+    public JwtAuthFilter(JwtUtil jwt, MemberService memberService) {
         this.jwt = jwt;
-        this.userRepo = userRepo;
         this.memberService = memberService;
     }
 
@@ -38,16 +34,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String header = req.getHeader("Authorization");
-
-            logger.info("@@@ header={}", header);
-
             if (header != null && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
-                logger.info("@@@ token={}", token);
                 Claims claims = jwt.parseToken(token, "ACCESS");
 
                 String membershipNo = jwt.getMembershipNo(claims);
-                logger.info("@@@ membershipNo={}", membershipNo);
                 // 회원 조회
                 Member member = memberService.findByMembershipNo(membershipNo);
 
@@ -62,12 +53,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
             // 유효기간이 지나서 만료된 경우
-            writeErrorResponse(res, "300", "Access token has expired");
+            writeErrorResponse(
+                    ResultCode.EXPIRE_TOKEN.getResultCode(),
+                    ResultCode.EXPIRE_TOKEN.getMessage()
+            );
         } catch (JwtException | SecurityException e) {
             // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
-            writeErrorResponse(res, "301", "Revoked access token");
+            writeErrorResponse(
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+            );
         } catch (Exception e) {
-            writeErrorResponse(res, "302", "Unknown authentication error");
+            writeErrorResponse(
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
+                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
+            );
         }
 
     }
@@ -78,16 +78,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return p.startsWith("/auth/") || p.startsWith("/login/basic/membership/userId/search");
     }
 
-    private void writeErrorResponse(HttpServletResponse res, String errorCode, String message) throws IOException {
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        res.setContentType("application/json;charset=UTF-8");
-
-        String json = String.format(
-                "{\"errorCode\":\"%s\", \"message\":\"%s\"}",
-                errorCode, message
-        );
-
-        res.getWriter().write(json);
+    private void writeErrorResponse(String resultCode, String message) throws IOException {
+        throw new InvalidRefreshTokenException(resultCode, message);
     }
 
 }
