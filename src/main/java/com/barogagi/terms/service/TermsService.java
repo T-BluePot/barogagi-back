@@ -1,6 +1,5 @@
 package com.barogagi.terms.service;
 
-import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
@@ -8,8 +7,8 @@ import com.barogagi.terms.dto.*;
 import com.barogagi.terms.exception.TermsException;
 import com.barogagi.terms.mapper.TermsMapper;
 import com.barogagi.util.InputValidate;
-import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
+import com.barogagi.util.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,18 +43,12 @@ public class TermsService {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-            throw new TermsException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new TermsException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 필수 입력값 확인
         if(inputValidate.isEmpty(termsType)) {
-            throw new TermsException(
-                    ProcessResultCode.EMPTY_DATA.getResultCode(),
-                    ProcessResultCode.EMPTY_DATA.getMessage()
-            );
+            throw new TermsException(ErrorCode.EMPTY_DATA);
         }
 
         // 3. 약관 조회
@@ -64,17 +57,14 @@ public class TermsService {
         List<TermsOutputDTO> termsList = this.selectTermsList(termsInputDTO);
 
         if(termsList.isEmpty()) {
-            throw new TermsException(
-                    ProcessResultCode.NOT_FOUND_TERMS.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_TERMS.getMessage()
-            );
+            throw new TermsException(ErrorCode.NOT_FOUND_TERMS);
 
         }
 
         return ApiResponse.resultData(
                 termsList,
-                ProcessResultCode.FOUND_TERMS.getResultCode(),
-                ProcessResultCode.FOUND_TERMS.getMessage()
+                ErrorCode.FOUND_TERMS.getCode(),
+                ErrorCode.FOUND_TERMS.getMessage()
         );
     }
 
@@ -82,30 +72,21 @@ public class TermsService {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(termsDTO.getApiSecretKey())) {
-            throw new TermsException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new TermsException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 필수 입력값 확인
         if(inputValidate.isEmpty(termsDTO.getUserId()) ||
                 termsDTO.getTermsAgreeList() == null ||
                 termsDTO.getTermsAgreeList().isEmpty()) {
-            throw new TermsException(
-                    ProcessResultCode.EMPTY_DATA.getResultCode(),
-                    ProcessResultCode.EMPTY_DATA.getMessage()
-            );
+            throw new TermsException(ErrorCode.EMPTY_DATA);
         }
 
         LoginVO lvo = new LoginVO();
         lvo.setUserId(termsDTO.getUserId());
         LoginVO loginVO = loginService.findMembershipNo(lvo);
         if(null == loginVO) {
-            throw new TermsException(
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-            );
+            throw new TermsException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
         List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
@@ -121,15 +102,12 @@ public class TermsService {
         String resCode = this.insertTermsAgreeList(termsAgreeDTOList);
 
         if(!resCode.equals("200")) {
-            throw new TermsException(
-                    ProcessResultCode.FAIL_INSERT_TERMS.getResultCode(),
-                    ProcessResultCode.FAIL_INSERT_TERMS.getMessage()
-            );
+            throw new TermsException(ErrorCode.FAIL_INSERT_TERMS);
         }
 
         return ApiResponse.result(
-                ProcessResultCode.SUCCESS_INSERT_TERMS.getResultCode(),
-                ProcessResultCode.SUCCESS_INSERT_TERMS.getMessage()
+                ErrorCode.SUCCESS_INSERT_TERMS.getCode(),
+                ErrorCode.SUCCESS_INSERT_TERMS.getMessage()
         );
     }
 

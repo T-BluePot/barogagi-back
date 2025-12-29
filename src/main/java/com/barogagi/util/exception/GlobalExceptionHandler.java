@@ -35,6 +35,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ApiResponse<?> handleBusinessException(BusinessException e) {
-        return ApiResponse.result(e.getResultCode(), e.getMessage());
+        return ApiResponse.result(e.getCode(), e.getMessage());
     }
 }
