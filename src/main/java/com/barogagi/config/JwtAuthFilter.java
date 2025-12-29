@@ -4,7 +4,7 @@ import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.util.JwtUtil;
-import com.barogagi.config.resultCode.ResultCode;
+import com.barogagi.util.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
@@ -53,21 +53,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
             // 유효기간이 지나서 만료된 경우
-            writeErrorResponse(
-                    ResultCode.EXPIRE_TOKEN.getResultCode(),
-                    ResultCode.EXPIRE_TOKEN.getMessage()
-            );
+            writeErrorResponse(ErrorCode.EXPIRE_TOKEN);
         } catch (JwtException | SecurityException e) {
             // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
-            writeErrorResponse(
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
-            );
+            writeErrorResponse(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         } catch (Exception e) {
-            writeErrorResponse(
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
-            );
+            writeErrorResponse(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         }
 
     }
@@ -78,8 +69,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return p.startsWith("/auth/") || p.startsWith("/login/basic/membership/userId/search");
     }
 
-    private void writeErrorResponse(String resultCode, String message) throws IOException {
-        throw new InvalidRefreshTokenException(resultCode, message);
+    private void writeErrorResponse(ErrorCode errorCode) throws IOException {
+        throw new InvalidRefreshTokenException(errorCode);
     }
 
 }

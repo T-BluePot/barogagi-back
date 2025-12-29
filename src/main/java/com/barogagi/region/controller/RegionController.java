@@ -93,7 +93,7 @@ public class RegionController {
             throw new RuntimeException(e);
 
         } finally {
-            apiResponse.setResultCode(resultCode);
+            apiResponse.setCode(resultCode);
             apiResponse.setMessage(message);
         }
         return apiResponse;
