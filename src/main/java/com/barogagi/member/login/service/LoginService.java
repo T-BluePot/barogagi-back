@@ -26,28 +26,25 @@ public class LoginService {
     private final Validator validator;
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
-    private final PasswordConfig passwordConfig;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
     @Autowired
     public LoginService(
-                        LoginMapper loginMapper,
-                        Validator validator,
-                        InputValidate inputValidate,
-                        EncryptUtil encryptUtil,
-                        PasswordConfig passwordConfig,
-                        MemberService memberService,
-                        PasswordEncoder passwordEncoder,
-                        AuthService authService
-                        )
+            LoginMapper loginMapper,
+            Validator validator,
+            InputValidate inputValidate,
+            EncryptUtil encryptUtil,
+            MemberService memberService,
+            PasswordEncoder passwordEncoder,
+            AuthService authService
+    )
     {
         this.loginMapper = loginMapper;
         this.validator = validator;
         this.inputValidate = inputValidate;
         this.encryptUtil = encryptUtil;
-        this.passwordConfig = passwordConfig;
         this.memberService = memberService;
         this.passwordEncoder = passwordEncoder;
         this.authService = authService;
@@ -182,7 +179,7 @@ public class LoginService {
         resultCode = pair.resultCode();
         message = pair.message();
 
-        if(!resultCode.equals("200")) {
+        if(!resultCode.equals("R200")) {
             return ApiResponse.error(resultCode, message);
         }
 
