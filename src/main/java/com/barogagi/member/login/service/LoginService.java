@@ -69,6 +69,8 @@ public class LoginService {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
+        searchUserIdDTO.setTel(searchUserIdDTO.getTel().replaceAll("[^0-9]", ""));
+
         searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
         List<UserIdDTO> searchIdList = this.myUserIdList(searchUserIdDTO);
 
