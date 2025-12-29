@@ -44,7 +44,7 @@ public class MemberService {
 
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
-        if(!membershipNoInfo.get("resultCode").equals("200")) {
+        if(!membershipNoInfo.get("resultCode").equals("A200")) {
             return ApiResponse.error(
                     String.valueOf(membershipNoInfo.get("resultCode")),
                     String.valueOf(membershipNoInfo.get("message"))
@@ -78,7 +78,7 @@ public class MemberService {
 
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
-        if(!membershipNoInfo.get("resultCode").equals("200")) {
+        if(!membershipNoInfo.get("resultCode").equals("A200")) {
             return ApiResponse.error(
                     String.valueOf(membershipNoInfo.get("resultCode")),
                     String.valueOf(membershipNoInfo.get("message"))
