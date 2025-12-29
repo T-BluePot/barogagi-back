@@ -2,7 +2,7 @@ package com.barogagi.config;
 
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
-import com.barogagi.config.resultCode.ResultCode;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +77,8 @@ public class SecurityConfig {
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
 
-                    String resultCode = ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode();
-                    String message = ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage();
+                    String resultCode = ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode();
+                    String message = ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage();
 
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json;charset=UTF-8");

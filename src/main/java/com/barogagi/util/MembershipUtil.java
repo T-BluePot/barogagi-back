@@ -1,7 +1,7 @@
 package com.barogagi.util;
 
-import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.exception.BasicException;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
@@ -22,18 +22,15 @@ public class MembershipUtil {
         try {
             Object membershipNoAttr = request.getAttribute("membershipNo");
             if(membershipNoAttr == null) {
-                throw new BasicException(
-                        ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
-                        ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
-                );
+                throw new BasicException(ErrorCode.NOT_EXIST_ACCESS_AUTH);
             }
 
             membershipNo = String.valueOf(membershipNoAttr);
-            resultCode = ResultCode.EXIST_ACCESS_AUTH.getResultCode();
-            message = ResultCode.EXIST_ACCESS_AUTH.getMessage();
+            resultCode = ErrorCode.EXIST_ACCESS_AUTH.getCode();
+            message = ErrorCode.EXIST_ACCESS_AUTH.getMessage();
 
         } catch (BasicException ex) {
-            resultCode = ex.getResultCode();
+            resultCode = ex.getCode();
             message = ex.getMessage();
         } finally {
             resultMap.put("resultCode", resultCode);
@@ -48,10 +45,7 @@ public class MembershipUtil {
 
         Object membershipNoAttr = request.getAttribute("membershipNo");
         if(null == membershipNoAttr) {
-            throw new BasicException(
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getResultCode(),
-                    ResultCode.NOT_EXIST_ACCESS_AUTH.getMessage()
-            );
+            throw new BasicException(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         }
 
         return String.valueOf(membershipNoAttr);

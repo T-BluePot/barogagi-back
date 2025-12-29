@@ -1,6 +1,5 @@
 package com.barogagi.member.login.service;
 
-import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
@@ -9,6 +8,7 @@ import com.barogagi.member.login.mapper.AuthMapper;
 import com.barogagi.member.login.repository.RefreshTokenRepository;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
+import com.barogagi.util.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,8 +82,8 @@ public class AuthService {
                         accessExp,
                         refresh,
                         refreshExp,
-                        ProcessResultCode.SUCCESS_LOGIN.getResultCode(),
-                        ProcessResultCode.SUCCESS_LOGIN.getMessage()
+                        ErrorCode.SUCCESS_LOGIN.getCode(),
+                        ErrorCode.SUCCESS_LOGIN.getMessage()
                 ),
                 no, u.getUserId(), u.getJoinType()
         );
@@ -114,8 +114,8 @@ public class AuthService {
                         accessExp,
                         refresh,
                         refreshExp,
-                        ProcessResultCode.SUCCESS_REFRESH_TOKEN.getResultCode(),
-                        ProcessResultCode.SUCCESS_REFRESH_TOKEN.getMessage()
+                        ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
+                        ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
                 ),
                 no, u.getUserId(), u.getJoinType()
         );
@@ -147,19 +147,13 @@ public class AuthService {
 
             // 현재 리프레시가 DB에 VALID로 존재하는지 확인
             RefreshToken current = refreshRepo.findByTokenAndStatus(refreshToken, "VALID")
-                    .orElseThrow(() -> new InvalidRefreshTokenException(
-                            ProcessResultCode.REQUIRED_LOGIN.getResultCode(),
-                            ProcessResultCode.REQUIRED_LOGIN.getMessage()
-                    ));
+                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.REQUIRED_LOGIN));
 
             // 만료 체크
             if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
                 current.setStatus("REVOKED");
                 refreshRepo.save(current);
-                throw new InvalidRefreshTokenException(
-                        ProcessResultCode.REQUIRED_RE_LOGIN.getResultCode(),
-                        ProcessResultCode.REQUIRED_RE_LOGIN.getMessage()
-                );
+                throw new InvalidRefreshTokenException(ErrorCode.REQUIRED_RE_LOGIN);
             }
 
             // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
@@ -171,10 +165,7 @@ public class AuthService {
 
             // 새 토큰 발급
             UserMembership user = userRepo.findById(membershipNo)
-                    .orElseThrow(() -> new InvalidRefreshTokenException(
-                            ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                            ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-                    ));
+                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_USER_INFO));
 
             newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
             newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
@@ -194,7 +185,7 @@ public class AuthService {
                     0,
                     "",
                     0,
-                    ex.getResultCode(),
+                    ex.getCode(),
                     ex.getMessage()
                     );
         }
@@ -202,8 +193,8 @@ public class AuthService {
         return new TokenPair(
                 newAccess, jwt.getAccessExpSeconds(),
                 newRefresh, jwt.getRefreshExpSeconds(),
-                ProcessResultCode.SUCCESS_REFRESH_TOKEN.getResultCode(),
-                ProcessResultCode.SUCCESS_REFRESH_TOKEN.getMessage()
+                ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
+                ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
         );
     }
 
@@ -242,7 +233,7 @@ public class AuthService {
         try {
             // 1. JWT 토큰 유효성 검증
             if(!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
-                throw new InvalidRefreshTokenException("301", "유효하지 않은 refresh token입니다.");
+                throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
             }
 
             // 2. membershipNo 구하기
@@ -250,7 +241,7 @@ public class AuthService {
 
             // 3. membershipNo 조회가 되지 않을 경우
             if(membershipNo == null || membershipNo.isBlank()) {
-                throw new InvalidRefreshTokenException("302", "유효한 token 정보를 찾을 수 없습니다.");
+                throw new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_AVAILABLE_REFRESH_TOKEN);
             }
 
             resultCode = "200";
@@ -258,7 +249,7 @@ public class AuthService {
             returnMap.put("membershipNo", membershipNo);
 
         } catch (InvalidRefreshTokenException e) {
-            resultCode = e.getResultCode();
+            resultCode = e.getCode();
             message = e.getMessage();
         } finally {
             returnMap.put("resultCode", resultCode);
