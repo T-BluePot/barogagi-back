@@ -66,22 +66,16 @@ public class ScheduleController {
             Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
             String resultCode = String.valueOf(resultMap.get("resultCode"));
             if (!"200".equals(resultCode)) {
-                throw new BasicException(
-                        resultCode,
-                        String.valueOf(resultMap.get("message"))
-                );
+                return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
             }
             String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
             //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleQueryService.getScheduleList(membershipNo);
 
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 목록 조회 실패");
         }
-
 
         return ApiResponse.success(result, "일정 목록 조회 성공");
     }
@@ -99,10 +93,7 @@ public class ScheduleController {
         Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
         String resultCode = String.valueOf(resultMap.get("resultCode"));
         if (!"200".equals(resultCode)) {
-            throw new BasicException(
-                    resultCode,
-                    String.valueOf(resultMap.get("message"))
-            );
+            return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
         }
         String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
@@ -199,7 +190,7 @@ public class ScheduleController {
             result = scheduleCommandService.createSchedule(scheduleRegistReqDTO);
 
         } catch (BasicException e) {
-            return ApiResponse.error(e.getResultCode(), e.getMessage());
+            return ApiResponse.error(e.getCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 생성 실패");
         }
@@ -373,17 +364,12 @@ public class ScheduleController {
             Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
             String resultCode = String.valueOf(resultMap.get("resultCode"));
             if (!"200".equals(resultCode)) {
-                throw new BasicException(
-                        resultCode,
-                        String.valueOf(resultMap.get("message"))
-                );
+                return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
             }
             String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 
             result = scheduleCommandService.saveSchedule(scheduleRegistResDTO, membershipNo);
 
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getResultCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -481,7 +467,7 @@ public class ScheduleController {
             result = scheduleCommandService.updateSchedule(scheduleRegistResDTO);
 
         } catch (BasicException e) {
-            return ApiResponse.error(e.getResultCode(), e.getMessage());
+            return ApiResponse.error(e.getCode(), e.getMessage());
         } catch (Exception e) {
             return ApiResponse.error("404", "일정 저장 실패");
         }
@@ -503,7 +489,7 @@ public class ScheduleController {
         Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
         String resultCode = String.valueOf(resultMap.get("resultCode"));
         if (!"200".equals(resultCode)) {
-            throw new BasicException( resultCode,String.valueOf(resultMap.get("message")));
+            return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
         }
         String membershipNo = String.valueOf(resultMap.get("membershipNo"));
 

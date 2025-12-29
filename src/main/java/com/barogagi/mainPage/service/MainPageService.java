@@ -4,11 +4,10 @@ import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.mapper.MainPageMapper;
 import com.barogagi.mainPage.response.MainPageResponse;
-import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.MembershipUtil;
-import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.util.Validator;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +44,14 @@ public class MainPageService {
         String message = "";
         List<TagInfoDTO> tagList = null;
         RegionInfoDTO regionInfo = null;
+        UserInfoResponseDTO userInfoResponseDTO = null;
 
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
         if(!membershipNoInfo.get("resultCode").equals("200")) {
-            throw new MainPageException(
+
+            return MainPageResponse.resultData(
+                    userInfoResponseDTO, tagList, regionInfo,
                     String.valueOf(membershipNoInfo.get("resultCode")),
                     String.valueOf(membershipNoInfo.get("message"))
             );
@@ -60,15 +62,15 @@ public class MainPageService {
         // 2. 유저 일정 정보 조회
         UserInfoRequestDTO userInfoRequestDTO = new UserInfoRequestDTO();
         userInfoRequestDTO.setMembershipNo(membershipNo);
-        UserInfoResponseDTO userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
+        userInfoResponseDTO = this.selectUserScheduleInfo(userInfoRequestDTO);
 
         if(null == userInfoResponseDTO) {
-            resultCode = ProcessResultCode.NOT_FOUND_SCHEDULE.getResultCode();
-            message = ProcessResultCode.NOT_FOUND_SCHEDULE.getMessage();
+            resultCode = ErrorCode.NOT_FOUND_SCHEDULE.getCode();
+            message = ErrorCode.NOT_FOUND_SCHEDULE.getMessage();
         } else {
 
-            resultCode = ProcessResultCode.FOUND_SCHEDULE.getResultCode();
-            message = ProcessResultCode.FOUND_SCHEDULE.getMessage();
+            resultCode = ErrorCode.FOUND_SCHEDULE.getCode();
+            message = ErrorCode.FOUND_SCHEDULE.getMessage();
 
             // 3. 해당 schedule에 대한 태그 목록 조회
             userInfoRequestDTO.setScheduleNum(userInfoResponseDTO.getScheduleNum());
@@ -86,26 +88,20 @@ public class MainPageService {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-            throw new MainPageException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new MainPageException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 인기 태그 조회
         List<TagRankInfoDTO> tagRankInfoList = this.selectTagRankList();
         if(tagRankInfoList.isEmpty()) {
-            throw new MainPageException(
-                    ProcessResultCode.NOT_FOUND_POPULAR_TAG.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_POPULAR_TAG.getMessage()
-            );
+            throw new MainPageException(ErrorCode.NOT_FOUND_POPULAR_TAG);
 
         }
 
         return ApiResponse.resultData(
                 tagRankInfoList,
-                ProcessResultCode.FOUND_POPULAR_TAG.getResultCode(),
-                ProcessResultCode.FOUND_POPULAR_TAG.getMessage()
+                ErrorCode.FOUND_POPULAR_TAG.getCode(),
+                ErrorCode.FOUND_POPULAR_TAG.getMessage()
         );
     }
 
@@ -113,26 +109,20 @@ public class MainPageService {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-            throw new MainPageException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new MainPageException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 인기 지역 조회
         List<RegionRankInfoDTO> regionRankInfoList = this.selectRegionRankList();
 
         if(regionRankInfoList.isEmpty()) {
-            throw new MainPageException(
-                    ProcessResultCode.NOT_FOUND_POPULAR_REGION.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_POPULAR_REGION.getMessage()
-            );
+            throw new MainPageException(ErrorCode.NOT_FOUND_POPULAR_REGION);
         }
 
         return ApiResponse.resultData(
                 regionRankInfoList,
-                ProcessResultCode.FOUND_POPULAR_REGION.getResultCode(),
-                ProcessResultCode.FOUND_POPULAR_REGION.getMessage()
+                ErrorCode.FOUND_POPULAR_REGION.getCode(),
+                ErrorCode.FOUND_POPULAR_REGION.getMessage()
         );
     }
 

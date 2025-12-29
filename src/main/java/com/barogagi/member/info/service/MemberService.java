@@ -1,6 +1,5 @@
 package com.barogagi.member.info.service;
 
-import com.barogagi.config.resultCode.ProcessResultCode;
 import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.dto.Member;
@@ -11,7 +10,7 @@ import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
-import com.barogagi.config.resultCode.ResultCode;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +45,7 @@ public class MemberService {
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
         if(!membershipNoInfo.get("resultCode").equals("200")) {
-            throw new MemberInfoException(
+            return ApiResponse.error(
                     String.valueOf(membershipNoInfo.get("resultCode")),
                     String.valueOf(membershipNoInfo.get("message"))
             );
@@ -56,10 +55,7 @@ public class MemberService {
         // 2. 회원 정보 조회
         Member memberInfo = this.findByMembershipNo(membershipNo);
         if(null == memberInfo) {
-            throw new MemberInfoException(
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-            );
+            throw new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
         // 이메일 복호화
@@ -73,8 +69,8 @@ public class MemberService {
 
         return ApiResponse.resultData(
                 memberInfo,
-                ProcessResultCode.FOUND_USER_INFO.getResultCode(),
-                ProcessResultCode.FOUND_USER_INFO.getMessage()
+                ErrorCode.FOUND_USER_INFO.getCode(),
+                ErrorCode.FOUND_USER_INFO.getMessage()
         );
     }
 
@@ -83,9 +79,10 @@ public class MemberService {
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
         if(!membershipNoInfo.get("resultCode").equals("200")) {
-            throw new MemberInfoException(
+            return ApiResponse.error(
                     String.valueOf(membershipNoInfo.get("resultCode")),
-                    String.valueOf(membershipNoInfo.get("message")));
+                    String.valueOf(membershipNoInfo.get("message"))
+            );
         }
 
         String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
@@ -93,10 +90,7 @@ public class MemberService {
         // 2. 회원 정보 조회
         Member memberInfo = this.findByMembershipNo(membershipNo);
         if(null == memberInfo) {
-            throw new MemberInfoException(
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getResultCode(),
-                    ProcessResultCode.NOT_FOUND_USER_INFO.getMessage()
-            );
+            throw new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
         // 3. 데이터 처리
@@ -117,10 +111,7 @@ public class MemberService {
             int nickNameCnt = joinService.selectNicknameCnt(nickNameRequest);
 
             if(nickNameCnt > 0) {
-                throw new MemberInfoException(
-                        ProcessResultCode.UNAVAILABLE_NICKNAME.getResultCode(),
-                        ProcessResultCode.UNAVAILABLE_NICKNAME.getMessage()
-                );
+                throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);
             }
 
             memberInfo.setNickName(memberRequestDTO.getNickName());
@@ -128,16 +119,10 @@ public class MemberService {
 
         int updateMemberInfo = this.updateMemberInfo(memberInfo);
         if(updateMemberInfo <= 0) {
-            throw new MemberInfoException(
-                    ProcessResultCode.FAIL_UPDATE_USER_INFO.getResultCode(),
-                    ProcessResultCode.FAIL_UPDATE_USER_INFO.getMessage()
-            );
+            throw new MemberInfoException(ErrorCode.FAIL_UPDATE_USER_INFO);
         }
 
-        return ApiResponse.result(
-                ProcessResultCode.SUCCESS_UPDATE_USER_INFO.getResultCode(),
-                ProcessResultCode.SUCCESS_UPDATE_USER_INFO.getMessage()
-        );
+        return ApiResponse.result(ErrorCode.SUCCESS_UPDATE_USER_INFO);
     }
 
     public Member findByMembershipNo(String membershipNo) {
