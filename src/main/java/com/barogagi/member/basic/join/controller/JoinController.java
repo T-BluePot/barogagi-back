@@ -23,11 +23,11 @@ public class JoinController {
 
     @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "해당 아이디 사용이 가능합니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "적합한 아이디가 아닙니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "해당 아이디 사용이 불가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "U200", description = "해당 아이디 사용이 가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "U102", description = "적합한 아이디가 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "U300", description = "해당 아이디 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/userid/exists")

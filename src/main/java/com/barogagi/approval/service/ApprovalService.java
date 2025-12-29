@@ -5,17 +5,15 @@ import com.barogagi.approval.mapper.ApprovalMapper;
 import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.approval.vo.ApprovalVO;
-import com.barogagi.config.resultCode.ProcessResultCode;
-import com.barogagi.config.resultCode.ResultCode;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.sendSms.dto.SendSmsVO;
 import com.barogagi.sendSms.service.SendSmsService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
+import com.barogagi.util.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 public class ApprovalService {
@@ -49,18 +47,12 @@ public class ApprovalService {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(approvalSendVO.getApiSecretKey())) {
-            throw new ApprovalException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 필수 입력값 확인
         if(inputValidate.isEmpty(approvalSendVO.getTel())) {
-            throw new ApprovalException(
-                    ProcessResultCode.EMPTY_DATA.getResultCode(),
-                    ProcessResultCode.EMPTY_DATA.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.EMPTY_DATA);
         }
 
         // 3. 처리
@@ -85,10 +77,7 @@ public class ApprovalService {
         boolean sendMessageResult = sendSmsService.sendSms(sendSmsVO);
 
         if(!sendMessageResult) {
-            throw new ApprovalException(
-                    ProcessResultCode.FAIL_SEND_SMS.getResultCode(),
-                    ProcessResultCode.FAIL_SEND_SMS.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.FAIL_SEND_SMS);
         }
 
         // 인증번호 암호화
@@ -98,35 +87,23 @@ public class ApprovalService {
         int insertResult = this.insertApprovalRecord(approvalVO);
 
         if(insertResult <= 0) {
-            throw new ApprovalException(
-                    ProcessResultCode.ERROR_SEND_SMS.getResultCode(),
-                    ProcessResultCode.ERROR_SEND_SMS.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.ERROR_SEND_SMS);
         }
 
-        return ApiResponse.result(
-                ProcessResultCode.SUCCESS_SEND_SMS.getResultCode(),
-                ProcessResultCode.SUCCESS_SEND_SMS.getMessage()
-        );
+        return ApiResponse.result(ErrorCode.SUCCESS_SEND_SMS);
     }
 
     public ApiResponse approvalTelCheck(ApprovalCompleteVO approvalCompleteVO) {
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(approvalCompleteVO.getApiSecretKey())) {
-            throw new ApprovalException(
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getResultCode(),
-                    ResultCode.NOT_EQUAL_API_SECRET_KEY.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 필수 입력값 확인
         if(inputValidate.isEmpty(approvalCompleteVO.getAuthCode())
                 || inputValidate.isEmpty(approvalCompleteVO.getTel())) {
-            throw new ApprovalException(
-                    ProcessResultCode.EMPTY_DATA.getResultCode(),
-                    ProcessResultCode.EMPTY_DATA.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.EMPTY_DATA);
         }
 
         // 3. 전화번호 암호화
@@ -139,16 +116,10 @@ public class ApprovalService {
         // 4. 인증
         int updateResult = this.updateApprovalComplete(approvalVO);
         if(updateResult != 1){
-            throw new ApprovalException(
-                    ProcessResultCode.FAIL_CHECK_SMS.getResultCode(),
-                    ProcessResultCode.FAIL_CHECK_SMS.getMessage()
-            );
+            throw new ApprovalException(ErrorCode.FAIL_CHECK_SMS);
         }
 
-        return ApiResponse.result(
-                ProcessResultCode.SUCCESS_CHECK_SMS.getResultCode(),
-                ProcessResultCode.SUCCESS_CHECK_SMS.getMessage()
-        );
+        return ApiResponse.result(ErrorCode.SUCCESS_CHECK_SMS);
     }
 
     public int updateApprovalRecord(ApprovalVO vo){
