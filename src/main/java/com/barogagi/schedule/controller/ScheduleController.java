@@ -65,7 +65,7 @@ public class ScheduleController {
             // token으로 membershipNo 조회
             Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
             String resultCode = String.valueOf(resultMap.get("resultCode"));
-            if (!"200".equals(resultCode)) {
+            if (!"A200".equals(resultCode)) {
                 return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
             }
             String membershipNo = String.valueOf(resultMap.get("membershipNo"));
@@ -92,7 +92,7 @@ public class ScheduleController {
         // token으로 membershipNo 조회
         Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
         String resultCode = String.valueOf(resultMap.get("resultCode"));
-        if (!"200".equals(resultCode)) {
+        if (!"A200".equals(resultCode)) {
             return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
         }
         String membershipNo = String.valueOf(resultMap.get("membershipNo"));
@@ -363,7 +363,7 @@ public class ScheduleController {
             // token으로 membershipNo 조회
             Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
             String resultCode = String.valueOf(resultMap.get("resultCode"));
-            if (!"200".equals(resultCode)) {
+            if (!"A200".equals(resultCode)) {
                 return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
             }
             String membershipNo = String.valueOf(resultMap.get("membershipNo"));
@@ -488,7 +488,7 @@ public class ScheduleController {
         // token으로 membershipNo 조회
         Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
         String resultCode = String.valueOf(resultMap.get("resultCode"));
-        if (!"200".equals(resultCode)) {
+        if (!"A200".equals(resultCode)) {
             return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
         }
         String membershipNo = String.valueOf(resultMap.get("membershipNo"));
