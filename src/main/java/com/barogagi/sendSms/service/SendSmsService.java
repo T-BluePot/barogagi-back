@@ -7,6 +7,7 @@ import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class SendSmsService {
     private String API_KEY = "";
     private String API_SECRET_KEY = "";
 
+    @Autowired
     public SendSmsService(Environment environment) {
         this.SEND_TEL = environment.getProperty("send.sms.tel");
         this.API_KEY = environment.getProperty("send.sms.api-key");
