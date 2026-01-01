@@ -110,6 +110,7 @@ public class ApprovalService {
 
         // 3. 전화번호 암호화
         ApprovalVO approvalVO = new ApprovalVO();
+        approvalCompleteVO.setTel(approvalCompleteVO.getTel().replaceAll("[^0-9]", ""));
         approvalVO.setTel(encryptUtil.hashEncodeString(approvalCompleteVO.getTel()));
         approvalVO.setCompleteYn("N");
         approvalVO.setAuthCode(encryptUtil.hashEncodeString(approvalCompleteVO.getAuthCode()));
