@@ -105,7 +105,7 @@ public enum ErrorCode {
     // Approval
     SUCCESS_SEND_SMS(HttpStatus.OK, "A200", "인증번호 발송에 성공하었습니다."),
     FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다."),
-    ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "오류가 발생하였습니다."),
+    ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다."),
     SUCCESS_CHECK_SMS(HttpStatus.OK, "A200", "인증이 완료되었습니다."),
     FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.");
 
