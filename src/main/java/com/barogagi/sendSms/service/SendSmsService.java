@@ -7,25 +7,12 @@ import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SendSmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SendSmsService.class);
-
-    private String SEND_TEL = "";
-    private String API_KEY = "";
-    private String API_SECRET_KEY = "";
-
-    @Autowired
-    public SendSmsService(Environment environment) {
-        this.SEND_TEL = environment.getProperty("send.sms.tel");
-        this.API_KEY = environment.getProperty("send.sms.api-key");
-        this.API_SECRET_KEY = environment.getProperty("send.sms.api-secret-key");
-    }
 
     /**
      * SMS 발송
@@ -36,14 +23,14 @@ public class SendSmsService {
 
         boolean result = true;
 
-        logger.info("@@ API_KEY={}", API_KEY);
-        logger.info("@@ API_SECRET_KEY={}", API_SECRET_KEY);
-        logger.info("@@ SEND_TEL={}", SEND_TEL);
+        String sendTel = "01022581349";
+        String apiKey = "NCSLFRXVINKTJJRF";
+        String apiSecretKey = "FVIG5UM7784HPLYECNCSYF2FVRXVCBWR";
 
-        DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
+        DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize(apiKey, apiSecretKey, "https://api.solapi.com");
         // Message 패키지가 중복될 경우 net.nurigo.sdk.message.model.Message로 치환하여 주세요
         Message message = new Message();
-        message.setFrom(SEND_TEL);
+        message.setFrom(sendTel);
         message.setTo(sendSmsVO.getRecipientTel());
         message.setText(sendSmsVO.getMessageContent());
 
