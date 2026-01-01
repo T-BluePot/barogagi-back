@@ -23,11 +23,11 @@ public class ApprovalController {
 
     @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다. <br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증번호 발송에 성공하었습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "오류가 발생하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "103", description = "인증번호 발송에 실패하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A200", description = "인증번호 발송에 성공하었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A102", description = "인증문자 발송 중 오류가 발생하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A103", description = "인증번호 발송에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/send")
@@ -40,10 +40,10 @@ public class ApprovalController {
             "<br> authCode에는 인증번호를 넣어주세요." +
             "<br> tel에는 전화번호를 넣어주세요.",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "인증이 완료되었습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "인증이 실패하었습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A200", description = "인증이 완료되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A300", description = "인증이 실패하었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/verify")
