@@ -7,6 +7,7 @@ import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class SendSmsService {
     private String API_KEY = "";
     private String API_SECRET_KEY = "";
 
+    @Autowired
     public SendSmsService(Environment environment) {
         this.SEND_TEL = environment.getProperty("send.sms.tel");
         this.API_KEY = environment.getProperty("send.sms.api-key");
@@ -33,10 +35,6 @@ public class SendSmsService {
     public boolean sendSms(SendSmsVO sendSmsVO){
 
         boolean result = true;
-
-        logger.info("@@ API_KEY={}", API_KEY);
-        logger.info("@@ API_SECRET_KEY={}", API_SECRET_KEY);
-        logger.info("@@ SEND_TEL={}", SEND_TEL);
 
         DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
         // Message 패키지가 중복될 경우 net.nurigo.sdk.message.model.Message로 치환하여 주세요
