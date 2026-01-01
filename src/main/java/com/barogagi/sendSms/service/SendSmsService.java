@@ -34,6 +34,10 @@ public class SendSmsService {
 
         boolean result = true;
 
+        logger.info("@@ API_KEY={}", API_KEY);
+        logger.info("@@ API_SECRET_KEY={}", API_SECRET_KEY);
+        logger.info("@@ SEND_TEL={}", SEND_TEL);
+
         DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
         // Message 패키지가 중복될 경우 net.nurigo.sdk.message.model.Message로 치환하여 주세요
         Message message = new Message();
