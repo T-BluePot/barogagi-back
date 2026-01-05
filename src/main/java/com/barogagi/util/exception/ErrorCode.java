@@ -54,7 +54,7 @@ public enum ErrorCode {
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다."),
     FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다."),
 
-    // DeleteAccount
+    // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다."),
     FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다."),
 

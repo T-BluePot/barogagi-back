@@ -28,4 +28,7 @@ public class JoinRequestDTO extends DefaultVO {
 
     // 닉네임
     private String nickName = "";
+
+    // 회원가입 종류
+    private String joinType = "BASIC";
 }

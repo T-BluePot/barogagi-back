@@ -19,7 +19,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     List<RefreshToken> findByMembershipNoAndStatus(String membershipNo, RefreshToken.Status status);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query(value = "DELETE FROM REFRESH_TOKEN WHERE MEMBERSHIP_NO = :membershipNo", nativeQuery = true)
-    int deleteAllByMembershipNo(@Param("membershipNo") String membershipNo);
+    int deleteAllByMembershipNo(String membershipNo);
 }

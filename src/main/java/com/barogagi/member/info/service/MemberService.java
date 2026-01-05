@@ -1,6 +1,5 @@
 package com.barogagi.member.info.service;
 
-import com.barogagi.member.basic.join.dto.NickNameDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.dto.MemberRequestDTO;
@@ -106,14 +105,10 @@ public class MemberService {
 
         // 닉네임(중복X)
         if(!inputValidate.isEmpty(memberRequestDTO.getNickName())) {
-            NickNameDTO nickNameRequest = new NickNameDTO();
-            nickNameRequest.setNickName(memberRequestDTO.getNickName());
-            int nickNameCnt = joinService.selectNicknameCnt(nickNameRequest);
-
-            if(nickNameCnt > 0) {
+            boolean existsNickname = joinService.existsByNickName(memberRequestDTO.getNickName());
+            if(existsNickname) {
                 throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);
             }
-
             memberInfo.setNickName(memberRequestDTO.getNickName());
         }
 

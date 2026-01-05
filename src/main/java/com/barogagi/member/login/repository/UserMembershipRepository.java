@@ -12,8 +12,5 @@ import java.util.Optional;
 public interface UserMembershipRepository extends JpaRepository<UserMembership, String> {
     Optional<UserMembership> findByUserId(String userId);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Transactional
-    @Query(value = "DELETE FROM USER_MEMBERSHIP_INFO WHERE MEMBERSHIP_NO = :membershipNo", nativeQuery = true)
-    int deleteByMembershipNo(@Param("membershipNo") String membershipNo);
+    int deleteByMembershipNo(String membershipNo);
 }

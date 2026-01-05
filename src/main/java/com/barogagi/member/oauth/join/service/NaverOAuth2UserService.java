@@ -1,16 +1,14 @@
 package com.barogagi.member.oauth.join.service;
 
-import com.barogagi.member.basic.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.oauth.join.dto.OAuth2UserDTO;
 import com.barogagi.member.oauth.join.mapper.OAuth2UserMapper;
 import com.barogagi.util.EncryptUtil;
-import org.checkerframework.checker.units.qual.N;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
@@ -80,21 +78,21 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
 
             // 없으면 insert
             if (userDTO == null) {
-                JoinDTO joinDTO = new JoinDTO();
-                joinDTO.setUserId(id);
-                joinDTO.setEmail(encryptUtil.encrypt(email));
-                joinDTO.setNickName(nickName);
-                joinDTO.setJoinType("NAVER");
+                JoinRequestDTO joinRequestDTO = new JoinRequestDTO();
+                joinRequestDTO.setUserId(id);
+                joinRequestDTO.setEmail(encryptUtil.encrypt(email));
+                joinRequestDTO.setNickName(nickName);
+                joinRequestDTO.setJoinType("NAVER");
 
                 // gender(성별) : M(남성), F(여성), U(미설정)
                 logger.info("@@ gender={}", null != gender);
                 if(null != gender) {
                     if(gender.equals("M")) {  // 남성
-                        joinDTO.setGender("M");
+                        joinRequestDTO.setGender("M");
                     } else if(gender.equals("F")) {  // 여성
-                        joinDTO.setGender("W");
+                        joinRequestDTO.setGender("W");
                     } else {
-                        joinDTO.setGender("");
+                        joinRequestDTO.setGender("");
                     }
                 }
 
@@ -105,17 +103,17 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                     if(birthday.contains("-")) {
                         birth = birth + birthday.replace("-", "");
                     }
-                    joinDTO.setBirth(birth);
+                    joinRequestDTO.setBirth(birth);
                 }
 
                 logger.info("@@ tel={}", null != tel);
                 if(null != tel) {
                     // 휴대 전화번호
-                    joinDTO.setTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
+                    joinRequestDTO.setTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
                 }
 
-                int insertResult = joinService.insertMembershipInfo(joinDTO);
-                logger.info("NAVER join result={}", insertResult);
+                String membershipNo = joinService.signUp(joinRequestDTO);
+                logger.info("NAVER join membershipNo={}", membershipNo);
             }
 
         } catch (Exception e) {

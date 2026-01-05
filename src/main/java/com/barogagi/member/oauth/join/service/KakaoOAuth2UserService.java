@@ -1,6 +1,6 @@
 package com.barogagi.member.oauth.join.service;
 
-import com.barogagi.member.basic.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.oauth.join.dto.OAuth2UserDTO;
 import com.barogagi.member.oauth.join.mapper.OAuth2UserMapper;
@@ -86,15 +86,15 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
             // 없으면 insert
             if (userDTO == null) {
                 logger.info("KAKAO 신규 회원");
-                JoinDTO dto = new JoinDTO();
-                dto.setUserId(id);
-                dto.setEmail(email);
-                dto.setNickName(nickName);
-                dto.setJoinType("KAKAO");
+                JoinRequestDTO joinRequestDTO = new JoinRequestDTO();
+                joinRequestDTO.setUserId(id);
+                joinRequestDTO.setEmail(email);
+                joinRequestDTO.setNickName(nickName);
+                joinRequestDTO.setJoinType("KAKAO");
 
-                int insertResult = joinService.insertMembershipInfo(dto);
+                String membershipNo = joinService.signUp(joinRequestDTO);
 
-                logger.info("KAKAO join result={}", insertResult);
+                logger.info("KAKAO join membershipNo={}", membershipNo);
             }
         } catch (Exception e) {
             logger.error("KAKAO OAuth 회원가입 중 오류 발생: {}", e.getMessage());

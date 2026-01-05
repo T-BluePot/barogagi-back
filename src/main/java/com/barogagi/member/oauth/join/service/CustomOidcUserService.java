@@ -1,6 +1,6 @@
 package com.barogagi.member.oauth.join.service;
 
-import com.barogagi.member.basic.join.dto.JoinDTO;
+import com.barogagi.member.basic.join.dto.JoinRequestDTO;
 import com.barogagi.member.basic.join.service.JoinService;
 import com.barogagi.member.oauth.join.dto.OAuth2UserDTO;
 import com.barogagi.member.oauth.join.mapper.OAuth2UserMapper;
@@ -59,15 +59,15 @@ public class CustomOidcUserService extends org.springframework.security.oauth2.c
 
             // 없으면 insert
             if (userDTO == null) {
-                JoinDTO joinDTO = new JoinDTO();
-                joinDTO.setUserId(sub);
-                joinDTO.setEmail(encryptUtil.encrypt(email));
-                joinDTO.setNickName(name);
-                joinDTO.setJoinType("GOOGLE");
+                JoinRequestDTO joinRequestDTO = new JoinRequestDTO();
+                joinRequestDTO.setUserId(sub);
+                joinRequestDTO.setEmail(encryptUtil.encrypt(email));
+                joinRequestDTO.setNickName(name);
+                joinRequestDTO.setJoinType("GOOGLE");
 
-                int insertResult = joinService.insertMembershipInfo(joinDTO);
+                String membershipNo = joinService.signUp(joinRequestDTO);
 
-                logger.info("GOOGLE join result={}", insertResult);
+                logger.info("GOOGLE join membershipNo={}", membershipNo);
             }
 
         } catch (Exception e) {

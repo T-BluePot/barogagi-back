@@ -31,8 +31,8 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/userid/exists")
-    public ApiResponse checkUserId(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String userId) {
-        return basicJoinService.checkUserId(apiSecretKey, userId);
+    public ApiResponse existsByUserId(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String userId) {
+        return basicJoinService.existsByUserId(apiSecretKey, userId);
     }
 
     @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다.",
@@ -62,8 +62,8 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping("/nickname/exists")
-    public ApiResponse checkDuplicateNickname(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String nickname){
-        return basicJoinService.checkNickname(apiSecretKey, nickname);
+    public ApiResponse existsByNickname(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String nickname){
+        return basicJoinService.existsByNickname(apiSecretKey, nickname);
     }
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
@@ -76,7 +76,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @DeleteMapping("/me")
-    public ApiResponse deleteAccount(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        return basicJoinService.deleteAccount(refreshTokenRequestDTO);
+    public ApiResponse withdrawMember(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
+        return basicJoinService.withdrawMember(refreshTokenRequestDTO);
     }
 }

@@ -1,35 +1,24 @@
 package com.barogagi.member.basic.join.service;
 
-import com.barogagi.member.basic.join.dto.NickNameDTO;
-import com.barogagi.member.basic.join.mapper.JoinMapper;
-import com.barogagi.member.basic.join.dto.JoinDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.barogagi.member.basic.join.dto.JoinRequestDTO;
+import com.barogagi.member.basic.join.entity.UserMembershipInfo;
+import com.barogagi.member.basic.join.repository.BasicJoinRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class JoinService {
-
-    private static final Logger logger = LoggerFactory.getLogger(JoinService.class);
 
     private static final SecureRandom random = new SecureRandom();
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    private final JoinMapper joinMapper;
-
-    @Autowired
-    public JoinService(JoinMapper joinMapper) {
-        this.joinMapper = joinMapper;
-    }
-
-    // 닉네임 개수 구하기
-    public int selectNicknameCnt(NickNameDTO nickNameDTO) {
-        return joinMapper.selectNicknameCnt(nickNameDTO);
-    }
+    private final BasicJoinRepository basicJoinRepository;
 
     // 회원번호 랜덤값 생성
     public String createRandomStr() {
@@ -61,7 +50,6 @@ public class JoinService {
             randomStr = stringBuilder.toString();
 
         } catch (Exception e) {
-            logger.error(e.toString());
             randomStr = "";
         }
 
@@ -72,9 +60,8 @@ public class JoinService {
     public boolean checkDuplicateMemberNo(String membershipNo) {
         boolean duplicateFlag = false;
 
-        int membershipNoCnt = joinMapper.checkDuplicateMembershipNo(membershipNo);
-        logger.info("membershipNoCnt={}", membershipNoCnt);
-        if(membershipNoCnt > 0) {
+        Optional<UserMembershipInfo> userMembershipInfo = basicJoinRepository.findById(membershipNo);
+        if(userMembershipInfo.isPresent()) {
             // 중복 발생
             duplicateFlag = true;
         }
@@ -82,10 +69,8 @@ public class JoinService {
         return duplicateFlag;
     }
 
-    // 회원가입 정보 저장 service
-    public int insertMembershipInfo(JoinDTO vo) {
-
-        int result = 0;
+    // 회원번호 구하기
+    public String generateMemberNo() {
 
         String membershipNo = "";
 
@@ -93,35 +78,44 @@ public class JoinService {
             // 랜덤 회원번호 생성
             membershipNo = this.createRandomStr();
 
-            logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
             if(membershipNo.isEmpty()) {
                 break;
             }
-
             // 회원번호 중복 체크
             boolean checkDuplicateMembershipNo = this.checkDuplicateMemberNo(membershipNo);
-            logger.info("checkDuplicateMembershipNo={}", checkDuplicateMembershipNo);
             if(!checkDuplicateMembershipNo) {
                 break;
             }
         }
-
-        logger.info("membershipNo.isEmpty()={}", membershipNo.isEmpty());
-        if(!membershipNo.isEmpty()) {  // 회원번호가 비어있을 경우 저장 X
-            vo.setMembershipNo(membershipNo);
-            result = this.insertMemberInfo(vo);
-        }
-
-        return result;
+        return membershipNo;
     }
 
     // 회원가입 정보 저장 기능
-    public int insertMemberInfo(JoinDTO vo) {
-        return joinMapper.insertMemberInfo(vo);
+    public String signUp(JoinRequestDTO joinRequestDTO) {
+        UserMembershipInfo userMembershipInfo = UserMembershipInfo.builder()
+                .membershipNo(this.generateMemberNo())
+                .userId(joinRequestDTO.getUserId())
+                .password(joinRequestDTO.getPassword())
+                .email(joinRequestDTO.getEmail())
+                .birth(joinRequestDTO.getBirth())
+                .tel(joinRequestDTO.getTel())
+                .gender(joinRequestDTO.getGender())
+                .nickName(joinRequestDTO.getNickName())
+                .joinType(joinRequestDTO.getJoinType())
+                .build();
+
+        basicJoinRepository.save(userMembershipInfo);
+        return userMembershipInfo.getMembershipNo();
     }
 
-    // 아이디 개수 구하기
-    public int selectUserIdCnt(JoinDTO vo) {
-        return joinMapper.selectUserIdCnt(vo);
+    // 아이디 중복 체크
+    @Transactional(readOnly = true)
+    public boolean existsByUserId(String userId) {
+        return basicJoinRepository.existsByUserId(userId);
+    }
+
+    // 닉네임 중복 체크
+    public boolean existsByNickName(String nickname) {
+        return basicJoinRepository.existsByNickName(nickname);
     }
 }
