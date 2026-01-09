@@ -82,19 +82,19 @@
                     SELECT TAG_NUM, COUNT(*) AS usage_count
                     FROM (
                         SELECT st.TAG_NUM
-                        FROM schedule_tag st
-                        JOIN schedule s ON s.SCHEDULE_NUM = st.SCHEDULE_NUM
+                        FROM SCHEDULE_TAG st
+                        JOIN SCHEDULE s ON s.SCHEDULE_NUM = st.SCHEDULE_NUM
                         WHERE s.DEL_YN = 'N'
                           AND s.start_date >= CURDATE()
                         UNION ALL
                         SELECT pt.TAG_NUM
-                        FROM plan_tag pt
-                        JOIN plan p ON p.PLAN_NUM = pt.PLAN_NUM
+                        FROM PLAN_TAG pt
+                        JOIN PLAN p ON p.PLAN_NUM = pt.PLAN_NUM
                         WHERE p.DEL_YN  = 'N'
                   ) AS combined
                   GROUP BY TAG_NUM
             ) tc
-            JOIN tag ti ON ti.TAG_NUM = tc.TAG_NUM
+            JOIN TAG ti ON ti.TAG_NUM = tc.TAG_NUM
             ORDER BY rankNo ASC
             LIMIT 10
         ]]>
@@ -103,23 +103,24 @@
     <select id="selectRegionRankList" resultType="com.barogagi.mainPage.dto.RegionRankInfoDTO">
         <![CDATA[
             SELECT
-                r.REGION_LEVEL_1 regionLevel1,
-                r.REGION_LEVEL_2 regionLevel2,
-                r.REGION_LEVEL_3 regionLevel3,
-                r.REGION_LEVEL_4 regionLevel4,
-                DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS rankNo
+                r.REGION_LEVEL_1 AS regionLevel1,
+                r.REGION_LEVEL_2 AS regionLevel2,
+                r.REGION_LEVEL_3 AS regionLevel3,
+                r.REGION_LEVEL_4 AS regionLevel4,
+                ROW_NUMBER() OVER (
+                    ORDER BY COUNT(*) DESC, r.REGION_NUM ASC
+                ) AS rankNo
             FROM REGION r
             LEFT OUTER JOIN PLAN_REGION pr
-            ON r.REGION_NUM = pr.REGION_NUM
+                ON r.REGION_NUM = pr.REGION_NUM
             LEFT OUTER JOIN PLAN p
-            ON pr.PLAN_NUM = p.PLAN_NUM
+                ON pr.PLAN_NUM = p.PLAN_NUM
             LEFT OUTER JOIN SCHEDULE s
-            ON p.SCHEDULE_NUM = s.SCHEDULE_NUM
+                ON p.SCHEDULE_NUM = s.SCHEDULE_NUM
             WHERE s.DEL_YN = 'N'
-            AND p.DEL_YN = 'N'
-            AND s.START_DATE >= CURDATE()
+              AND p.DEL_YN = 'N'
+              AND s.START_DATE >= CURDATE()
             GROUP BY r.REGION_NUM
-            ORDER BY rankNo ASC
         ]]>
     </select>
 </mapper>
