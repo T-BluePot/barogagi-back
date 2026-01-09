@@ -18,10 +18,10 @@ public class TermsController {
 
     @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 조회에 성공하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "101", description = "정보를 입력해주세요."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "약관이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 조회에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T102", description = "약관이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @GetMapping
@@ -31,10 +31,11 @@ public class TermsController {
 
     @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.",
             responses =  {
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "약관 저장에 성공하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "100", description = "API SECRET KEY 불일치"),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "102", description = "해당 사용자의 정보가 존재하지 않습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "300", description = "약관 저장에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 저장에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "해당 사용자의 정보가 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/terms-agreements")

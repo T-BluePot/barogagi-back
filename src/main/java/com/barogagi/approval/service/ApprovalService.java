@@ -61,6 +61,8 @@ public class ApprovalService {
         approvalVO.setCompleteYn("N");
         approvalVO.setType(approvalSendVO.getType());
 
+        approvalSendVO.setTel(approvalSendVO.getTel().replaceAll("[^0-9]", ""));
+
         // 전화번호 암호화
         approvalVO.setTel(encryptUtil.hashEncodeString(approvalSendVO.getTel()));
 
@@ -108,6 +110,7 @@ public class ApprovalService {
 
         // 3. 전화번호 암호화
         ApprovalVO approvalVO = new ApprovalVO();
+        approvalCompleteVO.setTel(approvalCompleteVO.getTel().replaceAll("[^0-9]", ""));
         approvalVO.setTel(encryptUtil.hashEncodeString(approvalCompleteVO.getTel()));
         approvalVO.setCompleteYn("N");
         approvalVO.setAuthCode(encryptUtil.hashEncodeString(approvalCompleteVO.getAuthCode()));
