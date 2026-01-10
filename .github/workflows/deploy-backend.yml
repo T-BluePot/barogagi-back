@@ -77,7 +77,7 @@ jobs:
 
             echo "Deploy target: $TARGET"
 
-            docker build -t barogagi-backend:single .
+            docker build -t barogagi-backend:${GITHUB_SHA::7} .
             docker compose up -d backend-$TARGET
             /srv/barogagi/backend/scripts/switch.sh
           EOF
