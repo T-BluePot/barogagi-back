@@ -2,8 +2,9 @@ package com.barogagi.config;
 
 import com.barogagi.member.info.dto.Member;
 import com.barogagi.member.info.service.MemberService;
-import com.barogagi.member.login.repository.UserMembershipRepository;
+import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.util.JwtUtil;
+import com.barogagi.util.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
@@ -13,18 +14,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
 import java.io.IOException;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwt;
-    private final UserMembershipRepository userRepo;
     private final MemberService memberService;
 
-    public JwtAuthFilter(JwtUtil jwt, UserMembershipRepository userRepo, MemberService memberService) {
+    public JwtAuthFilter(JwtUtil jwt, MemberService memberService) {
         this.jwt = jwt;
-        this.userRepo = userRepo;
         this.memberService = memberService;
     }
 
@@ -36,11 +36,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String header = req.getHeader("Authorization");
             if (header != null && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
-
                 Claims claims = jwt.parseToken(token, "ACCESS");
 
                 String membershipNo = jwt.getMembershipNo(claims);
-
                 // 회원 조회
                 Member member = memberService.findByMembershipNo(membershipNo);
 
@@ -55,12 +53,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(req, res);
         } catch (ExpiredJwtException e) {
             // 유효기간이 지나서 만료된 경우
-            writeErrorResponse(res, "TOKEN_EXPIRED", "Access token has expired");
+            writeErrorResponse(ErrorCode.EXPIRE_TOKEN);
         } catch (JwtException | SecurityException e) {
             // 위조되었거나 변조되었거나 구조가 잘못되었을 경우
-            writeErrorResponse(res, "REVOKED_TOKEN", "Revoked access token");
+            writeErrorResponse(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         } catch (Exception e) {
-            writeErrorResponse(res, "UNKNOWN_ERROR", "Unknown authentication error");
+            writeErrorResponse(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         }
 
     }
@@ -68,19 +66,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String p = request.getRequestURI();
-        return p.startsWith("/auth/");
+        return p.startsWith("/auth/") || p.startsWith("/login/basic/membership/userId/search");
     }
 
-    private void writeErrorResponse(HttpServletResponse res, String errorCode, String message) throws IOException {
-        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        res.setContentType("application/json;charset=UTF-8");
-
-        String json = String.format(
-                "{\"errorCode\":\"%s\", \"message\":\"%s\"}",
-                errorCode, message
-        );
-
-        res.getWriter().write(json);
+    private void writeErrorResponse(ErrorCode errorCode) throws IOException {
+        throw new InvalidRefreshTokenException(errorCode);
     }
 
 }
