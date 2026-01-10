@@ -1,14 +1,13 @@
 package com.barogagi.member.login.exception;
 
+import com.barogagi.config.exception.BusinessException;
+import com.barogagi.util.exception.ErrorCode;
 import lombok.Getter;
 
 @Getter
-public class InvalidRefreshTokenException extends RuntimeException{
+public class InvalidRefreshTokenException extends BusinessException {
 
-    private final String code;
-
-    public InvalidRefreshTokenException(String code, String message) {
-        super(message);
-        this.code = code;
+    public InvalidRefreshTokenException(ErrorCode errorCode) {
+        super(errorCode);
     }
 }

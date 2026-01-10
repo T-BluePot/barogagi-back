@@ -50,7 +50,6 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
 
         String email = "";
         String nickName = "";
-        String profileImg = "";
         if(null != kakaoAccount) {
             // 이메일
             // 계정에 이메일이 존재하는지 (존재 : ture, 미존재 : false)
@@ -67,13 +66,6 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
 
             if (hasEmail && !needAgree && valid && verified) {
                 email = encryptUtil.encrypt((String) kakaoAccount.get("email"));
-            }
-
-            // 프로필
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
-            if(null != profile) {
-                nickName = (String) profile.get("nickname");
-                profileImg = (String) profile.get("profile_image_url");
             }
 
             // id에 prefix 추가
@@ -98,7 +90,6 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
                 dto.setUserId(id);
                 dto.setEmail(email);
                 dto.setNickName(nickName);
-                dto.setProfileImg(profileImg);
                 dto.setJoinType("KAKAO");
 
                 int insertResult = joinService.insertMembershipInfo(dto);
@@ -114,7 +105,6 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
         unified.put("id", id);
         unified.put("email", email != null ? email : "");
         unified.put("name", nickName != null ? nickName : "");
-        unified.put("picture", profileImg != null ? profileImg : "");
 
         return new DefaultOAuth2User(
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),

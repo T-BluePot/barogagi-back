@@ -8,7 +8,5 @@ import lombok.Setter;
 @Setter
 public class TermsProcessDTO {
     private int termsNum = 0;
-    private String userId = "";
     private String agreeYn = "";
-    private String membershipNo = "";
 }

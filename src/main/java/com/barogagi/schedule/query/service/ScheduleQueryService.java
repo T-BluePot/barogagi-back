@@ -3,13 +3,20 @@ package com.barogagi.schedule.query.service;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import com.barogagi.schedule.dto.ScheduleDetailResDTO;
+import com.barogagi.schedule.dto.ScheduleListGroupResDTO;
+import com.barogagi.schedule.dto.ScheduleListResDTO;
 import com.barogagi.schedule.query.mapper.ScheduleMapper;
 import com.barogagi.schedule.query.vo.ScheduleDetailVO;
+import com.barogagi.schedule.query.vo.ScheduleListVO;
+import com.barogagi.schedule.query.vo.ScheduleMembershipNoVO;
+import com.barogagi.util.exception.BasicException;
+import com.barogagi.util.exception.ErrorCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,11 +35,50 @@ public class ScheduleQueryService {
         this.planQueryService = planQueryService;
     }
 
-    public ScheduleDetailResDTO getScheduleDetail(int scheduleNum) throws Exception{
+    public ScheduleListGroupResDTO getScheduleList(String membershipNo) {
+        List<ScheduleListVO> scheduleListVOList = scheduleMapper.selectScheduleList(membershipNo);
+
+        // VO -> DTO 변환
+        List<ScheduleListResDTO> scheduleListResDTOList = scheduleListVOList.stream()
+                .map(scheduleListVO ->
+                        ScheduleListResDTO.builder()
+                                .scheduleNum(scheduleListVO.getScheduleNum())
+                                .scheduleNm(scheduleListVO.getScheduleNm())
+                                .startDate(scheduleListVO.getStartDate())
+                                .endDate(scheduleListVO.getEndDate())
+                                .scheduleTagRegistResDTOList(scheduleListVO.getScheduleTagRegistResDTOList())
+                                .build()
+                ).toList();
+
+        LocalDate today = LocalDate.now();
+
+        List<ScheduleListResDTO> pastSchedules = scheduleListResDTOList.stream()
+                .filter(s -> LocalDate.parse(s.getEndDate()).isBefore(today))
+                .toList();
+
+        List<ScheduleListResDTO> upcomingSchedules = scheduleListResDTOList.stream()
+                .filter(s -> !LocalDate.parse(s.getEndDate()).isBefore(today))
+                .toList();
+
+        return ScheduleListGroupResDTO.builder()
+                .pastSchedules(pastSchedules)
+                .upcomingSchedules(upcomingSchedules)
+                .build();
+    }
+
+
+    public ScheduleDetailResDTO getScheduleDetail(int scheduleNum, String membershipNo) {
+
+        logger.info("scheduleNum={}, membershipNo={}", scheduleNum, membershipNo);
+
         // 일정 정보 조회
-        ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleNum);
+        ScheduleMembershipNoVO scheduleMembershipNoVO = new ScheduleMembershipNoVO(scheduleNum, membershipNo);
+        ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleMembershipNoVO);
+        if(null == scheduleDetailVO) throw new BasicException(ErrorCode.SCHEDULE_NOT_FOUND);
+        else if(scheduleDetailVO.getDelYn().equals("Y")) throw new BasicException(ErrorCode.SCHEDULE_ALREADY_DELETED);
 
         // 계획 정보 조회 (리스트)
+        logger.info("계획 조회 시작");
         List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
 
         // DTO에 정보 저장

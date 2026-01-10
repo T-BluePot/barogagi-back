@@ -46,7 +46,8 @@
             FROM 	PLAN a
             JOIN    ITEM b ON a.ITEM_NUM = b.ITEM_NUM
             JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
-            WHERE   a.SCHEDULE_NUM = #{scheduleNum};
+            WHERE   a.SCHEDULE_NUM = #{scheduleNum}
+            AND     a.DEL_YN = 'N';
         ]]>
     </select>
 </mapper>

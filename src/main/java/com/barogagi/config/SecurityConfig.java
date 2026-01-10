@@ -2,7 +2,10 @@ package com.barogagi.config;
 
 import com.barogagi.member.oauth.join.service.CustomOidcUserService;
 import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
+    Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
@@ -23,6 +28,7 @@ public class SecurityConfig {
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        logger.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
     private static final String[] PERMIT_URL_ARRAY = {
@@ -33,10 +39,12 @@ public class SecurityConfig {
             "/webjars/**",
             "/login/oauth2/**",
             "/oauth2/**",
-            "/auth/**",
-            "/login/**",
-            "/membership/join/**",
-            "/terms/**"
+            "/api/v1/auth/**",  // 일반 회원가입 관련
+            "/api/v1/users/**",  // 로그인 관련
+            "/api/v1/terms/**",  // 약관 관련
+            "/api/v1/home/tags/popular",  // 인기 태그 조회
+            "/api/v1/home/regions/popular",  // 인기 지역 조회
+            "/api/v1/verification-codes/**"
     };
 
     @Bean
@@ -68,9 +76,17 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
+
+                    String resultCode = ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode();
+                    String message = ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage();
+
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json;charset=UTF-8");
-                    res.getWriter().write("{\"error\":\"unauthorized\"}");
+                    String json = String.format(
+                            "{\"resultCode\":\"%s\", \"message\":\"%s\"}",
+                            resultCode, message
+                    );
+                    res.getWriter().write(json);
                 }));
 
         return http.build();

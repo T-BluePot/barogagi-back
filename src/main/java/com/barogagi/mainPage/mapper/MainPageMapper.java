@@ -1,0 +1,25 @@
+package com.barogagi.mainPage.mapper;
+
+import com.barogagi.mainPage.dto.*;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
+
+@Mapper
+public interface MainPageMapper {
+
+    // 유저 일정 조회
+    UserInfoResponseDTO selectUserScheduleInfo(UserInfoRequestDTO userInfoRequestDTO);
+
+    // 해당 schedule에 대한 태그 목록 조회
+    List<TagInfoDTO> selectScheduleTag(UserInfoRequestDTO userInfoRequestDTO);
+
+    // 해당 plan에 대한 region 정보 조회
+    RegionInfoDTO selectScheduleRegionInfo(UserInfoRequestDTO userInfoRequestDTO);
+
+    // 인기 지역 조회
+    List<RegionRankInfoDTO> selectRegionRankList();
+
+    // 인기 태그 조회
+    List<TagRankInfoDTO> selectTagRankList();
+}

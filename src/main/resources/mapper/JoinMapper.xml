@@ -3,12 +3,12 @@
 <mapper namespace="com.barogagi.member.basic.join.mapper.JoinMapper">
     <insert id="insertMemberInfo" parameterType="com.barogagi.member.basic.join.dto.JoinDTO">
         <![CDATA[
-            INSERT INTO USER_MEMBERSHIP_INFO(MEMBERSHIP_NO, USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, PROFILE_IMG, NICKNAME, REG_DATE, JOIN_TYPE)
-                VALUES(#{membershipNo}, #{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{profileImg}, #{nickName}, NOW(), #{joinType})
+            INSERT INTO USER_MEMBERSHIP_INFO(MEMBERSHIP_NO, USER_ID, PASSWORD, EMAIL, BIRTH, TEL, GENDER, NICKNAME, REG_DATE, JOIN_TYPE)
+                VALUES(#{membershipNo}, #{userId}, #{password}, #{email}, #{birth}, #{tel}, #{gender}, #{nickName}, NOW(), #{joinType})
         ]]>
     </insert>
 
-    <select id="checkUserId" parameterType="com.barogagi.member.basic.join.dto.JoinDTO" resultType="int">
+    <select id="selectUserIdCnt" parameterType="com.barogagi.member.basic.join.dto.JoinDTO" resultType="int">
         <![CDATA[
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO
@@ -16,7 +16,7 @@
         ]]>
     </select>
 
-    <select id="checkNickName" parameterType="com.barogagi.member.basic.join.dto.NickNameDTO" resultType="int">
+    <select id="selectNicknameCnt" parameterType="com.barogagi.member.basic.join.dto.NickNameDTO" resultType="int">
         <![CDATA[
             SELECT  COUNT(*)
             FROM    USER_MEMBERSHIP_INFO

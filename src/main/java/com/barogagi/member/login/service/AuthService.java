@@ -4,9 +4,11 @@ import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.entity.RefreshToken;
 import com.barogagi.member.login.entity.UserMembership;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.login.mapper.AuthMapper;
 import com.barogagi.member.login.repository.RefreshTokenRepository;
 import com.barogagi.member.login.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
+import com.barogagi.util.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,7 +16,10 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +34,21 @@ public class AuthService {
     private final JwtUtil jwt;
     private final PasswordEncoder encoder;
 
+    private final AuthMapper authMapper;
+
     @Value("${jwt.access-exp-seconds}")
     private long accessExp;
     @Value("${jwt.refresh-exp-seconds}")
     private long refreshExp;
 
     public AuthService(UserMembershipRepository userRepo, RefreshTokenRepository refreshRepo,
-                       JwtUtil jwt, PasswordEncoder encoder) {
+                       JwtUtil jwt, PasswordEncoder encoder,
+                       AuthMapper authMapper) {
         this.userRepo = userRepo;
         this.refreshRepo = refreshRepo;
         this.jwt = jwt;
         this.encoder = encoder;
+        this.authMapper = authMapper;
     }
 
     public LoginResponse login(LoginRequest req) {
@@ -68,27 +77,29 @@ public class AuthService {
         refreshRepo.save(rt);
 
         return new LoginResponse(
-                new TokenPair(access, accessExp, refresh, refreshExp),
+                new TokenPair(
+                        access,
+                        accessExp,
+                        refresh,
+                        refreshExp,
+                        ErrorCode.SUCCESS_LOGIN.getCode(),
+                        ErrorCode.SUCCESS_LOGIN.getMessage()
+                ),
                 no, u.getUserId(), u.getJoinType()
         );
     }
 
     /** 구글/네이버 등 OAuth 가입 직후: userId로 바로 토큰 발급 (비밀번호 검증 없음) */
     public LoginResponse loginAfterSignup(String userId, String deviceId) {
-        var u = userRepo.findByUserId(userId)
+        UserMembership u = userRepo.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("USER_NOT_FOUND"));
-
-        // 선택: BASIC 사용자가 이 엔드포인트를 타지 못하게 막고 싶다면
-//        if ("BASIC".equalsIgnoreCase(u.getJoinType())) {
-//            throw new RuntimeException("NOT_OAUTH_MEMBER");
-//        }
 
         String no = u.getMembershipNo();
         String access  = jwt.generateAccessToken(no, u.getUserId());
         String refresh = jwt.generateRefreshToken(no, deviceId != null ? deviceId : "web-oauth");
 
         // Refresh 저장(VALID)
-        var rt = new RefreshToken();
+        RefreshToken rt = new RefreshToken();
         rt.setMembershipNo(no);
         rt.setDeviceId(deviceId != null ? deviceId : "web-oauth");
         rt.setToken(refresh);
@@ -98,13 +109,21 @@ public class AuthService {
         refreshRepo.save(rt);
 
         return new LoginResponse(
-                new TokenPair(access, accessExp, refresh, refreshExp),
+                new TokenPair(
+                        access,
+                        accessExp,
+                        refresh,
+                        refreshExp,
+                        ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
+                        ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
+                ),
                 no, u.getUserId(), u.getJoinType()
         );
     }
 
     @Transactional
     public TokenPair rotate(String refreshToken) {
+
         try {
             if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
                 throw new BadCredentialsException("invalid_refresh_token");
@@ -112,6 +131,9 @@ public class AuthService {
         } catch (JwtException | IllegalArgumentException e) {
             throw new BadCredentialsException("invalid_refresh_token");
         }
+
+        String newAccess = "";
+        String newRefresh = "";
 
         String membershipNo = jwt.getMembershipNo(refreshToken);
         String deviceId = jwt.getDeviceId(refreshToken);
@@ -121,46 +143,58 @@ public class AuthService {
             deviceId = "web-oauth";
         }
 
-        // 현재 리프레시가 DB에 VALID로 존재하는지 확인
-        RefreshToken current = refreshRepo.findByTokenAndStatus(
-                refreshToken, "VALID"
-        ).orElseThrow(() -> new InvalidRefreshTokenException("refresh_not_found_or_revoked", "로그인을 진행해주세요."));
+        try {
 
-        // 만료 체크
-        if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
-            current.setStatus("REVOKED");
-            refreshRepo.save(current);
-            throw new InvalidRefreshTokenException("refresh_expired", "로그인을 다시 진행해주세요.");
+            // 현재 리프레시가 DB에 VALID로 존재하는지 확인
+            RefreshToken current = refreshRepo.findByTokenAndStatus(refreshToken, "VALID")
+                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.REQUIRED_LOGIN));
+
+            // 만료 체크
+            if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
+                current.setStatus("REVOKED");
+                refreshRepo.save(current);
+                throw new InvalidRefreshTokenException(ErrorCode.REQUIRED_RE_LOGIN);
+            }
+
+            // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
+            List<RefreshToken> olds = refreshRepo.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
+            for (RefreshToken o : olds) {
+                o.setStatus("REVOKED");
+            }
+            refreshRepo.saveAll(olds);
+
+            // 새 토큰 발급
+            UserMembership user = userRepo.findById(membershipNo)
+                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_USER_INFO));
+
+            newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
+            newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
+
+            RefreshToken next = new RefreshToken();
+            next.setMembershipNo(membershipNo);
+            next.setDeviceId(deviceId);
+            next.setToken(newRefresh);
+            next.setStatus("VALID");
+            next.setCreatedAt(LocalDateTime.now());
+            next.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
+            refreshRepo.save(next);
+
+        } catch (InvalidRefreshTokenException ex) {
+            return new TokenPair(
+                    "",
+                    0,
+                    "",
+                    0,
+                    ex.getCode(),
+                    ex.getMessage()
+                    );
         }
-
-        // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
-        var olds = refreshRepo.findByMembershipNoAndDeviceIdAndStatus(
-                membershipNo, deviceId, "VALID"
-        );
-        for (var o : olds) {
-            o.setStatus("REVOKED");
-        }
-        refreshRepo.saveAll(olds);
-
-        // 새 토큰 발급
-        var user = userRepo.findById(membershipNo)
-                .orElseThrow(() -> new InvalidRefreshTokenException("user_not_found", "회원 정보가 존재하지 않습니다."));
-
-        String newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
-        String newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
-
-        RefreshToken next = new RefreshToken();
-        next.setMembershipNo(membershipNo);
-        next.setDeviceId(deviceId);
-        next.setToken(newRefresh);
-        next.setStatus("VALID");
-        next.setCreatedAt(LocalDateTime.now());
-        next.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
-        refreshRepo.save(next);
 
         return new TokenPair(
                 newAccess, jwt.getAccessExpSeconds(),
-                newRefresh, jwt.getRefreshExpSeconds()
+                newRefresh, jwt.getRefreshExpSeconds(),
+                ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
+                ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
         );
     }
 
@@ -175,7 +209,7 @@ public class AuthService {
         List<RefreshToken> tokens = refreshRepo
                 .findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
 
-        for (var t : tokens) t.setStatus("REVOKED");
+        for (RefreshToken t : tokens) t.setStatus("REVOKED");
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
     }
 
@@ -186,6 +220,42 @@ public class AuthService {
 
         for (var t : tokens) t.setStatus("REVOKED");
         if (!tokens.isEmpty()) refreshRepo.saveAll(tokens);
+    }
+
+    public Map<String, String> selectUserInfoByToken(String refreshToken) {
+
+        Map<String, String> returnMap = new HashMap<>();
+
+        String resultCode = "";
+        String message = "";
+        String membershipNo = "";
+
+        try {
+            // 1. JWT 토큰 유효성 검증
+            if(!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+                throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
+            }
+
+            // 2. membershipNo 구하기
+            membershipNo = authMapper.selectUserInfoByToken(refreshToken);
+
+            // 3. membershipNo 조회가 되지 않을 경우
+            if(membershipNo == null || membershipNo.isBlank()) {
+                throw new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_AVAILABLE_REFRESH_TOKEN);
+            }
+
+            resultCode = "200";
+            message = "성공";
+            returnMap.put("membershipNo", membershipNo);
+
+        } catch (InvalidRefreshTokenException e) {
+            resultCode = e.getCode();
+            message = e.getMessage();
+        } finally {
+            returnMap.put("resultCode", resultCode);
+            returnMap.put("message", message);
+        }
+        return returnMap;
     }
 }
 

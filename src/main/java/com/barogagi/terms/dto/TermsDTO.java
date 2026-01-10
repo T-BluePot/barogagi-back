@@ -12,9 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class TermsDTO extends DefaultVO {
-    private int termsNum = 0;
     private String userId = "";
-    private String agreeYn = "";
 
     @ArraySchema(schema = @Schema(implementation = TermsProcessDTO.class))
     private List<TermsProcessDTO> termsAgreeList = new ArrayList<>();
