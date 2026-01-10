@@ -44,7 +44,8 @@ jobs:
             ./Dockerfile \
             ${{ secrets.USERNAME }}@${{ env.HOST }}:${{ env.TARGET_DIR }}
 
-      - name: SSH into EC2 and run Docker
+      - name: SSH into EC2 and run Docker (main
+        if: github.ref == 'refs/heads/main'
         run: |
           ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ env.HOST }} << EOF
             cd $TARGET_DIR
@@ -52,4 +53,30 @@ jobs:
             sudo docker rm backend || true
             sudo docker build -t backend .
             sudo docker run -d -p 8080:8080 --name backend backend
+          EOF
+      - name: SSH into server and deploy (release - blue/green)
+        if: github.ref == 'refs/heads/release'
+        run: |
+          ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no \
+            ${{ secrets.USERNAME }}@${{ env.HOST }} << 'EOF'
+
+            cd $TARGET_DIR
+
+            # 현재 active 확인 (nginx 기준)
+            if grep -q "8081" /etc/nginx/sites-available/barogagi.xyz; then
+              TARGET="blue"
+            else
+              TARGET="green"
+            fi
+
+            echo "Deploy target: $TARGET"
+
+            # 이미지 빌드
+            docker build -t barogagi-backend:single .
+
+            # inactive 컨테이너만 재기동
+            docker compose up -d backend-$TARGET
+
+            # 트래픽 전환
+            /srv/barogagi/backend/scripts/switch.sh
           EOF
