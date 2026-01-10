@@ -14,9 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH key
+      - name: Setup SSH key [main/release]
         run: |
-          echo "${{ secrets.PRIVATE_KEY }}" > key.pem
+          if [[ "${GITHUB_REF##*/}" == "release" ]]; then
+            echo "${{ secrets.PROD_PRIVATE_KEY }}" > key.pem
+          else
+            echo "${{ secrets.TEST_PRIVATE_KEY }}" > key.pem
+          fi
           chmod 600 key.pem
 
       - name: Set Environment Variables [main/release]
@@ -24,41 +28,43 @@ jobs:
           if [[ "${GITHUB_REF##*/}" == "release" ]]; then
             echo "HOST=${{ secrets.PROD_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.PROD_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "USERNAME=${{ secrets.PROD_USERNAME }}" >> $GITHUB_ENV
             echo "${{ secrets.APP_PROPS_RELEASE }}" > ./src/main/resources/application.properties
           else
             echo "HOST=${{ secrets.TEST_HOST }}" >> $GITHUB_ENV
             echo "TARGET_DIR=${{ secrets.TEST_TARGET_DIR }}" >> $GITHUB_ENV
+            echo "USERNAME=${{ secrets.TEST_USERNAME }}" >> $GITHUB_ENV
             echo "${{ secrets.APP_PROPS_MAIN_BASE64 }}" | base64 --decode > ./src/main/resources/application.properties
           fi
 
       - name: Build jar file
-        working-directory: ./
-        run: |
-          mvn clean package -DskipTests
+        run: mvn clean package -DskipTests
 
-      - name: SCP jar and Dockerfile to EC2
+      - name: SCP jar and Dockerfile
         run: |
           set -e
           scp -i key.pem -o StrictHostKeyChecking=no \
             ./target/*.jar \
             ./Dockerfile \
-            ${{ secrets.USERNAME }}@${{ env.HOST }}:${{ env.TARGET_DIR }}
+            $USERNAME@$HOST:$TARGET_DIR
 
-      - name: SSH into EC2 and run Docker (main
+      - name: Deploy to TEST EC2 (main)
         if: github.ref == 'refs/heads/main'
         run: |
-          ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no ${{ secrets.USERNAME }}@${{ env.HOST }} << EOF
+          ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no \
+            $USERNAME@$HOST << EOF
             cd $TARGET_DIR
-            sudo docker stop backend || true
-            sudo docker rm backend || true
-            sudo docker build -t backend .
-            sudo docker run -d -p 8080:8080 --name backend backend
+            docker stop backend || true
+            docker rm backend || true
+            docker build -t backend .
+            docker run -d -p 8080:8080 --name backend backend
           EOF
-      - name: SSH into server and deploy (release - blue/green)
+
+      - name: Deploy to PROD (release - blue/green)
         if: github.ref == 'refs/heads/release'
         run: |
           ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no \
-            ${{ secrets.USERNAME }}@${{ env.HOST }} << 'EOF'
+            $USERNAME@$HOST << 'EOF'
 
             cd $TARGET_DIR
 
@@ -71,12 +77,7 @@ jobs:
 
             echo "Deploy target: $TARGET"
 
-            # 이미지 빌드
             docker build -t barogagi-backend:single .
-
-            # inactive 컨테이너만 재기동
             docker compose up -d backend-$TARGET
-
-            # 트래픽 전환
             /srv/barogagi/backend/scripts/switch.sh
           EOF
