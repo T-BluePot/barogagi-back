@@ -111,11 +111,26 @@
 | | Vitest | 3.2.3 | 단위 테스트 프레임워크 |
 | | ESLint | 9.25.0 | 코드 품질 검사 |
 
-### Backend (계획)
-
-- **Database**: MariaDB (RDB)
-- **API**: RESTful API
-- **인증**: JWT + OAuth 2.0
+### Backend
+| 카테고리        | 기술                          | 버전      | 설명                      |
+| ----------- | --------------------------- | ------- | ----------------------- |
+| Core        | Java                        | 17      | LTS 기반 백엔드 언어           |
+| Framework   | Spring Boot                 | 3.2.1   | REST API 및 애플리케이션 프레임워크 |
+| Web         | Spring Web                  | 3.2.1   | RESTful API 개발          |
+| Persistence | Spring Data JPA             | 3.2.1   | ORM 기반 데이터 접근           |
+| Query       | QueryDSL                    | 5.0.0   | 타입 안전 동적 쿼리             |
+| SQL Mapper  | MyBatis                     | 3.0.3   | SQL 기반 데이터 처리           |
+| Database    | MariaDB                     | 3.1.4   | 관계형 데이터베이스              |
+| Security    | Spring Security             | 3.2.1   | 인증 및 인가 처리              |
+| Auth        | OAuth2 Client               | 3.2.1   | 소셜 로그인                  |
+| Auth        | JWT (jjwt)                  | 0.11.5  | 토큰 기반 인증                |
+| Validation  | Spring Validation           | 3.2.1   | 요청 값 검증                 |
+| API Docs    | Springdoc OpenAPI (Swagger) | 2.1.0   | API 문서 자동화              |
+| Encryption  | Jasypt                      | 3.0.4   | 민감 정보 암호화               |
+| Messaging   | Nurigo SMS SDK              | 4.3.0   | SMS 인증                  |
+| Build Tool  | Maven                       | 3.x     | 의존성 및 빌드 관리             |
+| Dev Tools   | Spring Boot DevTools        | 3.2.1   | 개발 생산성 향상               |
+| Utility     | Lombok                      | 1.18.38 | 보일러플레이트 코드 제거           |
 
 ---
 
