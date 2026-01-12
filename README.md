@@ -116,8 +116,8 @@
 ### �� 사전 요구사항
 
 ```bash
-Node.js >= 18.x
-npm >= 9.x (또는 yarn >= 1.22.x)
+git clone https://github.com/T-BluePot/barogagi-back.git
+cd barogagi-back
 ```
 
 ### ⚙️ 설치 및 실행
