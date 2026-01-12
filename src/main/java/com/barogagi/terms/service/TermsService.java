@@ -107,7 +107,6 @@ public class TermsService {
     }
 
     // 사용중인 약관 목록 조회
-
     @Transactional(readOnly = true)
     public List<Terms> findActiveTermsByType(String termsType) {
         Specification<Terms> spec = TermsSpec.useYnY()
@@ -141,15 +140,12 @@ public class TermsService {
     }
 
     public String insertTermsAgreeList(List<TermsAgreeDTO> termsList) {
-        String resultCode = "";
         for(TermsAgreeDTO vo : termsList) {
             boolean insertResult = this.insertTermsAgreeInfo(vo);
-            if(insertResult){
-                resultCode = "200";
-            } else {
-                resultCode = "400";
+            if(!insertResult){
+                return "400";
             }
         }
-        return resultCode;
+        return "200";
     }
 }

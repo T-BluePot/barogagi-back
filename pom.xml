@@ -44,6 +44,7 @@
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
             <version>5.0.0</version>
+            <classifier>jakarta</classifier>
         </dependency>
 
         <!-- Querydsl Annotation Processor (Q타입 생성용) -->

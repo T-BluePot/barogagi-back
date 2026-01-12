@@ -18,11 +18,13 @@ public class SendSmsService {
     private final String SEND_TEL;
     private final String API_KEY;
     private final String API_SECRET_KEY;
+    private final DefaultMessageService messageService;
 
     public SendSmsService(Environment environment) {
-        this.SEND_TEL = environment.getProperty("send.sms.tel");
-        this.API_KEY = environment.getProperty("send.sms.api-key");
-        this.API_SECRET_KEY = environment.getProperty("send.sms.api-secret-key");
+        this.SEND_TEL = environment.getRequiredProperty("send.sms.tel");
+        this.API_KEY = environment.getRequiredProperty("send.sms.api-key");
+        this.API_SECRET_KEY = environment.getRequiredProperty("send.sms.api-secret-key");
+        this.messageService = NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
     }
 
     /**
@@ -34,8 +36,6 @@ public class SendSmsService {
 
         boolean result = true;
 
-        DefaultMessageService messageService =  NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
-        // Message 패키지가 중복될 경우 net.nurigo.sdk.message.model.Message로 치환하여 주세요
         Message message = new Message();
         message.setFrom(SEND_TEL);
         message.setTo(sendSmsVO.getRecipientTel());
