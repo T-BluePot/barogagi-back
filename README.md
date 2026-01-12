@@ -143,105 +143,29 @@
 ## 📁 프로젝트 구조
 
 ```
-barogagi-front/
-├── .storybook/              # Storybook 설정
-│   └── main.ts             # Storybook 메인 설정
-├── public/                  # 정적 파일
-│   └── vite.svg
+barogagi-back/
+├── .github/                    # GitHub 워크플로우/설정
 ├── src/
-│   ├── assets/             # 이미지, 아이콘
-│   │   └── icons/          # SVG 아이콘
-│   │       ├── barogagi.svg
-│   │       ├── google-circle.png
-│   │       ├── kakao-circle.png
-│   │       └── naver-circle.png
-│   │
-│   ├── components/         # 재사용 컴포넌트
-│   │   ├── auth/          # 인증 관련
-│   │   │   ├── common/    # 공통 (Input, Button, etc)
-│   │   │   ├── signin/    # 로그인
-│   │   │   ├── signup/    # 회원가입
-│   │   │   ├── find/      # 계정 찾기
-│   │   │   └── verify/    # 본인 인증
-│   │   │
-│   │   ├── common/        # 전역 공통
-│   │   │   ├── buttons/   # 버튼 컴포넌트
-│   │   │   ├── headers/   # 헤더 컴포넌트
-│   │   │   ├── inputs/    # 입력 컴포넌트
-│   │   │   └── tags/      # 태그 컴포넌트
-│   │   │
-│   │   ├── layout/        # 레이아웃
-│   │   │   ├── Layout.tsx
-│   │   │   ├── BottomModalLayout.tsx
-│   │   │   └── FullScreenModalLayout.tsx
-│   │   │
-│   │   ├── main/          # 메인 앱
-│   │   │   ├── home/      # 홈 화면
-│   │   │   │   ├── HomeGreetingSection.tsx
-│   │   │   │   ├── HomeContentsSection.tsx
-│   │   │   │   └── contents/
-│   │   │   │       ├── ContentWrapper.tsx
-│   │   │   │       ├── HotPlaceSection.tsx
-│   │   │   │       ├── RankingList.tsx
-│   │   │   │       ├── RankingItem.tsx
-│   │   │   │       ├── TrendingCarousel.tsx
-│   │   │   │       ├── TrendingCarouselItem.tsx
-│   │   │   │       ├── TrendingScheduleSection.tsx
-│   │   │   │       └── UpcomingScheduleSection.tsx
-│   │   │   └── plan/      # 일정 관리
-│   │   │       ├── CourseCard.tsx
-│   │   │       └── ...
-│   │   │
-│   │   └── modal/         # 모달
-│   │       ├── CommonAlertModal.tsx
-│   │       ├── CommonConfirmModal.tsx
-│   │       └── FullScreenModal.tsx
-│   │
-│   ├── constants/         # 상수
-│   │   ├── routes.ts      # 라우트 경로
-│   │   └── texts/         # 텍스트 상수
-│   │       ├── auth/
-│   │       └── main/
-│   │
-│   ├── hooks/             # 커스텀 훅
-│   │   ├── useAppNavigation.ts
-│   │   ├── useHeaderConfig.ts
-│   │   └── usePhoneVerify.ts
-│   │
-│   ├── pages/             # 페이지
-│   │   ├── auth/          # 인증 페이지
-│   │   └── main/          # 메인 페이지
-│   │       ├── HomePage.tsx
-│   │       └── plan/
-│   │
-│   ├── routes/            # 라우팅
-│   │   ├── AuthRoutes.tsx
-│   │   └── MainRoutes.tsx
-│   │
-│   ├── styles/            # 스타일
-│   │   ├── animations.css
-│   │   └── README.md
-│   │
-│   ├── types/             # 타입 정의
-│   │   ├── modalTypes.ts
-│   │   ├── schedule.ts
-│   │   └── auth/
-│   │
-│   ├── utils/             # 유틸리티
-│   │   ├── authSchema.ts
-│   │   ├── date.ts
-│   │   └── regionFilter.ts
-│   │
-│   ├── App.tsx            # 루트 컴포넌트
-│   ├── main.tsx           # 엔트리 포인트
-│   └── globals.css        # 전역 CSS
-│
-├── .eslintrc.js           # ESLint 설정
-├── .prettierrc            # Prettier 설정
-├── tailwind.config.js     # Tailwind 설정
-├── tsconfig.json          # TypeScript 설정
-├── vite.config.ts         # Vite 설정
-└── package.json           # 의존성 관리
+│   └── main/
+│       ├── java/
+│       │   └── (패키지 구조)  # 백엔드 소스 코드
+│       │       ├── config/     # Spring 설정 클래스
+│       │       ├── controller/ # API 엔드포인트 정의
+│       │       ├── domain/     # 도메인 엔티티 및 모델
+│       │       ├── dto/        # 데이터 전달 객체
+│       │       ├── exception/  # 예외 처리 관련 코드
+│       │       ├── repository/ # 데이터 접근 레이어 (JPA, MyBatis)
+│       │       ├── security/   # 인증·인가 관련 설정/로직
+│       │       ├── service/    # 비즈니스 로직
+│       │       └── BarogagiBackApplication.java # 메인 실행 클래스
+│       └── resources/
+│           ├── application.yml       # 환경설정 (DB, OAuth, JWT 등)
+│           ├── static/               # 정적 리소스 (필요 시)
+│           └── db/                   # DB 관련 설정/마이그레이션
+├── .gitignore                   # Git 무시 파일 목록
+├── Dockerfile                   # Docker 이미지 빌드 설정
+├── README.md                    # 프로젝트 설명 및 실행 방법 :contentReference[oaicite:1]{index=1}
+└── pom.xml                     # Maven 의존성 및 빌드 설정 :contentReference[oaicite:2]{index=2}
 ```
 
 ---
