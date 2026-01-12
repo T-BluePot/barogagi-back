@@ -269,7 +269,7 @@ main              # 프로덕션 배포
 |------|--------|--------|
 | 프론트엔드 | 은우 | [@jeong-eun-woo](https://github.com/jeong-eun-woo) |
 | 프론트엔드 | 서림 | [@서림](https://github.com/서림) |
-| 백엔드 | 효경 | [@효경](https://github.com/dksgyrud1349) |
+| 백엔드 | 효경 | [@dksgyrud1349](https://github.com/dksgyrud1349) |
 | 백엔드 | 다민 | [@효경](https://github.com/다민) |
 
 ---
