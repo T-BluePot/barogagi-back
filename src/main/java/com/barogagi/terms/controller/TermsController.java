@@ -29,7 +29,7 @@ public class TermsController {
         return termsService.termsListProcess(apiSecretKey, termsType);
     }
 
-    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다.",
+    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다. agreeYn은 Y 또는 N을 보내주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 저장에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),

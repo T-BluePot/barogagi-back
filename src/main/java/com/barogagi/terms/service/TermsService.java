@@ -1,43 +1,40 @@
 package com.barogagi.terms.service;
 
+import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
+import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.terms.domain.TermsAgree;
+import com.barogagi.terms.domain.TermsId;
 import com.barogagi.terms.dto.*;
+import com.barogagi.terms.domain.Terms;
 import com.barogagi.terms.exception.TermsException;
-import com.barogagi.terms.mapper.TermsMapper;
+import com.barogagi.terms.repository.TermsAgreeRepository;
+import com.barogagi.terms.repository.TermsRepository;
+import com.barogagi.terms.repository.spec.TermsSpec;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class TermsService {
-
-    private final TermsMapper termsMapper;
+    private final TermsRepository termsRepository;
+    private final TermsAgreeRepository termsAgreeRepository;
+    private final UserMembershipRepository userMembershipRepository;
     private final Validator validator;
     private final InputValidate inputValidate;
     private final LoginService loginService;
-
-    @Autowired
-    public TermsService(
-                        TermsMapper termsMapper,
-                        Validator validator,
-                        InputValidate inputValidate,
-                        LoginService loginService
-                        )
-    {
-        this.termsMapper = termsMapper;
-        this.validator = validator;
-        this.inputValidate = inputValidate;
-        this.loginService = loginService;
-    }
 
     public ApiResponse termsListProcess(String apiSecretKey, String termsType) {
 
@@ -52,9 +49,7 @@ public class TermsService {
         }
 
         // 3. 약관 조회
-        TermsInputDTO termsInputDTO = new TermsInputDTO();
-        termsInputDTO.setTermsType(termsType);
-        List<TermsOutputDTO> termsList = this.selectTermsList(termsInputDTO);
+        List<Terms> termsList = this.findActiveTermsByType(termsType);
 
         if(termsList.isEmpty()) {
             throw new TermsException(ErrorCode.NOT_FOUND_TERMS);
@@ -84,8 +79,8 @@ public class TermsService {
 
         LoginVO lvo = new LoginVO();
         lvo.setUserId(termsDTO.getUserId());
-        LoginVO loginVO = loginService.findMembershipNo(lvo);
-        if(null == loginVO) {
+        UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(termsDTO.getUserId());
+        if(null == userMembershipInfo) {
             throw new TermsException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
@@ -94,7 +89,7 @@ public class TermsService {
 
         for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
             TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
-            termsAgreeDTO.setMembershipNo(loginVO.getMembershipNo());
+            termsAgreeDTO.setMembershipNo(userMembershipInfo.getMembershipNo());
             termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
             termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
             termsAgreeDTOList.add(termsAgreeDTO);
@@ -112,33 +107,45 @@ public class TermsService {
     }
 
     // 사용중인 약관 목록 조회
-    public List<TermsOutputDTO> selectTermsList(TermsInputDTO termsInputDTO) {
-        return termsMapper.selectTermsList(termsInputDTO);
+    @Transactional(readOnly = true)
+    public List<Terms> findActiveTermsByType(String termsType) {
+        Specification<Terms> spec = TermsSpec.useYnY()
+                .and(TermsSpec.termsTypeEq(termsType));
+
+        return termsRepository.findAll(
+                spec,
+                Sort.by(Sort.Direction.ASC, "sort")
+        );
     }
 
     // 약관 동의 여부 저장
-    public int insertTermsAgreeInfo(TermsAgreeDTO vo) {
-        return termsMapper.insertTermsAgreeInfo(vo);
+    @Transactional
+    public boolean insertTermsAgreeInfo(TermsAgreeDTO vo) {
+
+        try {
+            TermsId termsId = new TermsId();
+            termsId.setTermsNum(vo.getTermsNum());
+            termsId.setMembershipNo(vo.getMembershipNo());
+
+            TermsAgree termsAgree = new TermsAgree();
+            termsAgree.setId(termsId);
+            termsAgree.setAgreeYn(vo.getAgreeYn());
+
+            termsAgreeRepository.save(termsAgree);
+            return true;
+
+        } catch (DataIntegrityViolationException e) {
+            return false;
+        }
     }
 
-    @Transactional
     public String insertTermsAgreeList(List<TermsAgreeDTO> termsList) {
-        String resultCode = "";
-        try {
-            for(TermsAgreeDTO vo : termsList) {
-                int insertFlag = this.insertTermsAgreeInfo(vo);
-                if(insertFlag > 0){
-                    resultCode = "200";
-                } else {
-                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                }
+        for(TermsAgreeDTO vo : termsList) {
+            boolean insertResult = this.insertTermsAgreeInfo(vo);
+            if(!insertResult){
+                return "400";
             }
-        } catch (Exception e) {
-            resultCode = "400";
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            throw new RuntimeException(e);
         }
-
-        return resultCode;
+        return "200";
     }
 }
