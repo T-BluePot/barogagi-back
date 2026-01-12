@@ -9,11 +9,11 @@ import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
+import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -27,6 +27,7 @@ public class MemberService {
     private final InputValidate inputValidate;
     private final UserMembershipRepository userMembershipRepository;
     private final MemberTxService memberTxService;
+    private final Validator validator;
 
     public ApiResponse getUserInfo(HttpServletRequest request) {
 
@@ -93,6 +94,11 @@ public class MemberService {
 
         // 닉네임(중복X)
         if(!inputValidate.isEmpty(memberRequestDTO.getNickName())) {
+
+            if(!validator.isValidNickname(memberRequestDTO.getNickName())) {
+                throw new MemberInfoException(ErrorCode.INVALID_NICKNAME);
+            }
+
             boolean existsNickname = userMembershipRepository.existsByNickName(memberRequestDTO.getNickName());
             if(existsNickname) {
                 throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);

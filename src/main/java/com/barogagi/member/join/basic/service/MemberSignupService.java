@@ -58,6 +58,16 @@ public class MemberSignupService {
             throw new JoinException(ErrorCode.INVALID_SIGN_UP);
         }
 
+        boolean existsByUserId = userMembershipRepository.existsByUserId(joinRequestDTO.getUserId().trim());
+        if(existsByUserId) {
+            throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
+        }
+
+        boolean existsNickname = userMembershipRepository.existsByNickName(joinRequestDTO.getNickName());
+        if(existsNickname) {
+            throw new JoinException(ErrorCode.UNAVAILABLE_NICKNAME);
+        }
+
         // 4. 암호화
         // 휴대전화번호, 비밀번호 암호화
         joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel().replaceAll("[^0-9]", "")));

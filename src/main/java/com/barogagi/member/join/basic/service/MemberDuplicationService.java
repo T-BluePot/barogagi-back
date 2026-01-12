@@ -7,16 +7,12 @@ import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberDuplicationService {
-
-    Logger logger = LoggerFactory.getLogger(MemberDuplicationService.class);
 
     private final Validator validator;
     private final InputValidate inputValidate;
@@ -43,8 +39,6 @@ public class MemberDuplicationService {
 
         // 4. 아이디 중복 체크
         boolean existsByUserId = userMembershipRepository.existsByUserId(userId.trim());
-
-        logger.info("@@ existsByUserId={}", existsByUserId);
         if(existsByUserId) {
             throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
         }
@@ -73,7 +67,6 @@ public class MemberDuplicationService {
 
         // 4. 닉네임 중복 체크
         boolean existsNickname = userMembershipRepository.existsByNickName(nickname);
-        logger.info("@@ existsNickname={}", existsNickname);
         if(existsNickname) {
             throw new JoinException(ErrorCode.UNAVAILABLE_NICKNAME);
         }
