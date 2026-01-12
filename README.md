@@ -23,11 +23,8 @@
 - [기술 스택](#-기술-스택)
 - [시작하기](#-시작하기)
 - [프로젝트 구조](#-프로젝트-구조)
-- [개발 가이드](#-개발-가이드)
-- [스크립트](#-스크립트)
 - [컨벤션 가이드](#-컨벤션-가이드)
 - [API 명세](#-api-명세)
-- [로드맵](#-로드맵)
 - [기여하기](#-기여하기)
 - [팀](#-팀)
 
@@ -231,7 +228,7 @@ main              # 프로덕션 배포
 ---
 
 ## 📡 API 명세
-- [http://](http://localhost:8080/swagger-ui/index.html#/)
+- [Swagger API 명세서 (local)](http://localhost:8080/swagger-ui/index.html#/)
   
 ---
 
@@ -288,14 +285,14 @@ main              # 프로덕션 배포
 이 프로젝트는 다음 오픈소스 프로젝트들의 도움을 받았습니다:
 
 - [Java 17](https://openjdk.org/projects/jdk/17/) - 백엔드 언어, LTS 버전
-Spring Boot 3.2.1 - 애플리케이션 프레임워크
-Spring Security - 인증/인가 처리
-JPA / Hibernate - ORM 기반 데이터 처리
-QueryDSL - 타입 안전 동적 쿼리
-MyBatis - SQL 기반 데이터 접근
-MariaDB - 관계형 데이터베이스
-JWT - 토큰 기반 인증
-Springdoc OpenAPI - API 문서화
+- [Spring Boot 3.2.1](https://spring.io/projects/spring-boot) - 애플리케이션 프레임워크
+- [Spring Security](https://spring.io/projects/spring-security) - 인증/인가 처리
+- [JPA / Hibernate](https://hibernate.org/orm/) - ORM 기반 데이터 처리
+- [QueryDSL](https://querydsl.com) - 타입 안전 동적 쿼리
+- [MyBatis](https://mybatis.org/mybatis-3/) - SQL 기반 데이터 접근
+- [MariaDB]() - 관계형 데이터베이스
+- [JWT](https://www.jwt.io) - 토큰 기반 인증
+- [Springdoc OpenAPI](https://springdoc.org) - API 문서화
 ---
 
 <div align="center">
