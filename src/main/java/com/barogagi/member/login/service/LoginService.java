@@ -1,75 +1,52 @@
 package com.barogagi.member.login.service;
 
-import com.barogagi.config.PasswordConfig;
-import com.barogagi.member.info.dto.Member;
-import com.barogagi.member.info.service.MemberService;
+import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.exception.LoginException;
-import com.barogagi.member.login.mapper.LoginMapper;
+import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class LoginService {
 
-    private final LoginMapper loginMapper;
     private final Validator validator;
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
-    private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
+    private final UserMembershipRepository userMembershipRepository;
 
-    @Autowired
-    public LoginService(
-            LoginMapper loginMapper,
-            Validator validator,
-            InputValidate inputValidate,
-            EncryptUtil encryptUtil,
-            MemberService memberService,
-            PasswordEncoder passwordEncoder,
-            AuthService authService
-    )
-    {
-        this.loginMapper = loginMapper;
-        this.validator = validator;
-        this.inputValidate = inputValidate;
-        this.encryptUtil = encryptUtil;
-        this.memberService = memberService;
-        this.passwordEncoder = passwordEncoder;
-        this.authService = authService;
-    }
-
-    public ApiResponse findUser(SearchUserIdDTO searchUserIdDTO) {
+    public ApiResponse findUserIdByTel(String apiSecretKey, String tel) {
 
         String resultCode = "";
         String message = "";
         List<UserIdDTO> userIdList = null;
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(searchUserIdDTO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new LoginException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
         // 2. 필수 입력값 확인
-        if(inputValidate.isEmpty(searchUserIdDTO.getTel())) {
+        if(inputValidate.isEmpty(tel)) {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
-        searchUserIdDTO.setTel(searchUserIdDTO.getTel().replaceAll("[^0-9]", ""));
-
-        searchUserIdDTO.setTel(encryptUtil.encrypt(searchUserIdDTO.getTel()));
-        List<UserIdDTO> searchIdList = this.myUserIdList(searchUserIdDTO);
+        List<UserIdDTO> searchIdList = userMembershipRepository.findByTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
 
         if(searchIdList.isEmpty()) {
             resultCode = ErrorCode.NOT_FOUND_ACCOUNT.getCode();
@@ -83,7 +60,7 @@ public class LoginService {
         return ApiResponse.resultData(userIdList, resultCode, message);
     }
 
-    public ApiResponse updatePasswordProcess(LoginDTO loginDTO) {
+    public ApiResponse resetPassword(LoginDTO loginDTO) {
         String resultCode = "";
         String message = "";
 
@@ -97,19 +74,20 @@ public class LoginService {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
+        // 3. 회원 정보 존재 여부
+        UserMembershipInfo userInfo = userMembershipRepository.findByUserId(loginDTO.getUserId());
+
+        if(null == userInfo) {
+            throw new LoginException(ErrorCode.NOT_FOUND_USER_ID);
+        }
+
         // 3. 비밀번호 암호화
         loginDTO.setPassword(passwordEncoder.encode(loginDTO.getPassword()));
 
         // 4. 비밀번호 update
-        int updatePassword = this.updatePassword(loginDTO);
-        if(updatePassword > 0) {
-            resultCode = ErrorCode.SUCCESS_UPDATE_PASSWORD.getCode();
-            message = ErrorCode.SUCCESS_UPDATE_PASSWORD.getMessage();
-        } else {
-            throw new LoginException(ErrorCode.FAIL_UPDATE_PASSWORD);
-        }
+        userInfo.changePassword(loginDTO.getPassword());
 
-        return ApiResponse.result(resultCode, message);
+        return ApiResponse.result(ErrorCode.SUCCESS_UPDATE_PASSWORD.getCode(), ErrorCode.SUCCESS_UPDATE_PASSWORD.getMessage());
     }
 
     public ApiResponse login(LoginDTO loginDTO) {
@@ -124,28 +102,24 @@ public class LoginService {
         }
 
         // 2. 필수 입력값 확인
-        if(
-                inputValidate.isEmpty(loginDTO.getUserId())
-                        || inputValidate.isEmpty(loginDTO.getPassword())
-        )
-        {
+        if(inputValidate.isEmpty(loginDTO.getUserId()) || inputValidate.isEmpty(loginDTO.getPassword())) {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
         // 3. 아이디로 회원정보 조회
-        Member member = memberService.selectUserMembershipInfo(loginDTO.getUserId());
-        if (null == member) {
+        UserMembershipInfo userInfo = userMembershipRepository.findByUserId(loginDTO.getUserId());
+        if (null == userInfo) {
             throw new LoginException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
         // 4. 비밀번호 일치 여부
-        boolean ok = passwordEncoder.matches(loginDTO.getPassword(), member.getPassword());
+        boolean ok = passwordEncoder.matches(loginDTO.getPassword(), userInfo.getPassword());
         if(!ok) {
             throw new LoginException(ErrorCode.FAIL_LOGIN);
         }
 
         // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
-        LoginResponse loginResponse = authService.loginAfterSignup(member.getUserId(), "web-basic");
+        LoginResponse loginResponse = authService.loginAfterSignup(userInfo.getUserId(), "web-basic");
 
         resultCode = loginResponse.tokens().resultCode();
         message = loginResponse.tokens().message();
@@ -153,7 +127,7 @@ public class LoginService {
         dataMap = Map.of(
                 "accessToken", loginResponse.tokens().accessToken(),
                 "accessTokenExpiresIn", loginResponse.tokens().accessTokenExpiresIn(),
-                "userId", member.getUserId(),
+                "userId", userInfo.getUserId(),
                 "membershipNo", loginResponse.membershipNo(),
                 "refreshToken", loginResponse.tokens().refreshToken(),
                 "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
@@ -193,30 +167,19 @@ public class LoginService {
 
     public ApiResponse logout(RefreshTokenRequestDTO refreshTokenRequestDTO) {
 
-        // 1. 필수 입력값 확인
-        if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
-            throw new LoginException(ErrorCode.EMPTY_DATA);
+        try {
+
+            // 1. 필수 입력값 확인
+            if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
+                throw new LoginException(ErrorCode.EMPTY_DATA);
+            }
+
+            // 2. 로그아웃
+            authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
+            return ApiResponse.result(ErrorCode.SUCCESS_LOGOUT);
+
+        } catch (Exception e) {
+            return ApiResponse.result(ErrorCode.FAIL_LOGOUT);
         }
-
-        // 2. 로그아웃
-        authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
-
-        return ApiResponse.result(ErrorCode.SUCCESS_LOGOUT);
-    }
-
-    public int selectMemberCnt(LoginDTO loginDTO){
-        return loginMapper.selectMemberCnt(loginDTO);
-    }
-
-    public LoginVO findByUserId(LoginDTO loginDTO) {
-        return loginMapper.findByUserId(loginDTO);
-    }
-
-    public List<UserIdDTO> myUserIdList(SearchUserIdDTO searchUserIdDTO){ return loginMapper.myUserIdList(searchUserIdDTO);}
-
-    public int updatePassword(LoginDTO loginDTO){return loginMapper.updatePassword(loginDTO);}
-
-    public LoginVO findMembershipNo(LoginVO vo) {
-        return loginMapper.findMembershipNo(vo);
     }
 }

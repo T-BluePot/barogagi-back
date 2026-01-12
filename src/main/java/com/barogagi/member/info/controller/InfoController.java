@@ -28,7 +28,7 @@ public class InfoController {
             })
     @GetMapping
     public ApiResponse selectMemberInfo(HttpServletRequest request) {
-        return memberService.selectMemberInfo(request);
+        return memberService.getUserInfo(request);
     }
 
     @Operation(summary = "회원 정보 수정", description = "회원 정보 조회 수정입니다.",
@@ -42,6 +42,6 @@ public class InfoController {
             })
     @PatchMapping
     public ApiResponse updateMemberInfo(HttpServletRequest request, @RequestBody MemberRequestDTO memberRequestDTO) {
-        return memberService.updateMemberProcess(request, memberRequestDTO);
+        return memberService.updateUserInfo(request, memberRequestDTO);
     }
 }

@@ -48,6 +48,7 @@ public enum ErrorCode {
     INVALID_USER_ID(HttpStatus.BAD_REQUEST, "U102", "적합한 아이디가 아닙니다."),
     UNAVAILABLE_USER_ID(HttpStatus.CONFLICT, "U300", "해당 아이디 사용이 불가능합니다."),
     AVAILABLE_USER_ID(HttpStatus.OK, "U200", "해당 아이디 사용이 가능합니다."),
+    NOT_FOUND_USER_ID(HttpStatus.NOT_FOUND, "U400", "해당 아이디의 정보가 존재하지 않습니다."),
 
     // SignUp
     INVALID_SIGN_UP(HttpStatus.BAD_REQUEST, "S102", "적합한 아이디, 비밀번호, 닉네임이 아닙니다."),

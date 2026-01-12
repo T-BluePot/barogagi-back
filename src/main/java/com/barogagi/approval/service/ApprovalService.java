@@ -1,7 +1,6 @@
 package com.barogagi.approval.service;
 
 import com.barogagi.approval.exception.ApprovalException;
-import com.barogagi.approval.mapper.ApprovalMapper;
 import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.approval.vo.ApprovalVO;
@@ -12,36 +11,19 @@ import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class ApprovalService {
 
-    private final ApprovalMapper approvalMapper;
     private final Validator validator;
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
     private final AuthCodeService authCodeService;
     private final SendSmsService sendSmsService;
-
-    @Autowired
-    public ApprovalService(
-                            ApprovalMapper approvalMapper,
-                            Validator validator,
-                            InputValidate inputValidate,
-                            EncryptUtil encryptUtil,
-                            AuthCodeService authCodeService,
-                            SendSmsService sendSmsService
-                            )
-    {
-        this.approvalMapper = approvalMapper;
-        this.validator = validator;
-        this.inputValidate = inputValidate;
-        this.encryptUtil = encryptUtil;
-        this.authCodeService = authCodeService;
-        this.sendSmsService = sendSmsService;
-    }
+    private final ApprovalTxService approvalTxService;
 
     public ApiResponse approvalTelSend(ApprovalSendVO approvalSendVO) {
 
@@ -66,7 +48,7 @@ public class ApprovalService {
         // 전화번호 암호화
         approvalVO.setTel(encryptUtil.hashEncodeString(approvalSendVO.getTel()));
 
-        int updateResult = this.updateApprovalRecord(approvalVO);
+        boolean updateResult = approvalTxService.cancelApproval(approvalVO.getTel(), approvalVO.getType(), approvalVO.getCompleteYn());
 
         // 인증번호 생성
         String authCode = authCodeService.generateAuthCode();
@@ -86,9 +68,9 @@ public class ApprovalService {
         approvalVO.setAuthCode(encryptUtil.hashEncodeString(authCode));
 
         approvalVO.setMessageContent(sendSmsVO.getMessageContent());
-        int insertResult = this.insertApprovalRecord(approvalVO);
+        boolean insertResult = approvalTxService.insertApprovalRecord(approvalVO);
 
-        if(insertResult <= 0) {
+        if(!insertResult) {
             throw new ApprovalException(ErrorCode.ERROR_SEND_SMS);
         }
 
@@ -108,32 +90,18 @@ public class ApprovalService {
             throw new ApprovalException(ErrorCode.EMPTY_DATA);
         }
 
-        // 3. 전화번호 암호화
-        ApprovalVO approvalVO = new ApprovalVO();
-        approvalCompleteVO.setTel(approvalCompleteVO.getTel().replaceAll("[^0-9]", ""));
-        approvalVO.setTel(encryptUtil.hashEncodeString(approvalCompleteVO.getTel()));
-        approvalVO.setCompleteYn("N");
-        approvalVO.setAuthCode(encryptUtil.hashEncodeString(approvalCompleteVO.getAuthCode()));
-        approvalVO.setType(approvalCompleteVO.getType());
+        // 3. 인증
+        boolean updateResult = approvalTxService.updateApprovalComplete(
+                encryptUtil.hashEncodeString(approvalCompleteVO.getTel().replaceAll("[^0-9]", "")),
+                approvalCompleteVO.getType(),
+                "N",
+                encryptUtil.hashEncodeString(approvalCompleteVO.getAuthCode())
+        );
 
-        // 4. 인증
-        int updateResult = this.updateApprovalComplete(approvalVO);
-        if(updateResult != 1){
+        if(!updateResult){
             throw new ApprovalException(ErrorCode.FAIL_CHECK_SMS);
         }
 
         return ApiResponse.result(ErrorCode.SUCCESS_CHECK_SMS);
-    }
-
-    public int updateApprovalRecord(ApprovalVO vo){
-        return approvalMapper.updateApprovalRecord(vo);
-    }
-
-    public int insertApprovalRecord(ApprovalVO vo){
-        return approvalMapper.insertApprovalRecord(vo);
-    }
-
-    public int updateApprovalComplete(ApprovalVO vo){
-        return approvalMapper.updateApprovalComplete(vo);
     }
 }
