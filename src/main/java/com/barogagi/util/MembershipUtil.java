@@ -40,14 +40,4 @@ public class MembershipUtil {
 
         return resultMap;
     }
-
-    public String selectMembershipNo(HttpServletRequest request) {
-
-        Object membershipNoAttr = request.getAttribute("membershipNo");
-        if(null == membershipNoAttr) {
-            throw new BasicException(ErrorCode.NOT_EXIST_ACCESS_AUTH);
-        }
-
-        return String.valueOf(membershipNoAttr);
-    }
 }

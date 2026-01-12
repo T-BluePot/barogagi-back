@@ -1,7 +1,7 @@
 package com.barogagi.member.login.service;
 
-import com.barogagi.member.login.repository.RefreshTokenRepository;
-import com.barogagi.member.login.repository.UserMembershipRepository;
+import com.barogagi.member.repository.RefreshTokenRepository;
+import com.barogagi.member.repository.UserMembershipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
