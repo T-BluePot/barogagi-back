@@ -1,6 +1,4 @@
 <div align="center">
-  <img src="./src/assets/icons/barogagi.svg" alt="바로가기 로고" width="120" height="120">
-  
   # 🗺️ 바로가기 (Barogagi)
   
   **AI 기반 스마트 일정 추천 플래너**
