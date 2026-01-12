@@ -147,119 +147,34 @@ barogagi-back/
 ├── .github/                    # GitHub 워크플로우/설정
 ├── src/
 │   └── main/
-│       ├── java/
-│       │   └── (패키지 구조)  # 백엔드 소스 코드
-│       │       ├── config/     # Spring 설정 클래스
-│       │       ├── controller/ # API 엔드포인트 정의
-│       │       ├── domain/     # 도메인 엔티티 및 모델
-│       │       ├── dto/        # 데이터 전달 객체
-│       │       ├── exception/  # 예외 처리 관련 코드
-│       │       ├── repository/ # 데이터 접근 레이어 (JPA, MyBatis)
-│       │       ├── security/   # 인증·인가 관련 설정/로직
-│       │       ├── service/    # 비즈니스 로직
-│       │       └── BarogagiBackApplication.java # 메인 실행 클래스
+│       ├── java/com/
+│       │   └── barogagi
+│       │       ├── config/         # ai 관련 코드
+│       │       ├── approval/       # 인증 관련 코드
+│       │       ├── config/         # 설정 클래스
+│       │       ├── kakaoplace/     # 카카오 장소 검색 API 관련 코드
+│       │       ├── logging/        # 로그 관련 코드
+│       │       ├── mainPage/       # 메인페이지 API 관련 코드
+│       │       ├── member/         # 회원 API 관련 코드
+│       │       ├── naverblog/      # 네이버 블로그 API 관련 코드
+│       │       ├── plan/           # 계획 API 관련 코드
+│       │       ├── region/         # 장소 API 관련 코드
+│       │       ├── response/       # API 응답 객체
+│       │       ├── schedule/       # 일정 API 관련 코드
+│       │       ├── sendSms/        # 메시지 발송
+│       │       ├── tag/            # 태그 API 관련 코드
+│       │       ├── terms/          # 약관 API 관련 코드
+│       │       ├── util/           # 유틸 API 관련 코드
+│       │   ├── Application.java    # 메인 실행 클래스
+│       │   ├── SwaggerConfig       # Swagger 관련 코드
 │       └── resources/
-│           ├── application.yml       # 환경설정 (DB, OAuth, JWT 등)
-│           ├── static/               # 정적 리소스 (필요 시)
-│           └── db/                   # DB 관련 설정/마이그레이션
+│           ├── mapper                     # 쿼리
+│           └── application.properties/    # 환경설정 (DB, OAuth, JWT 등)
 ├── .gitignore                   # Git 무시 파일 목록
 ├── Dockerfile                   # Docker 이미지 빌드 설정
 ├── README.md                    # 프로젝트 설명 및 실행 방법 :contentReference[oaicite:1]{index=1}
 └── pom.xml                     # Maven 의존성 및 빌드 설정 :contentReference[oaicite:2]{index=2}
 ```
-
----
-
-## 💻 개발 가이드
-
-### 컴포넌트 개발
-
-1. **새 컴포넌트 생성**
-   ```tsx
-   // src/components/example/MyComponent.tsx
-   import React from 'react';
-   
-   interface MyComponentProps {
-     title: string;
-     onClick?: () => void;
-   }
-   
-   export const MyComponent: React.FC<MyComponentProps> = ({ 
-     title, 
-     onClick 
-   }) => {
-     return (
-       <button 
-         onClick={onClick} 
-         className="typo-title-01 bg-main px-4 py-2 rounded-lg"
-       >
-         {title}
-       </button>
-     );
-   };
-   ```
-
-2. **Storybook 스토리 작성**
-   ```tsx
-   // src/components/example/MyComponent.stories.tsx
-   import type { Meta, StoryObj } from '@storybook/react-vite';
-   import { MyComponent } from './MyComponent';
-   
-   const meta: Meta<typeof MyComponent> = {
-     title: 'Components/Example/MyComponent',
-     component: MyComponent,
-     tags: ['autodocs'],
-   };
-   
-   export default meta;
-   type Story = StoryObj<typeof meta>;
-   
-   export const Default: Story = {
-     args: {
-       title: 'Click Me',
-     },
-   };
-   ```
-
-### 스타일링 가이드
-
-**Tailwind 유틸리티 우선**
-```tsx
-<div className="flex items-center gap-4 p-6 bg-main rounded-lg">
-  <h1 className="typo-title-01">Title</h1>
-</div>
-```
-
-**커스텀 타이포그래피**
-- `typo-title-01`: 대제목 (28px, Bold)
-- `typo-title-02`: 중제목 (20px, Bold)
-- `typo-subtitle`: 소제목 (16px, SemiBold)
-- `typo-body`: 본문 (14px, Regular)
-- `typo-caption`: 캡션 (12px, Regular)
-- `typo-tag`: 태그 (10px, Medium)
-
-### 라우팅
-
-```tsx
-import { useNavigate } from 'react-router-dom';
-import { ROUTES } from '@/constants/routes';
-
-const navigate = useNavigate();
-navigate(ROUTES.MAIN.HOME);
-```
-
----
-
-## 📜 스크립트
-
-| 명령어 | 설명 |
-|--------|------|
-| `npm run dev` | 개발 서버 실행 (포트: 8080) |
-| `npm run build` | 프로덕션 빌드 생성 |
-| `npm run preview` | 빌드 결과 미리보기 |
-| `npm run lint` | ESLint 코드 검사 |
-| `npm run storybook` | Storybook 개발 서버 (포트: 6006) |
-| `npm run build-storybook` | Storybook 정적 빌드 |
 
 ---
 
@@ -301,7 +216,7 @@ Closes #123
 ```
 main              # 프로덕션 배포
 ├── develop       # 개발 통합
-    ├── feature/  # 기능 개발
+    ├── feat/     # 기능 개발
     ├── fix/      # 버그 수정
     ├── design/   # UI/UX 작업
     └── docs/     # 문서 작업
@@ -313,102 +228,11 @@ main              # 프로덕션 배포
 - `design/main-page`
 - `docs/readme`
 
-### 코드 스타일
-
-**파일/폴더 네이밍**
-- 컴포넌트: `PascalCase` (MyComponent.tsx)
-- 유틸/훅: `camelCase` (useAuth.ts)
-- 상수: `UPPER_SNAKE_CASE`
-- 타입/인터페이스: `PascalCase`
-
-**컴포넌트 구조**
-```tsx
-// 1. Import
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-
-// 2. Type/Interface
-interface Props {
-  title: string;
-}
-
-// 3. Component
-export const MyComponent: React.FC<Props> = ({ title }) => {
-  // 3-1. Hooks
-  const navigate = useNavigate();
-  
-  // 3-2. State
-  const [state, setState] = useState('');
-  
-  // 3-3. Effects
-  useEffect(() => {
-    // ...
-  }, []);
-  
-  // 3-4. Handlers
-  const handleClick = () => {
-    // ...
-  };
-  
-  // 3-5. Render
-  return <div>{title}</div>;
-};
-```
-
 ---
 
 ## 📡 API 명세
-
-> **작업 중** - 추후 업데이트 예정
-
-### 인증 API
-- `POST /api/auth/signup` - 회원가입
-- `POST /api/auth/login` - 로그인
-- `POST /api/auth/logout` - 로그아웃
-- `GET /api/auth/verify` - 토큰 검증
-
-### 일정 API
-- `GET /api/schedules` - 일정 목록 조회
-- `POST /api/schedules` - 일정 생성
-- `GET /api/schedules/:id` - 일정 상세 조회
-- `PUT /api/schedules/:id` - 일정 수정
-- `DELETE /api/schedules/:id` - 일정 삭제
-
-### 추천 API
-- `POST /api/recommend` - AI 기반 장소 추천
-- `GET /api/trending` - 트렌딩 핫플레이스
-
----
-
-## 🗺️ 로드맵
-
-### Phase 1: MVP (현재)
-- [x] 프로젝트 초기 설정
-- [x] 인증 시스템 (회원가입/로그인)
-- [x] 홈 화면 UI
-- [x] 일정 생성 기본 UI
-- [ ] 키워드 기반 추천 시스템
-- [ ] 지도 연동
-
-### Phase 2: 핵심 기능
-- [ ] AI 기반 장소 추천
-- [ ] 루트 최적화 알고리즘
-- [ ] 시간표 뷰 구현
-- [ ] 그룹 멤버 초대
-- [ ] 실시간 알림
-
-### Phase 3: 고도화
-- [ ] 소셜 로그인 (Google, Kakao, Naver)
-- [ ] 사용자 선호도 학습
-- [ ] 일정 공유 기능
-- [ ] 리뷰 시스템
-
-### Phase 4: 최적화
-- [ ] 성능 최적화
-- [ ] SEO 개선
-- [ ] PWA 적용
-- [ ] 다국어 지원
-
+- [http://](http://localhost:8080/swagger-ui/index.html#/)
+  
 ---
 
 ## 🤝 기여하기
@@ -448,7 +272,8 @@ export const MyComponent: React.FC<Props> = ({ title }) => {
 |------|--------|--------|
 | 프론트엔드 | 은우 | [@jeong-eun-woo](https://github.com/jeong-eun-woo) |
 | 프론트엔드 | 서림 | [@서림](https://github.com/서림) |
-| 백엔드 | 효경 | [@효경](https://github.com/효경) |
+| 백엔드 | 효경 | [@효경](https://github.com/dksgyrud1349) |
+| 백엔드 | 다민 | [@효경](https://github.com/다민) |
 
 ---
 
@@ -462,12 +287,15 @@ export const MyComponent: React.FC<Props> = ({ title }) => {
 
 이 프로젝트는 다음 오픈소스 프로젝트들의 도움을 받았습니다:
 
-- [React](https://reactjs.org/) - UI 라이브러리
-- [Vite](https://vitejs.dev/) - 빌드 툴
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 프레임워크
-- [Framer Motion](https://www.framer.com/motion/) - 애니메이션
-- [Storybook](https://storybook.js.org/) - 컴포넌트 개발 환경
-
+- [Java 17](https://openjdk.org/projects/jdk/17/) - 백엔드 언어, LTS 버전
+Spring Boot 3.2.1 - 애플리케이션 프레임워크
+Spring Security - 인증/인가 처리
+JPA / Hibernate - ORM 기반 데이터 처리
+QueryDSL - 타입 안전 동적 쿼리
+MyBatis - SQL 기반 데이터 접근
+MariaDB - 관계형 데이터베이스
+JWT - 토큰 기반 인증
+Springdoc OpenAPI - API 문서화
 ---
 
 <div align="center">
