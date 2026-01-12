@@ -11,7 +11,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ServletComponentScan
 @MapperScan(
         basePackages = {
-                // MyBatis 인터페이스가 모여있는 패키지들만 적어줘
                 "com.barogagi.**.mapper"
         },
         annotationClass = Mapper.class // @Mapper 붙은 것만 스캔
