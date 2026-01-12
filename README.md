@@ -88,29 +88,6 @@
 ---
 
 ## 🛠️ 기술 스택
-
-### Frontend
-
-| 카테고리 | 기술 | 버전 | 설명 |
-|---------|------|------|------|
-| **Core** | React | 19.1.0 | 사용자 인터페이스 라이브러리 |
-| | TypeScript | 5.x | 정적 타입 시스템 |
-| | Vite | 6.x | 번개같이 빠른 빌드 툴 |
-| **Styling** | Tailwind CSS | 4.x | 유틸리티 우선 CSS 프레임워크 |
-| | Emotion | 11.14.0 | CSS-in-JS 라이브러리 |
-| | Material-UI | 7.2.0 | React UI 컴포넌트 |
-| **Animation** | Framer Motion | 12.23.22 | 프로덕션 레벨 애니메이션 |
-| | React Modal Sheet | 4.4.0 | 모바일 바텀 시트 |
-| **Routing** | React Router DOM | 7.6.3 | 클라이언트 사이드 라우팅 |
-| **Form** | Yup | 1.6.1 | 스키마 기반 폼 검증 |
-| **Date** | date-fns | 4.1.0 | 날짜 유틸리티 |
-| | React Datepicker | 8.4.0 | 날짜 선택 컴포넌트 |
-| **Utils** | es-hangul | 2.3.5 | 한글 처리 라이브러리 |
-| | clsx | 2.1.1 | 조건부 className 유틸 |
-| **Dev Tools** | Storybook | 9.0.12 | 컴포넌트 주도 개발 |
-| | Vitest | 3.2.3 | 단위 테스트 프레임워크 |
-| | ESLint | 9.25.0 | 코드 품질 검사 |
-
 ### Backend
 | 카테고리        | 기술                          | 버전      | 설명                      |
 | ----------- | --------------------------- | ------- | ----------------------- |
