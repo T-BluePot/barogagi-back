@@ -121,29 +121,23 @@
    cd barogagi-back
    ```
 
-2. **의존성 설치**
+2. **환경 설정**
    ```bash
-   npm install
+   # application.yml 또는 application.properties 설정
+   # (DB, OAuth, JWT, Jasypt 관련 값 필요)
    ```
 
-3. **개발 서버 실행**
+3. **의존성 설치 및 빌드**
    ```bash
-   npm run dev
-   ```
-   브라우저에서 http://localhost:8080 접속
-
-4. **Storybook 실행**
-   ```bash
-   npm run storybook
-   ```
-   브라우저에서 http://localhost:6006 접속
-
-5. **프로덕션 빌드**
-   ```bash
-   npm run build
-   npm run preview  # 빌드 결과 미리보기
+   ./mvnw clean install
    ```
 
+4. **개발 서버 실행**
+   ```bash
+   ./mvnw spring-boot:run
+   또는
+   java -jar target/barogagi-1.0-SNAPSHOT.jar
+   ```
 ---
 
 ## 📁 프로젝트 구조
