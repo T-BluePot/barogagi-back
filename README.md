@@ -113,19 +113,12 @@
 
 ## 🚀 시작하기
 
-### �� 사전 요구사항
-
-```bash
-git clone https://github.com/T-BluePot/barogagi-back.git
-cd barogagi-back
-```
-
 ### ⚙️ 설치 및 실행
 
 1. **저장소 클론**
    ```bash
-   git clone https://github.com/T-BluePot/barogagi-front.git
-   cd barogagi-front
+   git clone https://github.com/T-BluePot/barogagi-back.git
+   cd barogagi-back
    ```
 
 2. **의존성 설치**
