@@ -3,15 +3,15 @@
   
   **AI 기반 스마트 일정 추천 플래너**
   
-  [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-  [![Vite](https://img.shields.io/badge/Vite-6.x-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-  [![Storybook](https://img.shields.io/badge/Storybook-9.0-FF4785?logo=storybook&logoColor=white)](https://storybook.js.org/)
-  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-  [데모 보기](#) · [버그 리포트](https://github.com/T-BluePot/barogagi-front/issues) · [기능 제안](https://github.com/T-BluePot/barogagi-front/issues)
-
+  [![Java](https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/17/)
+  [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.1-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+  [![Spring Security](https://img.shields.io/badge/Spring_Security-6.x-6DB33F?logo=springsecurity&logoColor=white)](https://spring.io/projects/spring-security)
+  [![JPA](https://img.shields.io/badge/JPA-Hibernate-59666C?logo=hibernate&logoColor=white)](https://hibernate.org/orm/)
+  [![QueryDSL](https://img.shields.io/badge/QueryDSL-5.0.0-blue)](https://querydsl.com/)
+  [![MyBatis](https://img.shields.io/badge/MyBatis-3.0.3-black)](https://mybatis.org/mybatis-3/)
+  [![MariaDB](https://img.shields.io/badge/MariaDB-10.x-003545?logo=mariadb&logoColor=white)](https://mariadb.org/)
+  [![JWT](https://img.shields.io/badge/JWT-0.11.5-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
+  [![Swagger](https://img.shields.io/badge/Swagger-OpenAPI-85EA2D?logo=swagger&logoColor=white)](https://springdoc.org/)
 </div>
 
 ---
