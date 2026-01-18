@@ -1,5 +1,6 @@
 package com.barogagi.schedule.controller;
 
+import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.plan.query.service.PlanQueryService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.service.ScheduleCommandService;
@@ -8,6 +9,7 @@ import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.exception.BasicException;
+import com.barogagi.util.exception.ErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,31 +55,18 @@ public class ScheduleController {
         this.membershipUtil = membershipUtil;
     }
 
-    @Operation(summary = "내 일정 목록 조회 기능", description = "일정 목록을 조회하는 기능입니다.")
+    @Operation(summary = "내 일정 목록 조회 기능", description = "일정 목록을 조회하는 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S202", description = "일정 조회에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @GetMapping("/list")
     public ApiResponse getScheduleList(HttpServletRequest request) {
 
         logger.info("CALL /api/v1/schedule/list");
-
-        ScheduleListGroupResDTO result;
-        try {
-
-            // token으로 membershipNo 조회
-            Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
-            String resultCode = String.valueOf(resultMap.get("resultCode"));
-            if (!"A200".equals(resultCode)) {
-                return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
-            }
-            String membershipNo = String.valueOf(resultMap.get("membershipNo"));
-
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
-            result = scheduleQueryService.getScheduleList(membershipNo);
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 목록 조회 실패");
-        }
-
-        return ApiResponse.success(result, "일정 목록 조회 성공");
+        return scheduleQueryService.getScheduleList(request);
     }
 
     @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.")
