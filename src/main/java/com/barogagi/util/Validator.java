@@ -25,12 +25,8 @@ public class Validator {
     }
 
     // API SECRET KEY 검증
-// API SECRET KEY 검증
     public boolean apiSecretKeyCheck(String apiSecretKey) {
-        String inputKey = apiSecretKey != null ? apiSecretKey.trim() : "";
-        String configKey = API_SECRET_KEY != null ? API_SECRET_KEY.trim() : "";
-
-        return inputKey.equals(configKey);
+        return apiSecretKey.equals(API_SECRET_KEY);
     }
 
     // 아이디 검증
