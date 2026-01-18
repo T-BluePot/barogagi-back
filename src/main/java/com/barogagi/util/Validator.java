@@ -1,5 +1,8 @@
 package com.barogagi.util;
 
+import com.barogagi.schedule.command.service.ScheduleCommandService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
@@ -8,6 +11,7 @@ import java.util.regex.Pattern;
 
 @Service
 public class Validator {
+    private static final Logger logger = LoggerFactory.getLogger(Validator.class);
 
     // 금칙어 목록 예시 (확장 가능)
     private static final String[] BLOCKED_WORDS = {"admin", "운영자"};
@@ -21,6 +25,8 @@ public class Validator {
 
     // API SECRET KEY 검증
     public boolean apiSecretKeyCheck(String apiSecretKey) {
+        logger.info("input apiSecretKey={}, properties apiSecretKey={}", apiSecretKey, API_SECRET_KEY);
+        logger.info("apiSecretKey.equals(API_SECRET_KEY)={}", apiSecretKey.equals(API_SECRET_KEY));
         return apiSecretKey.equals(API_SECRET_KEY);
     }
 
