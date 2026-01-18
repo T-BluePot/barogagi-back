@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 @Service
@@ -25,9 +26,19 @@ public class Validator {
 
     // API SECRET KEY 검증
     public boolean apiSecretKeyCheck(String apiSecretKey) {
+        // trim() 추가
+        String inputKey = apiSecretKey != null ? apiSecretKey.trim() : "";
+        String configKey = API_SECRET_KEY != null ? API_SECRET_KEY.trim() : "";
+
+        // 디버깅 로그 추가
+        logger.info("input length={}, config length={}", inputKey.length(), configKey.length());
+        logger.info("input bytes={}", Arrays.toString(inputKey.getBytes()));
+        logger.info("config bytes={}", Arrays.toString(configKey.getBytes()));
+
         logger.info("input apiSecretKey={}, properties apiSecretKey={}", apiSecretKey, API_SECRET_KEY);
         logger.info("apiSecretKey.equals(API_SECRET_KEY)={}", apiSecretKey.equals(API_SECRET_KEY));
-        return apiSecretKey.equals(API_SECRET_KEY);
+
+        return inputKey.equals(configKey);
     }
 
     // 아이디 검증
