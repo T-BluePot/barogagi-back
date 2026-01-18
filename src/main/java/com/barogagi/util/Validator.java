@@ -30,16 +30,7 @@ public class Validator {
         String inputKey = apiSecretKey != null ? apiSecretKey.trim() : "";
         String configKey = API_SECRET_KEY != null ? API_SECRET_KEY.trim() : "";
 
-        // 디버깅 로그 수정
-        logger.info("input length={}, config length={}", inputKey.length(), configKey.length());
-        logger.info("input bytes={}", Arrays.toString(inputKey.getBytes()));
-        logger.info("config bytes={}", Arrays.toString(configKey.getBytes()));
-        logger.info("input apiSecretKey={}, properties apiSecretKey={}", inputKey, configKey);
-
-        boolean result = inputKey.equals(configKey);
-        logger.info("inputKey.equals(configKey)={}", result);
-
-        return result;
+        return inputKey.equals(configKey);
     }
 
     // 아이디 검증
