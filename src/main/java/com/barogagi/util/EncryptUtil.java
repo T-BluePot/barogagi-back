@@ -1,7 +1,5 @@
 package com.barogagi.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +13,6 @@ import java.util.Base64;
 
 @Service
 public class EncryptUtil {
-    private static final Logger logger = LoggerFactory.getLogger(EncryptUtil.class);
 
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String FIXED_IV = "0123456789abcdef"; // 16-byte 고정 IV
@@ -37,11 +34,6 @@ public class EncryptUtil {
 
             return Base64.getUrlEncoder().encodeToString(encrypted);
         } catch (Exception e) {
-            logger.error("Encryption failed. Key: {}, IV: {}, PlainText length: {}",
-                    encodeDecodeSecretKey != null ? "exists" : "null",
-                    FIXED_IV,
-                    plainText != null ? plainText.length() : 0,
-                    e);
             throw new RuntimeException("Encryption failed", e);
         }
     }
