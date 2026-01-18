@@ -421,7 +421,7 @@ public class ScheduleCommandService {
 
             for (TagRegistResDTO tagReq : scheduleRegistResDTO.getScheduleTagRegistResDTOList()) {
                 Tag tag = tagRepository.findById(tagReq.getTagNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.TAG_NOT_FOUND));
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
                 scheduleTagRepository.save(
                         ScheduleTag.builder()
@@ -442,7 +442,7 @@ public class ScheduleCommandService {
             PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
 
             Item item = itemRepository.findById(planRes.getItemNum())
-                    .orElseThrow(() -> new BasicException(ErrorCode.ITEM_NOT_FOUND));
+                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
             PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                     .membershipNo(membershipNo)
@@ -472,7 +472,7 @@ public class ScheduleCommandService {
 
                 for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
                     Tag tag = tagRepository.findById(tagRes.getTagNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.TAG_NOT_FOUND));
+                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
                     PlanTag planTag = PlanTag.builder()
                             .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
@@ -487,7 +487,7 @@ public class ScheduleCommandService {
             // 3-3. Plan_region
             if (planRes.getRegionNum() != null) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.REGION_NOT_FOUND));
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
                 PlanRegionId planRegionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
 
@@ -505,7 +505,7 @@ public class ScheduleCommandService {
             // 3-4. Place
             if (planRes.getRegionNum() != null) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.REGION_NOT_FOUND));
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
                 Place place = Place.builder()
                         .region(region)
@@ -539,7 +539,7 @@ public class ScheduleCommandService {
             schedule.markDeleted();  // del_yn=Y로 변경
             return true;  // 트랜잭션 커밋 시 자동 UPDATE
         }
-        throw new BasicException(ErrorCode.SCHEDULE_NOT_FOUND);
+        throw new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE);
     }
 
     @Transactional
@@ -547,7 +547,7 @@ public class ScheduleCommandService {
 
         // 1) Schedule 조회
         Schedule schedule = scheduleRepository.findById(String.valueOf(dto.getScheduleNum()))
-                .orElseThrow(() -> new BasicException(ErrorCode.SCHEDULE_NOT_FOUND));
+                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
         // 2) Schedule 기본 정보 업데이트
         schedule.updateBasicInfo(
@@ -562,7 +562,7 @@ public class ScheduleCommandService {
         if (dto.getScheduleTagRegistResDTOList() != null) {
             for (TagRegistResDTO tagReq : dto.getScheduleTagRegistResDTOList()) {
                 Tag tag = tagRepository.findById(tagReq.getTagNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.TAG_NOT_FOUND));
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
                 scheduleTagRepository.save(
                         ScheduleTag.builder()
@@ -586,7 +586,7 @@ public class ScheduleCommandService {
             for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
 
                 Item item = itemRepository.findById(planRes.getItemNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.ITEM_NOT_FOUND));
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
                 PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                         .membershipNo("1")
@@ -612,7 +612,7 @@ public class ScheduleCommandService {
                 if (planRes.getPlanTagRegistResDTOList() != null) {
                     for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
                         Tag tag = tagRepository.findById(tagRes.getTagNum())
-                                .orElseThrow(() -> new BasicException(ErrorCode.TAG_NOT_FOUND));
+                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
                         planTagRepository.save(
                                 new PlanTag(new PlanTagId(tag.getTagNum(), plan.getPlanNum()), plan, tag)
@@ -623,7 +623,7 @@ public class ScheduleCommandService {
                 // PlanRegion + Place 저장
                 if (planRes.getRegionNum() != null) {
                     Region region = regionRepository.findById(planRes.getRegionNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.REGION_NOT_FOUND));
+                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
                     // PlanRegion
                     PlanRegionId regionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());

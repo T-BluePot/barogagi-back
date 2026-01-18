@@ -74,8 +74,8 @@ public class ScheduleQueryService {
         // 일정 정보 조회
         ScheduleMembershipNoVO scheduleMembershipNoVO = new ScheduleMembershipNoVO(scheduleNum, membershipNo);
         ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleMembershipNoVO);
-        if(null == scheduleDetailVO) throw new BasicException(ErrorCode.SCHEDULE_NOT_FOUND);
-        else if(scheduleDetailVO.getDelYn().equals("Y")) throw new BasicException(ErrorCode.SCHEDULE_ALREADY_DELETED);
+        if(null == scheduleDetailVO) throw new BasicException(ErrorCode.NOT_FOUND_SCHEDULE);
+        else if(scheduleDetailVO.getDelYn().equals("Y")) throw new BasicException(ErrorCode.ALREADY_DELETED_SCHEDULE);
 
         // 계획 정보 조회 (리스트)
         logger.info("계획 조회 시작");

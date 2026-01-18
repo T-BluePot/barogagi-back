@@ -17,27 +17,9 @@ public enum ErrorCode {
     EXPIRE_TOKEN(HttpStatus.UNAUTHORIZED, "A300", "Token이 만료되었습니다."),
 
     // Common
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON-500", "서버 오류가 발생했습니다."),
-    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다."),
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "C500", "서버 오류가 발생했습니다."),
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "C400", "잘못된 요청입니다."),
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요."),
-
-    // Membership
-    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBERSHIP-404", "멤버십 정보가 없습니다."),
-    MEMBERSHIP_SERVICE_FAIL(HttpStatus.BAD_GATEWAY, "MEMBERSHIP-502", "멤버십 서비스 호출에 실패했습니다."),
-
-    // Schedule
-    SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "SCH-001", "일정 저장에 실패했습니다."),
-    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCH-002", "일정 정보를 찾을 수 없습니다."),
-    SCHEDULE_ALREADY_DELETED(HttpStatus.NOT_FOUND, "SCH-003", "이미 삭제된 일정입니다."),
-
-    // Tag
-    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "TAG-001", "태그 정보를 찾을 수 없습니다."),
-
-    // Item
-    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM-001", "아이템 정보를 찾을 수 없습니다."),
-
-    // Region
-    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "REGION-001", "지역 정보를 찾을 수 없습니다."),
 
     // Nickname
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "N102", "적합하지 않는 닉네임입니다."),
@@ -108,7 +90,22 @@ public enum ErrorCode {
     FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다."),
     ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다."),
     SUCCESS_CHECK_SMS(HttpStatus.OK, "A200", "인증이 완료되었습니다."),
-    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.");
+    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다."),
+
+    // Schedule
+    SUCCESS_SCHEDULE_SAVE(HttpStatus.CREATED, "S200", "일정 저장에 성공하였습니다."),
+    FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "일정 저장에 실패하였습니다."),
+    NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S201", "일정 정보를 찾을 수 없습니다."),
+    ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S202", "이미 삭제된 일정입니다."),
+
+    // Tag
+    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G201", "태그 정보를 찾을 수 없습니다."),
+
+    // Item
+    NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다."),
+
+    // Region
+    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "R201", "지역 정보를 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
