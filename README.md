@@ -1,5 +1,5 @@
 <div align="center">
-  # 🗺️ 바로가기 (Barogagi)
+  <h1>🗺️ 바로가기 (Barogagi)</h1>
   
   **AI 기반 스마트 일정 추천 플래너**
   
