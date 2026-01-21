@@ -175,8 +175,12 @@ public class LoginService {
             }
 
             // 2. 로그아웃
-            authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
-            return ApiResponse.result(ErrorCode.SUCCESS_LOGOUT);
+            boolean result = authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
+            if(result) {
+                return ApiResponse.result(ErrorCode.SUCCESS_LOGOUT);
+            } else {
+                return ApiResponse.result(ErrorCode.FAIL_LOGOUT);
+            }
 
         } catch (Exception e) {
             return ApiResponse.result(ErrorCode.FAIL_LOGOUT);
