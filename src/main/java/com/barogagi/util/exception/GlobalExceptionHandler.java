@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
     /**
      * 비즈니스 예외 (BasicException 포함)
      * - 의도된 흐름
-     * - Discord 알림 X
+     * - ErrorCode.notify = true인 경우에만 Discord 알림 O
      */
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<?>> handleBusinessException(
@@ -41,9 +41,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         if (isProd() && e.getErrorCode().isNotify()) {
-            discordNotifier.sendError(
-                    DiscordErrorMessage.from(e, request, activeProfile())
-            );
+            discordNotifier.sendError(DiscordErrorMessage.from(e, request, activeProfile()));
         }
 
         return ResponseEntity
@@ -121,7 +119,7 @@ public class GlobalExceptionHandler {
     }
 
     private boolean isProd() {
-        return Arrays.asList(environment.getActiveProfiles()).contains("dev");
+        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
     }
 }
 

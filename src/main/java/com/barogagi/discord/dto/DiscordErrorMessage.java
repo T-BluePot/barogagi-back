@@ -77,7 +77,7 @@ public class DiscordErrorMessage {
                 environment,
                 uri,
                 method,
-                errorCode,
+                errorCode == null ? "-" : errorCode,
                 exception,
                 message,
                 stackTrace == null ? "-" : stackTrace
