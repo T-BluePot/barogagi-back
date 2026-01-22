@@ -9,8 +9,6 @@ import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +17,6 @@ import java.util.Map;
 
 @Service
 public class MainPageService {
-
-    private static final Logger logger = LoggerFactory.getLogger(MainPageService.class);
 
     private final MainPageMapper mainPageMapper;
     private final MembershipUtil membershipUtil;
