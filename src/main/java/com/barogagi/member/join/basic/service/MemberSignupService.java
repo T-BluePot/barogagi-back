@@ -1,6 +1,7 @@
 package com.barogagi.member.join.basic.service;
 
 import com.barogagi.config.PasswordConfig;
+import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
@@ -220,6 +221,7 @@ public class MemberSignupService {
                 .gender(joinRequestDTO.getGender())
                 .nickName(joinRequestDTO.getNickName())
                 .joinType(joinRequestDTO.getJoinType())
+                .status(MembershipStatus.ACTIVE)
                 .build();
 
         userMembershipRepository.save(userMembershipInfo);
