@@ -198,17 +198,28 @@ public class AuthService {
 
     /** 현재 기기 로그아웃: refresh 기준 (membershipNo, deviceId)의 VALID 토큰들을 REVOKE */
     @Transactional
-    public void logout(String refreshToken) {
-        if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) return;
+    public boolean logout(String refreshToken) {
 
-        String membershipNo = jwt.getMembershipNo(refreshToken);
-        String deviceId = jwt.getDeviceId(refreshToken);
+        try {
+            if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+                return false;
+            }
 
-        List<RefreshToken> tokens = refreshTokenRepository
-                .findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
+            String membershipNo = jwt.getMembershipNo(refreshToken);
+            String deviceId = jwt.getDeviceId(refreshToken);
 
-        for (RefreshToken t : tokens) t.setStatus("REVOKED");
-        if (!tokens.isEmpty()) refreshTokenRepository.saveAll(tokens);
+            List<RefreshToken> tokens = refreshTokenRepository
+                    .findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
+
+            for (RefreshToken t : tokens) t.setStatus("REVOKED");
+            if (!tokens.isEmpty()) {
+                refreshTokenRepository.saveAll(tokens);
+            }
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /** 모든 기기 로그아웃: 회원의 모든 VALID 리프레시 REVOKE */
