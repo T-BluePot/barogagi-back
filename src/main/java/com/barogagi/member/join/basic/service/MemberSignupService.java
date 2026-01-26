@@ -6,6 +6,7 @@ import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.login.dto.UserIdDTO;
+import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.exception.TermsException;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,9 +44,11 @@ public class MemberSignupService {
 
     private final UserMembershipRepository userMembershipRepository;
     private final TermsRepository termsRepository;
+    private final DeletedMembershipRepository deletedMembershipRepository;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final int REJOIN_BLOCK_DAYS = 90;
 
     @Transactional
     public ApiResponse signupBasic(String apiSecretKey, JoinRequestDTO joinRequestDTO) {
@@ -69,6 +73,13 @@ public class MemberSignupService {
         if(!(validator.isValidId(joinRequestDTO.getUserId())
                 && validator.isValidPassword(joinRequestDTO.getPassword()))) {
             throw new JoinException(ErrorCode.INVALID_SIGN_UP);
+        }
+
+        // 4. 일정 기간 동안 동일한 아이디로 회원가입 금지
+        LocalDateTime limitDate = LocalDateTime.now().minusDays(REJOIN_BLOCK_DAYS);
+        boolean blocked = deletedMembershipRepository.existsRecentlyWithdrawnUser(joinRequestDTO.getUserId().trim(), limitDate);
+        if(blocked) {
+            throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
         }
 
         // 4. 생년월일 데이터 처리
@@ -111,10 +122,6 @@ public class MemberSignupService {
         if(null != searchId) {
             throw new JoinException(ErrorCode.FAIL_DUPLICATE_PHONE_NUMBER);
         }
-
-        // 9. 암호화 - 비밀번호
-        String encodedPassword = passwordConfig.passwordEncoder().encode(joinRequestDTO.getPassword());
-        joinRequestDTO.setPassword(encodedPassword);
 
         // 10. 이메일 값이 넘어오면 암호화
         if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){

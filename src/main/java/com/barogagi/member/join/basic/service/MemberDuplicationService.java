@@ -1,6 +1,7 @@
 package com.barogagi.member.join.basic.service;
 
 import com.barogagi.member.join.basic.exception.JoinException;
+import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class MemberDuplicationService {
@@ -19,6 +22,9 @@ public class MemberDuplicationService {
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
     private final UserMembershipRepository userMembershipRepository;
+    private final DeletedMembershipRepository deletedMembershipRepository;
+
+    private static final int REJOIN_BLOCK_DAYS = 90;
 
     // 아이디 중복 체크
     @Transactional(readOnly = true)
@@ -42,6 +48,13 @@ public class MemberDuplicationService {
         // 4. 아이디 중복 체크
         boolean existsByUserId = userMembershipRepository.existsByUserId(userId.trim());
         if(existsByUserId) {
+            throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
+        }
+
+        // 5. 일정 기간 동안 동일한 아이디로 회원가입 금지
+        LocalDateTime limitDate = LocalDateTime.now().minusDays(REJOIN_BLOCK_DAYS);
+        boolean blocked = deletedMembershipRepository.existsRecentlyWithdrawnUser(userId.trim(), limitDate);
+        if(blocked) {
             throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
         }
 
