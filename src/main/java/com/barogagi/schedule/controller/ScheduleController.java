@@ -74,36 +74,14 @@ public class ScheduleController implements SwaggerScheduleController {
     }
 
     @PutMapping("/")
-    public ApiResponse updateSchedule(@RequestBody ScheduleRegistResDTO scheduleRegistResDTO) {
+    public ApiResponse updateSchedule(@RequestBody ScheduleRegistResDTO scheduleRegistResDTO, HttpServletRequest request) {
         logger.info("CALL /api/v1/schedule/update");
-
-        boolean result;
-        try {
-            result = scheduleCommandService.updateSchedule(scheduleRegistResDTO);
-
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error("404", "일정 저장 실패");
-        }
-
-        return ApiResponse.success(result, "일정 저장 성공");
+        return scheduleCommandService.updateSchedule(scheduleRegistResDTO, request);
     }
 
     @DeleteMapping("/")
     public ApiResponse deleteSchedule(@RequestParam Integer scheduleNum, HttpServletRequest request) {
         logger.info("CALL /api/v1/schedule/delete");
-        logger.info("[input] scheduleNum={}", scheduleNum);
-
-        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
-        String resultCode = String.valueOf(resultMap.get("resultCode"));
-        if (!"A200".equals(resultCode)) {
-            return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
-        }
-        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
-
-        scheduleCommandService.deleteSchedule(scheduleNum, membershipNo);
-
-        return ApiResponse.success(null, "일정 삭제 성공");
+        return scheduleCommandService.deleteSchedule(scheduleNum, request);
     }
 }

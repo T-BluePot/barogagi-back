@@ -350,7 +350,41 @@ public interface SwaggerScheduleController {
             description = "DB에 저장되어 있는 일정을 수정하는 기능입니다.<br>" +
                     "- 전체 일정 내 세부 일정을 수정/삭제하는 경우에도 이 API를 호출해주세요.<br>" +
                     "- '일정 번호'가 반드시 필요합니다.<br>" +
-                    "- '일정 조회' API로 받은 응답 DTO를 수정하여 보내주세요."
+                    "- '일정 조회' API로 받은 응답 DTO를 수정하여 보내주세요.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A100",
+                            description = "잘못된 접근입니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A401",
+                            description = "접근 권한이 존재하지 않습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S401",
+                            description = "일정 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "G201",
+                            description = "태그 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "I201",
+                            description = "아이템 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "R201",
+                            description = "지역 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "일정 수정 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C500",
+                            description = "서버 오류가 발생했습니다."
+                    )
+            }
     )
     ApiResponse updateSchedule(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -423,12 +457,34 @@ public interface SwaggerScheduleController {
                             )
                     )
             )
-            ScheduleRegistResDTO scheduleRegistResDTO
+            ScheduleRegistResDTO scheduleRegistResDTO, HttpServletRequest request
     );
 
     @Operation(
             summary = "일정 전체 삭제 기능",
-            description = "일정 전체를 DB에서 삭제하는 기능입니다."
+            description = "일정 전체를 DB에서 삭제하는 기능입니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A100",
+                            description = "잘못된 접근입니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A401",
+                            description = "접근 권한이 존재하지 않습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S401",
+                            description = "일정 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "200",
+                            description = "일정 삭제 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C500",
+                            description = "서버 오류가 발생했습니다."
+                    )
+            }
     )
     ApiResponse deleteSchedule(
             @Parameter(description = "삭제할 일정 번호", example = "1")
