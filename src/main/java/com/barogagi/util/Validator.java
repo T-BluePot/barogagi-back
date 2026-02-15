@@ -82,4 +82,9 @@ public class Validator {
         }
         return true;
     }
+
+    // Integer 검증
+    public boolean isInvalidInteger(Integer value) {
+        return value == null || value < 0;
+    }
 }
