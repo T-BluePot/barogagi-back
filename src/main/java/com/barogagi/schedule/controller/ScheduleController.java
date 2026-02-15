@@ -69,27 +69,18 @@ public class ScheduleController {
         return scheduleQueryService.getScheduleList(request);
     }
 
-    @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.")
+    @Operation(summary = "일정 상세 조회 기능", description = "일정을 상세 조회하는 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S202", description = "일정 상세 조회에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+            })
     @GetMapping("/detail")
     public ApiResponse getScheduleDetail(@Parameter(description = "조회할 일정 번호", example = "1")
                                          @RequestParam Integer scheduleNum, HttpServletRequest request) {
-
-
         logger.info("CALL /api/v1/schedule/detail");
-        logger.info("[input] scheduleNum={}", scheduleNum);
-
-        // token으로 membershipNo 조회
-        Map<String, Object> resultMap = membershipUtil.membershipNoService(request);
-        String resultCode = String.valueOf(resultMap.get("resultCode"));
-        if (!"A200".equals(resultCode)) {
-            return ApiResponse.error(resultCode, String.valueOf(resultMap.get("message")));
-        }
-        String membershipNo = String.valueOf(resultMap.get("membershipNo"));
-
-
-        ScheduleDetailResDTO result = scheduleQueryService.getScheduleDetail(scheduleNum, membershipNo);
-
-        return ApiResponse.success(result, "일정 조회 성공");
+        return scheduleQueryService.getScheduleDetail(scheduleNum, request);
     }
 
 
@@ -175,7 +166,6 @@ public class ScheduleController {
 
         ScheduleRegistResDTO result;
         try {
-            //if(userIdCheckVO.getApiSecretKey().equals(API_SECRET_KEY)){
             result = scheduleCommandService.createSchedule(scheduleRegistReqDTO);
 
         } catch (BasicException e) {
