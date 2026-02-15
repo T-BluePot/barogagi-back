@@ -115,31 +115,47 @@ public class ScheduleQueryService {
     }
 
 
-    public ScheduleDetailResDTO getScheduleDetail(int scheduleNum, String membershipNo) {
+    public ApiResponse getScheduleDetail(int scheduleNum, HttpServletRequest request) {
 
-        logger.info("scheduleNum={}, membershipNo={}", scheduleNum, membershipNo);
+        try {
+            // 1. API SECRET KEY 검증
+            if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
+                return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
+            }
 
-        // 일정 정보 조회
-        ScheduleMembershipNoVO scheduleMembershipNoVO = new ScheduleMembershipNoVO(scheduleNum, membershipNo);
-        ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleMembershipNoVO);
-        if(null == scheduleDetailVO) throw new BasicException(ErrorCode.NOT_FOUND_SCHEDULE);
-        else if(scheduleDetailVO.getDelYn().equals("Y")) throw new BasicException(ErrorCode.ALREADY_DELETED_SCHEDULE);
+            // 2. 회원번호 조회
+            Map<String, Object> membershipInfo = membershipUtil.membershipNoService(request);
+            if (!membershipInfo.get("resultCode").equals("A200")) {
+                return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(), ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
+            }
 
-        // 계획 정보 조회 (리스트)
-        logger.info("계획 조회 시작");
-        List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
+            // 일정 정보 조회
+            ScheduleMembershipNoVO scheduleMembershipNoVO = new ScheduleMembershipNoVO(scheduleNum, String.valueOf(membershipInfo.get("membershipNo")));
+            ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleMembershipNoVO);
+            if (null == scheduleDetailVO) throw new BasicException(ErrorCode.NOT_FOUND_SCHEDULE);
+            else if (scheduleDetailVO.getDelYn().equals("Y"))
+                throw new BasicException(ErrorCode.ALREADY_DELETED_SCHEDULE);
 
-        // DTO에 정보 저장
-        ScheduleDetailResDTO result = ScheduleDetailResDTO.builder()
-                .scheduleNum(scheduleDetailVO.getScheduleNum())
-                .scheduleNm(scheduleDetailVO.getScheduleNm())
-                .startDate(scheduleDetailVO.getStartDate())
-                .endDate(scheduleDetailVO.getEndDate())
-                .radius(scheduleDetailVO.getRadius())
-                .planDetailVOList(planDetailVOList)
-                .build();
+            // 계획 정보 조회 (리스트)
+            logger.info("계획 조회 시작");
+            List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
 
-        logger.info("result={}", result.toString());
-        return result;
+            // DTO에 정보 저장
+            ScheduleDetailResDTO result = ScheduleDetailResDTO.builder()
+                    .scheduleNum(scheduleDetailVO.getScheduleNum())
+                    .scheduleNm(scheduleDetailVO.getScheduleNm())
+                    .startDate(scheduleDetailVO.getStartDate())
+                    .endDate(scheduleDetailVO.getEndDate())
+                    .radius(scheduleDetailVO.getRadius())
+                    .planDetailVOList(planDetailVOList)
+                    .build();
+
+            logger.info("result={}", result.toString());
+            return ApiResponse.resultData(result, ErrorCode.FOUND_INFO_SCHEDULE.getCode(), ErrorCode.FOUND_INFO_SCHEDULE.getMessage());
+        } catch (BusinessException e) {
+            return ApiResponse.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
+        }
     }
 }
