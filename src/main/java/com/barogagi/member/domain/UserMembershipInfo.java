@@ -1,5 +1,6 @@
 package com.barogagi.member.domain;
 
+import com.barogagi.member.join.basic.dto.Gender;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -45,9 +46,10 @@ public class UserMembershipInfo {
     private String tel;
 
     @Schema(description = "성별 (M : 남 / W : 여)", example = "M")
+    @Enumerated(EnumType.STRING)
     @Column(name = "GENDER")
     @Setter
-    private String gender;
+    private Gender gender;
 
     @Schema(description = "닉네임", example = "가나다")
     @Column(name = "NICKNAME")

@@ -37,7 +37,9 @@ public class InfoController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "회원 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "N103", description = "해당 닉네임 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M404", description = "사용자 정보 수정 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M401", description = "성별 데이터가 올바르지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M200", description = "사용자 정보 수정 완료하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S401", description = "올바른 생년월일 형식이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PatchMapping

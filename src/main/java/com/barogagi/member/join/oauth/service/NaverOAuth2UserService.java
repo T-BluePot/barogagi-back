@@ -1,11 +1,14 @@
 package com.barogagi.member.join.oauth.service;
 
 import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
+import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.join.basic.service.MemberSignupService;
 import com.barogagi.member.join.oauth.dto.OAuth2UserDTO;
 import com.barogagi.member.service.UserMembershipService;
 import com.barogagi.util.EncryptUtil;
+import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +37,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest req) {
 
-        String nameAttributeKey;  // getName()에서 쓸 키(id)
-
         OAuth2User user = super.loadUser(req);
 
         // provider 구분 (여기서는 naver일 때만 처리)
@@ -48,12 +49,9 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         @SuppressWarnings("unchecked")
         Map<String, Object> resp = (Map<String, Object>) attrs.get("response");
 
-        logger.info("resp={}", resp);
         if (resp == null) {
-            throw new IllegalStateException("Naver userinfo has no 'response' field");
+            throw new JoinException(ErrorCode.FAIL_SIGN_UP);
         }
-
-        nameAttributeKey = "id"; // 네이버는 id가 고유 식별자
 
         String id = str(resp.get("id"));
         String nickName = str(resp.get("nickname"));
@@ -81,19 +79,15 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                 joinRequestDTO.setNickName(nickName);
                 joinRequestDTO.setJoinType("NAVER");
 
-                // gender(성별) : M(남성), F(여성), U(미설정)
-                logger.info("@@ gender={}", null != gender);
+                // gender(성별) : M(남성), F(여성)
                 if(null != gender) {
                     if(gender.equals("M")) {  // 남성
-                        joinRequestDTO.setGender("M");
+                        joinRequestDTO.setGender(Gender.M);
                     } else if(gender.equals("F")) {  // 여성
-                        joinRequestDTO.setGender("W");
-                    } else {
-                        joinRequestDTO.setGender("");
+                        joinRequestDTO.setGender(Gender.W);
                     }
                 }
 
-                logger.info("@@ birthday & birthyear={}", null != birthday && null != birthyear);
                 if(null != birthday && null != birthyear) {
                     // BIRTH(생년월일) (출생연도 + 생일)
                     String birth = birthyear;
@@ -103,7 +97,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                     joinRequestDTO.setBirth(birth);
                 }
 
-                logger.info("@@ tel={}", null != tel);
                 if(null != tel) {
                     // 휴대 전화번호
                     joinRequestDTO.setTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
@@ -118,7 +111,6 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         }
 
         // Naver는 OIDC가 아니라 OAuth2이므로 DefaultOAuth2User로 반환
-        // nameAttributeKey를 "id"로 주고, attributes는 'resp'(언래핑된 맵)로 설정
         return new DefaultOAuth2User(
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),
                 resp,

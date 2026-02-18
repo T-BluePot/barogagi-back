@@ -1,6 +1,7 @@
 package com.barogagi.member.info.service;
 
 import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.member.join.basic.dto.Gender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,7 +14,7 @@ public class MemberTxService {
     }
 
     @Transactional
-    public void updateGender(UserMembershipInfo userMembershipInfo, String gender) {
+    public void updateGender(UserMembershipInfo userMembershipInfo, Gender gender) {
         userMembershipInfo.setGender(gender);
     }
 

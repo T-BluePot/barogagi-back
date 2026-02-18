@@ -34,7 +34,6 @@ public class LoginService {
 
         String resultCode = "";
         String message = "";
-        List<UserIdDTO> userIdList = null;
 
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
@@ -46,18 +45,17 @@ public class LoginService {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
-        List<UserIdDTO> searchIdList = userMembershipRepository.findByTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
+        UserIdDTO searchId = userMembershipRepository.findByTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
 
-        if(searchIdList.isEmpty()) {
+        if(null == searchId) {
             resultCode = ErrorCode.NOT_FOUND_ACCOUNT.getCode();
             message = ErrorCode.NOT_FOUND_ACCOUNT.getMessage();
         } else {
             resultCode = ErrorCode.FOUND_ACCOUNT.getCode();
             message = ErrorCode.FOUND_ACCOUNT.getMessage();
-            userIdList = searchIdList;
         }
 
-        return ApiResponse.resultData(userIdList, resultCode, message);
+        return ApiResponse.resultData(searchId, resultCode, message);
     }
 
     public ApiResponse resetPassword(String apiSecretKey, LoginDTO loginDTO) {
