@@ -1,6 +1,5 @@
 package com.barogagi.member.login.dto;
 
-import com.barogagi.config.vo.DefaultVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginDTO extends DefaultVO {
+public class LoginDTO {
     @NotBlank(message = "사용자 ID는 필수 입력값입니다.")
     @Size(min = 4, max = 20, message = "사용자 ID는 4자 이상 20자 이하여야 합니다.")
     private String userId = "";

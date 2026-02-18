@@ -71,8 +71,8 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping
-    public ApiResponse signUp(@RequestBody JoinRequestDTO joinRequestDTO) {
-        return memberSignupService.signupBasic(joinRequestDTO);
+    public ApiResponse signUp(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody JoinRequestDTO joinRequestDTO) {
+        return memberSignupService.signupBasic(apiSecretKey, joinRequestDTO);
     }
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
@@ -85,7 +85,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @DeleteMapping("/me")
-    public ApiResponse withdrawMember(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        return memberAccountService.withdrawMember(refreshTokenRequestDTO);
+    public ApiResponse withdrawMember(@RequestHeader("REFRESH-TOKEN") String refreshToken) {
+        return memberAccountService.withdrawMember(refreshToken);
     }
 }
