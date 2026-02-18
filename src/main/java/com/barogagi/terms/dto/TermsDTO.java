@@ -13,6 +13,8 @@ import java.util.List;
 public class TermsDTO {
     private String userId = "";
 
+    private String termsType = "";
+
     @ArraySchema(schema = @Schema(implementation = TermsProcessDTO.class))
     private List<TermsProcessDTO> termsAgreeList = new ArrayList<>();
 }
