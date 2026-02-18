@@ -1,5 +1,8 @@
 package com.barogagi.terms.dto;
 
+import com.barogagi.terms.domain.AgreeYn;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,5 +11,7 @@ import lombok.Setter;
 public class TermsAgreeDTO {
     private String membershipNo = "";
     private int termsNum = 0;
-    private String agreeYn = "";
+
+    @Enumerated(EnumType.STRING)
+    private AgreeYn agreeYn;
 }

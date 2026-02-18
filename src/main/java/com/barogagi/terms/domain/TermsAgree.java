@@ -15,6 +15,7 @@ public class TermsAgree {
     private TermsId id;
 
     @Schema(description = "동의 여부", example = "Y:동의 / N:비동의")
+    @Enumerated(EnumType.STRING)
     @Column(name = "AGREE_YN", nullable = false)
-    private String agreeYn;
+    private AgreeYn agreeYn;
 }

@@ -69,7 +69,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(u -> u
                                 .oidcUserService(customOidcUserService)   // Google
-                                .userService(delegatingOAuth2UserService)      // Naver, Kakao
+                                .userService(delegatingOAuth2UserService) // Naver, Kakao
                         )
                         .successHandler(oAuth2LoginSuccessHandler)  // 로그인 성공 핸들러 (토큰 발급 등)
                 )
