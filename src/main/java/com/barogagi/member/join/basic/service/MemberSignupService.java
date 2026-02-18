@@ -35,10 +35,10 @@ public class MemberSignupService {
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     @Transactional
-    public ApiResponse signupBasic(JoinRequestDTO joinRequestDTO) {
+    public ApiResponse signupBasic(String apiSecretKey, JoinRequestDTO joinRequestDTO) {
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(joinRequestDTO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new JoinException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 

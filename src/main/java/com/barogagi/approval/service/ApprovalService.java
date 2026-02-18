@@ -25,10 +25,10 @@ public class ApprovalService {
     private final SendSmsService sendSmsService;
     private final ApprovalTxService approvalTxService;
 
-    public ApiResponse approvalTelSend(ApprovalSendVO approvalSendVO) {
+    public ApiResponse approvalTelSend(String apiSecretKey, ApprovalSendVO approvalSendVO) {
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(approvalSendVO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new ApprovalException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
@@ -77,10 +77,10 @@ public class ApprovalService {
         return ApiResponse.result(ErrorCode.SUCCESS_SEND_SMS);
     }
 
-    public ApiResponse approvalTelCheck(ApprovalCompleteVO approvalCompleteVO) {
+    public ApiResponse approvalTelCheck(String apiSecretKey, ApprovalCompleteVO approvalCompleteVO) {
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(approvalCompleteVO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new ApprovalException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 

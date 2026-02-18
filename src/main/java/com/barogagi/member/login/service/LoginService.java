@@ -60,12 +60,12 @@ public class LoginService {
         return ApiResponse.resultData(userIdList, resultCode, message);
     }
 
-    public ApiResponse resetPassword(LoginDTO loginDTO) {
+    public ApiResponse resetPassword(String apiSecretKey, LoginDTO loginDTO) {
         String resultCode = "";
         String message = "";
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new LoginException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
@@ -90,14 +90,14 @@ public class LoginService {
         return ApiResponse.result(ErrorCode.SUCCESS_UPDATE_PASSWORD.getCode(), ErrorCode.SUCCESS_UPDATE_PASSWORD.getMessage());
     }
 
-    public ApiResponse login(LoginDTO loginDTO) {
+    public ApiResponse login(String apiSecretKey, LoginDTO loginDTO) {
 
         String resultCode = "";
         String message = "";
         Map<String, Object> dataMap = new HashMap<>();
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(loginDTO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new LoginException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
@@ -136,19 +136,19 @@ public class LoginService {
         return ApiResponse.resultData(dataMap, resultCode, message);
     }
 
-    public ApiResponse refreshToken(RefreshTokenRequestDTO refreshTokenRequestDTO) {
+    public ApiResponse refreshToken(String refreshToken) {
 
         String resultCode = "";
         String message = "";
         Map<String, Object> data = new HashMap<>();
 
         // 1. 필수 입력값 확인
-        if (inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
+        if (inputValidate.isEmpty(refreshToken)) {
             throw new LoginException(ErrorCode.EMPTY_DATA);
         }
 
         // 2. ACCESS, REFRESH TOKEN 재생성
-        TokenPair pair = authService.rotate(refreshTokenRequestDTO.getRefreshToken());
+        TokenPair pair = authService.rotate(refreshToken);
 
         resultCode = pair.resultCode();
         message = pair.message();
@@ -165,17 +165,17 @@ public class LoginService {
         return ApiResponse.resultData(data, resultCode, message);
     }
 
-    public ApiResponse logout(RefreshTokenRequestDTO refreshTokenRequestDTO) {
+    public ApiResponse logout(String refreshToken) {
 
         try {
 
             // 1. 필수 입력값 확인
-            if(inputValidate.isEmpty(refreshTokenRequestDTO.getRefreshToken())) {
+            if(inputValidate.isEmpty(refreshToken)) {
                 throw new LoginException(ErrorCode.EMPTY_DATA);
             }
 
             // 2. 로그아웃
-            boolean result = authService.logout(refreshTokenRequestDTO.getRefreshToken()); // DB REVOKE
+            boolean result = authService.logout(refreshToken); // DB REVOKE
             if(result) {
                 return ApiResponse.result(ErrorCode.SUCCESS_LOGOUT);
             } else {
