@@ -31,8 +31,8 @@ public class ApprovalController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/send")
-    public ApiResponse approvalTelSend(@RequestBody ApprovalSendVO approvalSendVO) {
-        return approvalService.approvalTelSend(approvalSendVO);
+    public ApiResponse approvalTelSend(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody ApprovalSendVO approvalSendVO) {
+        return approvalService.approvalTelSend(apiSecretKey, approvalSendVO);
     }
 
     @Operation(summary = "인증번호 일치 여부 확인", description = "휴대전화번호에 발송된 인증번호와 입력된 인증번호가 동일한지 확인." +
@@ -47,7 +47,7 @@ public class ApprovalController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/verify")
-    public ApiResponse approvalTelCheck(@RequestBody ApprovalCompleteVO approvalCompleteVO) {
-        return approvalService.approvalTelCheck(approvalCompleteVO);
+    public ApiResponse approvalTelCheck(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody ApprovalCompleteVO approvalCompleteVO) {
+        return approvalService.approvalTelCheck(apiSecretKey, approvalCompleteVO);
     }
 }
