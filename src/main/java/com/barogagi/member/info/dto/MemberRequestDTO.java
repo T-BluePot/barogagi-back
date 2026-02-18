@@ -1,6 +1,5 @@
 package com.barogagi.member.info.dto;
 
-import com.barogagi.config.vo.DefaultVO;
 import lombok.Getter;
 import lombok.Setter;
 
