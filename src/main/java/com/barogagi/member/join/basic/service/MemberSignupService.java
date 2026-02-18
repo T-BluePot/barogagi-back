@@ -2,8 +2,10 @@ package com.barogagi.member.join.basic.service;
 
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
+import com.barogagi.member.login.dto.UserIdDTO;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
@@ -51,42 +53,52 @@ public class MemberSignupService {
             throw new JoinException(ErrorCode.EMPTY_DATA);
         }
 
-        // 3. 적합한 아이디인지 확인
-        // 아이디, 비밀번호 적합성 검사
+        // 3. 아이디, 비밀번호 적합성 검사
         if(!(validator.isValidId(joinRequestDTO.getUserId())
                 && validator.isValidPassword(joinRequestDTO.getPassword()))) {
             throw new JoinException(ErrorCode.INVALID_SIGN_UP);
         }
 
+        // 4. 생년월일 형식 검사 & 데이터 처리
+        if(!inputValidate.isEmpty(joinRequestDTO.getBirth())) {
+            joinRequestDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+        }
+
+        // 5. 아이디 중복 검사
         boolean existsByUserId = userMembershipRepository.existsByUserId(joinRequestDTO.getUserId().trim());
         if(existsByUserId) {
             throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
         }
 
-        boolean existsNickname = userMembershipRepository.existsByNickName(joinRequestDTO.getNickName());
-        if(existsNickname) {
-            throw new JoinException(ErrorCode.UNAVAILABLE_NICKNAME);
+        // 5. 닉네임 중복 검사
+        if(!inputValidate.isEmpty(joinRequestDTO.getNickName())) {
+            boolean existsNickname = userMembershipRepository.existsByNickName(joinRequestDTO.getNickName());
+            if(existsNickname) {
+                throw new JoinException(ErrorCode.UNAVAILABLE_NICKNAME);
+            }
         }
 
-        // 4. 암호화
-        // 휴대전화번호, 비밀번호 암호화
+        // 6. 암호화 - 휴대전화번호
         joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel().replaceAll("[^0-9]", "")));
+
+        // 7. 전화번호 중복 검사 - 동일한 전화번호로 중복 회원가입이 불가능
+        UserIdDTO searchId = userMembershipRepository.findByTel(joinRequestDTO.getTel());
+        if(null != searchId) {
+            throw new JoinException(ErrorCode.FAIL_DUPLICATE_PHONE_NUMBER);
+        }
+
+        // 8. 암호화 - 비밀번호
         String encodedPassword = passwordConfig.passwordEncoder().encode(joinRequestDTO.getPassword());
         joinRequestDTO.setPassword(encodedPassword);
 
-        // 이메일 값이 넘어오면 암호화
+        // 8. 이메일 값이 넘어오면 암호화
         if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){
             joinRequestDTO.setEmail(encryptUtil.encrypt(joinRequestDTO.getEmail()));
         }
 
-        // 생년월일 데이터 처리
-        if(null != joinRequestDTO.getBirth()) {
-            joinRequestDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
-        }
-
         joinRequestDTO.setJoinType("BASIC");
 
-        // 6. 회원 정보 저장
+        // 10. 회원 정보 저장
         String membershipNo = this.signUp(joinRequestDTO);
         if(membershipNo.isEmpty()){
             throw new JoinException(ErrorCode.FAIL_SIGN_UP);

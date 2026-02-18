@@ -1,5 +1,6 @@
 package com.barogagi.member.info.dto;
 
+import com.barogagi.member.join.basic.dto.Gender;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +31,7 @@ public class UserInfoResponseDTO {
     private String tel = "";
 
     // 성별 (M : 남 / W : 여)
-    private String gender = "";
+    private Gender gender;
 
     // 닉네임
     private String nickName = "";

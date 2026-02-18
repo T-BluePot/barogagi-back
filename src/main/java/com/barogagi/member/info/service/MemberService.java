@@ -4,6 +4,7 @@ import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.dto.UserInfoResponseDTO;
 import com.barogagi.member.info.exception.MemberInfoException;
+import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
@@ -76,9 +77,7 @@ public class MemberService {
         String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
         // 2. 회원 정보 조회
-        UserMembershipInfo memberInfo = userMembershipRepository.findById(membershipNo)
-                .orElseThrow(() -> new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO));
-
+        UserMembershipInfo memberInfo = userMembershipRepository.findById(membershipNo).orElseThrow(() -> new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO));
 
         // 3. 데이터 처리 & update
         // 생년월일
@@ -88,16 +87,20 @@ public class MemberService {
 
         // 성별 (M : 남 / W : 여)
         if(!inputValidate.isEmpty(memberRequestDTO.getGender())) {
-            memberTxService.updateGender(memberInfo, memberRequestDTO.getGender());
+            if("M".equals(memberRequestDTO.getGender())) {
+                memberTxService.updateGender(memberInfo, Gender.M);
+            } else if("W".equals(memberRequestDTO.getGender())) {
+                memberTxService.updateGender(memberInfo, Gender.W);
+            } else {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_GENDER);
+            }
         }
 
         // 닉네임(중복X)
         if(!inputValidate.isEmpty(memberRequestDTO.getNickName())) {
-
             if(!validator.isValidNickname(memberRequestDTO.getNickName())) {
                 throw new MemberInfoException(ErrorCode.INVALID_NICKNAME);
             }
-
             boolean existsNickname = userMembershipRepository.existsByNickName(memberRequestDTO.getNickName());
             if(existsNickname) {
                 throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);

@@ -54,6 +54,7 @@ public enum ErrorCode {
     INVALID_SIGN_UP(HttpStatus.BAD_REQUEST, "S102", "적합한 아이디, 비밀번호, 닉네임이 아닙니다.", false),
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다.", false),
     FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", false),
+    FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
 
     // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),
@@ -96,6 +97,7 @@ public enum ErrorCode {
     FOUND_USER_INFO(HttpStatus.OK, "M200", "회원 정보 조회가 완료되었습니다.", false),
     FAIL_UPDATE_USER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "M404", "사용자 정보 수정 실패하였습니다.", false),
     SUCCESS_UPDATE_USER_INFO(HttpStatus.OK, "M200", "사용자 정보 수정 완료하였습니다.", false),
+    FAIL_INVALID_GENDER(HttpStatus.INTERNAL_SERVER_ERROR, "M401", "성별 데이터가 올바르지 않습니다.", false),
 
     // MainPage
     NOT_FOUND_SCHEDULE(HttpStatus.NOT_FOUND, "M201", "일정이 존재하지 않습니다.", false),

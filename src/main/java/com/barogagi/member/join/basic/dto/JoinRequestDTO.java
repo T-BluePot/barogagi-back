@@ -1,5 +1,7 @@
 package com.barogagi.member.join.basic.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +25,8 @@ public class JoinRequestDTO {
     private String tel = "";
 
     // 성별 (M : 남 / W : 여)
-    private String gender = "";
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     // 닉네임
     private String nickName = "";
