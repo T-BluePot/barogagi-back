@@ -1,6 +1,5 @@
 package com.barogagi.member.domain;
 
-import com.barogagi.config.vo.DefaultVO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class UserMembershipInfo extends DefaultVO {
+public class UserMembershipInfo {
 
     @Schema(description = "회원번호", example = "D18513EW81")
     @Id
