@@ -68,6 +68,8 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "N102", description = "적합하지 않는 닉네임입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "N103", description = "해당 닉네임 사용이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S300", description = "회원가입에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S400", description = "동일한 전화번호로 중복 회원가입이 불가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S401", description = "올바른 생년월일 형식이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping

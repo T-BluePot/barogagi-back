@@ -36,7 +36,9 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "해당 사용자의 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T400", description = "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T401", description = "유효한 약관이 아닙니다.")
             })
     @PostMapping("/terms-agreements")
     public ApiResponse insertTermsAgree(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody TermsDTO termsDTO) {

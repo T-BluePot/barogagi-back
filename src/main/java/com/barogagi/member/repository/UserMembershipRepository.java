@@ -20,7 +20,7 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
 
     UserInfoResponseDTO findByMembershipNo(String membershipNo);
 
-    List<UserIdDTO> findByTel(String tel);
+    UserIdDTO findByTel(String tel);
 
     int deleteByMembershipNo(String membershipNo);
 }
