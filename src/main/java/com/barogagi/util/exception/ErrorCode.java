@@ -87,8 +87,10 @@ public enum ErrorCode {
     // Terms
     FOUND_TERMS(HttpStatus.OK, "T200", "약관 조회에 성공하였습니다.", false),
     NOT_FOUND_TERMS(HttpStatus.NOT_FOUND, "T102", "약관이 존재하지 않습니다.", false),
+    FAIL_INVALID_TERMS(HttpStatus.INTERNAL_SERVER_ERROR, "T401", "유효한 약관이 아닙니다.", false),
     SUCCESS_INSERT_TERMS(HttpStatus.CREATED, "T200", "약관 저장에 성공하였습니다.", false),
     FAIL_INSERT_TERMS(HttpStatus.INTERNAL_SERVER_ERROR, "T300", "약관 저장에 실패하였습니다.", false),
+    FAIL_REQUIRED_TERMS_NOT_AGREED(HttpStatus.INTERNAL_SERVER_ERROR, "T400", "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다.", false),
 
     // MemberInfo
     FOUND_USER_INFO(HttpStatus.OK, "M200", "회원 정보 조회가 완료되었습니다.", false),

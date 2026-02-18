@@ -4,6 +4,7 @@ import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.service.LoginService;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.terms.domain.AgreeYn;
 import com.barogagi.terms.domain.TermsAgree;
 import com.barogagi.terms.domain.TermsId;
 import com.barogagi.terms.dto.*;
@@ -85,6 +86,18 @@ public class TermsService {
         List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
 
         for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
+            Terms term = termsRepository.findById(termsProcessDTO.getTermsNum()).orElseThrow(() -> new TermsException(ErrorCode.NOT_FOUND_TERMS));
+
+            // 유효한 약관이 아닐 경우
+            if(!"Y".equals(term.getUseYn()) || !term.getTermsType().equals(termsDTO.getTermsType())) {
+                throw new TermsException(ErrorCode.FAIL_INVALID_TERMS);
+            }
+
+            // 약관이 필수 약관일 경우 agreeYn은 무조건 Y이어야 한다.
+            if("Y".equals(term.getEssentialYn()) && termsProcessDTO.getAgreeYn() == AgreeYn.N) {
+                throw new TermsException(ErrorCode.FAIL_REQUIRED_TERMS_NOT_AGREED);
+            }
+
             TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
             termsAgreeDTO.setMembershipNo(userMembershipInfo.getMembershipNo());
             termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
