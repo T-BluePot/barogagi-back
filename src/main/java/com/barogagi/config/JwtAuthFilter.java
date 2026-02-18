@@ -1,8 +1,6 @@
 package com.barogagi.config;
 
 import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.member.info.dto.UserInfoResponseDTO;
-import com.barogagi.member.info.service.MemberService;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
