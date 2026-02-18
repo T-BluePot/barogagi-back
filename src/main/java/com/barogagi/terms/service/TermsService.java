@@ -1,7 +1,6 @@
 package com.barogagi.terms.service;
 
 import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.member.login.dto.LoginVO;
 import com.barogagi.member.login.service.LoginService;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
@@ -63,10 +62,10 @@ public class TermsService {
         );
     }
 
-    public ApiResponse termsAgreementsProcess(TermsDTO termsDTO) {
+    public ApiResponse termsAgreementsProcess(String apiSecretKey, TermsDTO termsDTO) {
 
         // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(termsDTO.getApiSecretKey())) {
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new TermsException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
 
@@ -77,8 +76,6 @@ public class TermsService {
             throw new TermsException(ErrorCode.EMPTY_DATA);
         }
 
-        LoginVO lvo = new LoginVO();
-        lvo.setUserId(termsDTO.getUserId());
         UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(termsDTO.getUserId());
         if(null == userMembershipInfo) {
             throw new TermsException(ErrorCode.NOT_FOUND_USER_INFO);

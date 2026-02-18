@@ -39,7 +39,7 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/terms-agreements")
-    public ApiResponse insertTermsAgree(@RequestBody TermsDTO termsDTO) {
-        return termsService.termsAgreementsProcess(termsDTO);
+    public ApiResponse insertTermsAgree(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody TermsDTO termsDTO) {
+        return termsService.termsAgreementsProcess(apiSecretKey, termsDTO);
     }
 }
