@@ -55,6 +55,7 @@ public enum ErrorCode {
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다.", false),
     FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", false),
     FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
+    FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "올바른 생년월일 형식이 아닙니다.", false),
 
     // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),

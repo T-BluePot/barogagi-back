@@ -16,6 +16,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Map;
 
 @Service
@@ -82,7 +86,24 @@ public class MemberService {
         // 3. 데이터 처리 & update
         // 생년월일
         if(!inputValidate.isEmpty(memberRequestDTO.getBirth())) {
-            memberTxService.updateBirth(memberInfo, memberRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+            memberRequestDTO.setBirth(memberRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+            // 8자리 숫자인지 확인
+            if (!memberRequestDTO.getBirth().matches("^\\d{8}$")) {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
+
+            // 실제 날짜인지 검증
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
+            try {
+                LocalDate.parse(memberRequestDTO.getBirth(), formatter);
+            } catch (DateTimeParseException e) {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
+
+            memberTxService.updateBirth(memberInfo, memberRequestDTO.getBirth());
+
         }
 
         // 성별 (M : 남 / W : 여)

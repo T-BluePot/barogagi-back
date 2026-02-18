@@ -2,7 +2,6 @@ package com.barogagi.member.join.basic.service;
 
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.login.dto.UserIdDTO;
@@ -17,6 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,9 +62,22 @@ public class MemberSignupService {
             throw new JoinException(ErrorCode.INVALID_SIGN_UP);
         }
 
-        // 4. 생년월일 형식 검사 & 데이터 처리
+        // 4. 생년월일 데이터 처리
         if(!inputValidate.isEmpty(joinRequestDTO.getBirth())) {
             joinRequestDTO.setBirth(joinRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+            // 8자리 숫자인지 확인
+            if (!joinRequestDTO.getBirth().matches("^\\d{8}$")) {
+                throw new JoinException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
+
+            // 실제 날짜인지 검증
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
+            try {
+                LocalDate.parse(joinRequestDTO.getBirth(), formatter);
+            } catch (DateTimeParseException e) {
+                throw new JoinException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
         }
 
         // 5. 아이디 중복 검사
@@ -70,7 +86,7 @@ public class MemberSignupService {
             throw new JoinException(ErrorCode.UNAVAILABLE_USER_ID);
         }
 
-        // 5. 닉네임 중복 검사
+        // 6. 닉네임 중복 검사
         if(!inputValidate.isEmpty(joinRequestDTO.getNickName())) {
             boolean existsNickname = userMembershipRepository.existsByNickName(joinRequestDTO.getNickName());
             if(existsNickname) {
@@ -78,27 +94,27 @@ public class MemberSignupService {
             }
         }
 
-        // 6. 암호화 - 휴대전화번호
+        // 7. 암호화 - 휴대전화번호
         joinRequestDTO.setTel(encryptUtil.encrypt(joinRequestDTO.getTel().replaceAll("[^0-9]", "")));
 
-        // 7. 전화번호 중복 검사 - 동일한 전화번호로 중복 회원가입이 불가능
+        // 8. 전화번호 중복 검사 - 동일한 전화번호로 중복 회원가입이 불가능
         UserIdDTO searchId = userMembershipRepository.findByTel(joinRequestDTO.getTel());
         if(null != searchId) {
             throw new JoinException(ErrorCode.FAIL_DUPLICATE_PHONE_NUMBER);
         }
 
-        // 8. 암호화 - 비밀번호
+        // 9. 암호화 - 비밀번호
         String encodedPassword = passwordConfig.passwordEncoder().encode(joinRequestDTO.getPassword());
         joinRequestDTO.setPassword(encodedPassword);
 
-        // 8. 이메일 값이 넘어오면 암호화
+        // 10. 이메일 값이 넘어오면 암호화
         if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){
             joinRequestDTO.setEmail(encryptUtil.encrypt(joinRequestDTO.getEmail()));
         }
 
         joinRequestDTO.setJoinType("BASIC");
 
-        // 10. 회원 정보 저장
+        // 11. 회원 정보 저장
         String membershipNo = this.signUp(joinRequestDTO);
         if(membershipNo.isEmpty()){
             throw new JoinException(ErrorCode.FAIL_SIGN_UP);
