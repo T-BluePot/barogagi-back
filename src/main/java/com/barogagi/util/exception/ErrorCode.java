@@ -113,7 +113,24 @@ public enum ErrorCode {
     FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", false),
     ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
     SUCCESS_CHECK_SMS(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
-    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false);
+    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
+
+    // Schedule
+    SUCCESS_SCHEDULE_SAVE(HttpStatus.CREATED, "S201", "일정 저장에 성공하였습니다.", false),
+    FOUND_INFO_SCHEDULE(HttpStatus.OK, "S202", "일정 조회에 성공하였습니다.", false),
+    FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", false),
+    NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S401", "일정 정보를 찾을 수 없습니다.", false),
+    ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S402", "이미 삭제된 일정입니다.", false),
+
+    // Tag
+    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G201", "태그 정보를 찾을 수 없습니다.", false),
+
+    // Item
+    NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다.", false),
+
+    // Region
+    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "R201", "지역 정보를 찾을 수 없습니다.", false);
+
 
     private final HttpStatus status;
     private final String code;

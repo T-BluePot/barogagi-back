@@ -3,6 +3,11 @@ package com.barogagi.region.query.service;
 import com.barogagi.region.dto.RegionSearchResDTO;
 import com.barogagi.region.query.mapper.RegionMapper;
 import com.barogagi.region.query.vo.RegionDetailVO;
+import com.barogagi.response.ApiResponse;
+import com.barogagi.util.Validator;
+import com.barogagi.util.exception.BasicException;
+import com.barogagi.util.exception.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +21,12 @@ public class RegionQueryService {
     private static final Logger logger = LoggerFactory.getLogger(RegionQueryService.class);
 
     private final RegionMapper regionMapper;
+    private final Validator validator;
 
     @Autowired
-    public RegionQueryService(RegionMapper regionMapper) {
+    public RegionQueryService(RegionMapper regionMapper, Validator validator) {
         this.regionMapper = regionMapper;
+        this.validator = validator;
     }
 
     /**
@@ -43,47 +50,62 @@ public class RegionQueryService {
      * @param regionQuery 검색 키워드
      * @return RegionSearchResDTO 리스트 (단계별 주소 포함)
      */
-    public List<RegionSearchResDTO> searchList(String regionQuery) {
-        List<RegionDetailVO> regionList = regionMapper.selectRegionByRegionNm(regionQuery);
-
-        List<RegionSearchResDTO> result = new ArrayList<>();
-        Set<String> seen = new HashSet<>(); // 중복 방지
-
-        for (RegionDetailVO r : regionList) {
-            List<String> parts = new ArrayList<>();
-
-            if (r.getRegionLevel1() != null && !r.getRegionLevel1().isBlank()) {
-                parts.add(r.getRegionLevel1());
-            }
-            if (r.getRegionLevel2() != null && !r.getRegionLevel2().isBlank()) {
-                parts.add(r.getRegionLevel2());
-            }
-            if (r.getRegionLevel3() != null && !r.getRegionLevel3().isBlank()) {
-                parts.add(r.getRegionLevel3());
+    public ApiResponse searchList(String regionQuery, HttpServletRequest request) {
+        try {
+            // 1. API SECRET KEY 검증
+            if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
+                return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(),
+                        ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
             }
 
-            // 상위 주소 (레벨1~레벨3까지) → 중복 방지 후 추가
-            String upperAddress = String.join(" ", parts);
-            if (!upperAddress.isBlank() && seen.add(upperAddress)) {
-                result.add(RegionSearchResDTO.builder()
-                        .regionNum(r.getRegionNum())
-                        .regionNm(upperAddress)
-                        .build());
-            }
+            // 2. 지역 검색
+            List<RegionDetailVO> regionList = regionMapper.selectRegionByRegionNm(regionQuery);
 
-            // 레벨4 (동/면/리)
-            if (r.getRegionLevel4() != null && !r.getRegionLevel4().isBlank()) {
-                String fullAddress = upperAddress + " " + r.getRegionLevel4();
-                if (seen.add(fullAddress)) {
+            List<RegionSearchResDTO> result = new ArrayList<>();
+            Set<String> seen = new HashSet<>(); // 중복 방지
+
+            for (RegionDetailVO r : regionList) {
+                List<String> parts = new ArrayList<>();
+
+                if (r.getRegionLevel1() != null && !r.getRegionLevel1().isBlank()) {
+                    parts.add(r.getRegionLevel1());
+                }
+                if (r.getRegionLevel2() != null && !r.getRegionLevel2().isBlank()) {
+                    parts.add(r.getRegionLevel2());
+                }
+                if (r.getRegionLevel3() != null && !r.getRegionLevel3().isBlank()) {
+                    parts.add(r.getRegionLevel3());
+                }
+
+                // 상위 주소 (레벨1~레벨3까지) → 중복 방지 후 추가
+                String upperAddress = String.join(" ", parts);
+                if (!upperAddress.isBlank() && seen.add(upperAddress)) {
                     result.add(RegionSearchResDTO.builder()
                             .regionNum(r.getRegionNum())
-                            .regionNm(fullAddress)
+                            .regionNm(upperAddress)
                             .build());
                 }
-            }
-        }
 
-        return result;
+                // 레벨4 (동/면/리)
+                if (r.getRegionLevel4() != null && !r.getRegionLevel4().isBlank()) {
+                    String fullAddress = upperAddress + " " + r.getRegionLevel4();
+                    if (seen.add(fullAddress)) {
+                        result.add(RegionSearchResDTO.builder()
+                                .regionNum(r.getRegionNum())
+                                .regionNm(fullAddress)
+                                .build());
+                    }
+                }
+            }
+
+            return ApiResponse.success(result, "주소 목록 검색 성공");
+
+        } catch (BasicException e) {
+            return ApiResponse.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(),
+                    ErrorCode.INTERNAL_ERROR.getMessage());
+        }
     }
 
     public RegionDetailVO getRegionByRegionNum(int regionNum) {
@@ -146,6 +168,4 @@ public class RegionQueryService {
 
         throw new IllegalStateException("입력된 주소로 지역을 찾을 수 없습니다: " + address);
     }
-
 }
-
