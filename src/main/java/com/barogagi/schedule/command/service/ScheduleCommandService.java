@@ -19,7 +19,7 @@ import com.barogagi.plan.dto.PlanRegistReqDTO;
 import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.plan.dto.UserAddedPlaceDTO;
 import com.barogagi.plan.enums.PLAN_SOURCE;
-import com.barogagi.plan.query.mapper.CategoryMapper;
+import com.barogagi.category.query.mapper.CategoryMapper;
 import com.barogagi.plan.query.mapper.ItemMapper;
 import com.barogagi.region.command.entity.Place;
 import com.barogagi.region.command.entity.PlanRegion;
