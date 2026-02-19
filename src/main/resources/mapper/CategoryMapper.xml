@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.barogagi.plan.query.mapper.CategoryMapper">
+<mapper namespace="com.barogagi.category.query.mapper.CategoryMapper">
 
     <!-- resultMap -->
 
@@ -22,6 +22,15 @@
             FROM CATEGORY
             ORDER BY RAND()
                 LIMIT 1
+        ]]>
+    </select>
+
+    <select id="selectCategoryList" resultType="com.barogagi.category.query.vo.CategoryVO">
+        <![CDATA[
+        SELECT
+                  CATEGORY_NUM as categoryNum
+                , CATEGORY_NM as categoryNm
+        FROM CATEGORY
         ]]>
     </select>
 

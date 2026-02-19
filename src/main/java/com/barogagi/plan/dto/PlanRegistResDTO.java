@@ -37,7 +37,7 @@ public class PlanRegistResDTO {
     @Schema(description = "카테고리 번호", example = "1")
     public int categoryNum;
 
-    @Schema(description = "카테고리 명", example = "1")
+    @Schema(description = "카테고리 명", example = "식사")
     public String categoryNm;
 
     @Schema(description = "장소 번호")
