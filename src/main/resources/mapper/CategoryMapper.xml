@@ -31,6 +31,7 @@
                   CATEGORY_NUM as categoryNum
                 , CATEGORY_NM as categoryNm
         FROM CATEGORY
+        ORDER BY categoryNum ASC
         ]]>
     </select>
 
