@@ -430,158 +430,151 @@ public class ScheduleCommandService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ApiResponse saveSchedule(ScheduleRegistResDTO scheduleRegistResDTO, HttpServletRequest request) {
 
-        try {
-            // 1. API SECRET KEY 검증
-            if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
-                return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
+        // 1. API SECRET KEY 검증
+        if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
+            return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
+        }
+
+        // 2. 회원번호 조회
+        Map<String, Object> membershipInfo = membershipUtil.membershipNoService(request);
+        if (!membershipInfo.get("resultCode").equals("A200")) {
+            return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(), ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
+        }
+        String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
+
+        // todo. 날짜 형식 검증 필요
+
+        logger.info("START DB SAVE!");
+
+        // 1. Schedule
+        Schedule schedule = Schedule.builder()
+                .membershipNo(membershipNo)
+                .scheduleNm(scheduleRegistResDTO.getScheduleNm())
+                .startDate(scheduleRegistResDTO.getStartDate())
+                .endDate(scheduleRegistResDTO.getEndDate())
+                .radius(radius)
+                .delYn("N")
+                .build();
+
+        scheduleRepository.save(schedule);
+        logger.info("schedule Save! scheduleNum={}", schedule.getScheduleNum());
+
+        // 2. Schedule_tag
+        if (scheduleRegistResDTO.getScheduleTagRegistResDTOList() != null) {
+            logger.info("schedule save result id={}", schedule.getScheduleNum());
+
+            for (TagRegistResDTO tagReq : scheduleRegistResDTO.getScheduleTagRegistResDTOList()) {
+                Tag tag = tagRepository.findById(tagReq.getTagNum())
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
+
+                scheduleTagRepository.save(
+                        ScheduleTag.builder()
+                                .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
+                                .membershipNo(membershipNo)
+                                .schedule(schedule)
+                                .tag(tag)
+                                .build()
+                );
+
             }
+        }
+        logger.info("scheduleTag Save! scheduleNum={}", schedule.getScheduleNum());
 
-            // 2. 회원번호 조회
-            Map<String, Object> membershipInfo = membershipUtil.membershipNoService(request);
-            if (!membershipInfo.get("resultCode").equals("A200")) {
-                return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(), ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
-            }
-            String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
+        // 3. Plan + Plan_tag + Plan_region + Place
+        for (int i = 0; i < scheduleRegistResDTO.getPlanRegistResDTOList().size(); i++) {
 
-            // todo. 날짜 형식 검증 필요
+            PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
 
-            logger.info("START DB SAVE!");
+            Item item = itemRepository.findById(planRes.getItemNum())
+                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
-            // 1. Schedule
-            Schedule schedule = Schedule.builder()
+            PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                     .membershipNo(membershipNo)
-                    .scheduleNm(scheduleRegistResDTO.getScheduleNm())
-                    .startDate(scheduleRegistResDTO.getStartDate())
-                    .endDate(scheduleRegistResDTO.getEndDate())
-                    .radius(radius)
+                    .build();
+
+            // 3-1. Plan
+            Plan plan = Plan.builder()
+                    .planNum(planRes.getPlanNum())
+                    .planNm(planRes.getPlanNm())
+                    .startTime(planRes.getStartTime())
+                    .endTime(planRes.getEndTime())
+                    .planLink(planRes.getPlanLink())
+                    .planDescription(planRes.getPlanDescription())
+                    .planAddress(planRes.getPlanAddress())
+                    .schedule(schedule)
+                    .user(user)
+                    .item(item)
                     .delYn("N")
                     .build();
 
-            scheduleRepository.save(schedule);
-            logger.info("schedule Save! scheduleNum={}", schedule.getScheduleNum());
+            planRepository.saveAndFlush(plan);
+            logger.info("Plan save! planNum={}", plan.getPlanNum());
 
-            // 2. Schedule_tag
-            if (scheduleRegistResDTO.getScheduleTagRegistResDTOList() != null) {
-                logger.info("schedule save result id={}", schedule.getScheduleNum());
 
-                for (TagRegistResDTO tagReq : scheduleRegistResDTO.getScheduleTagRegistResDTOList()) {
-                    Tag tag = tagRepository.findById(tagReq.getTagNum())
+            // 3-2. Plan_tag
+            if (planRes.getPlanTagRegistResDTOList() != null) {
+
+                for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
+                    Tag tag = tagRepository.findById(tagRes.getTagNum())
                             .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
-                    scheduleTagRepository.save(
-                            ScheduleTag.builder()
-                                    .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
-                                    .membershipNo(membershipNo)
-                                    .schedule(schedule)
-                                    .tag(tag)
-                                    .build()
-                    );
+                    PlanTag planTag = PlanTag.builder()
+                            .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
+                            .plan(plan)
+                            .tag(tag)
+                            .build();
 
+                    planTagRepository.save(planTag);
                 }
             }
-            logger.info("scheduleTag Save! scheduleNum={}", schedule.getScheduleNum());
 
-            // 3. Plan + Plan_tag + Plan_region + Place
-            for (int i = 0; i < scheduleRegistResDTO.getPlanRegistResDTOList().size(); i++) {
+            // 3-3. Plan_region
+            if (planRes.getRegionNum() != null) {
+                Region region = regionRepository.findById(planRes.getRegionNum())
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
-                PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
+                PlanRegionId planRegionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
 
-                Item item = itemRepository.findById(planRes.getItemNum())
-                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
-
-                PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
-                        .membershipNo(membershipNo)
+                PlanRegion planRegion = PlanRegion.builder()
+                        .id(planRegionId)
+                        .region(region)
+                        .plan(plan)
                         .build();
 
-                // 3-1. Plan
-                Plan plan = Plan.builder()
-                        .planNum(planRes.getPlanNum())
-                        .planNm(planRes.getPlanNm())
-                        .startTime(planRes.getStartTime())
-                        .endTime(planRes.getEndTime())
+                planRegionRepository.save(planRegion);
+                logger.info("PlanRegion save! regionNum={}, planNum={}", region.getRegionNum(), plan.getPlanNum());
+
+            }
+
+            // 3-4. Place
+            if (planRes.getRegionNum() != null) {
+                Region region = regionRepository.findById(planRes.getRegionNum())
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
+
+                Place place = Place.builder()
+                        .region(region)
+                        .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
+                        .address(planRes.getPlanAddress())
                         .planLink(planRes.getPlanLink())
-                        .planDescription(planRes.getPlanDescription())
-                        .planAddress(planRes.getPlanAddress())
-                        .schedule(schedule)
-                        .user(user)
-                        .item(item)
-                        .delYn("N")
+                        .placeDescription(planRes.getPlanDescription())
+                        .plan(plan)
                         .build();
 
-                planRepository.saveAndFlush(plan);
-                logger.info("Plan save! planNum={}", plan.getPlanNum());
+                placeRepository.save(place);
+                logger.info("Place save! planNum={}, regionNum={}", plan.getPlanNum(), planRes.getRegionNum());
 
-
-                // 3-2. Plan_tag
-                if (planRes.getPlanTagRegistResDTOList() != null) {
-
-                    for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
-                        Tag tag = tagRepository.findById(tagRes.getTagNum())
-                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
-
-                        PlanTag planTag = PlanTag.builder()
-                                .id(new PlanTagId(tag.getTagNum(), plan.getPlanNum()))
-                                .plan(plan)
-                                .tag(tag)
-                                .build();
-
-                        planTagRepository.save(planTag);
-                    }
-                }
-
-                // 3-3. Plan_region
-                if (planRes.getRegionNum() != null) {
-                    Region region = regionRepository.findById(planRes.getRegionNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
-
-                    PlanRegionId planRegionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
-
-                    PlanRegion planRegion = PlanRegion.builder()
-                            .id(planRegionId)
-                            .region(region)
-                            .plan(plan)
-                            .build();
-
-                    planRegionRepository.save(planRegion);
-                    logger.info("PlanRegion save! regionNum={}, planNum={}", region.getRegionNum(), plan.getPlanNum());
-
-                }
-
-                // 3-4. Place
-                if (planRes.getRegionNum() != null) {
-                    Region region = regionRepository.findById(planRes.getRegionNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
-
-                    Place place = Place.builder()
-                            .region(region)
-                            .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                            .address(planRes.getPlanAddress())
-                            .planLink(planRes.getPlanLink())
-                            .placeDescription(planRes.getPlanDescription())
-                            .plan(plan)
-                            .build();
-
-                    placeRepository.save(place);
-                    logger.info("Place save! planNum={}, regionNum={}", plan.getPlanNum(), planRes.getRegionNum());
-
-                    // 3-5. plan-place 동기화
-                    plan.toBuilder().place(place).build();
-                }
-
+                // 3-5. plan-place 동기화
+                plan = plan.toBuilder().place(place).build();
+                planRepository.save(plan);
             }
-            logger.info("END DB SAVE!");
 
-            return ApiResponse.success(schedule.getScheduleNum(), "일정 저장 성공");
-
-        } catch (BusinessException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
         }
+        logger.info("END DB SAVE!");
+
+        return ApiResponse.success(schedule.getScheduleNum(), "일정 저장 성공");
 
     }
 
-    // ========== updateSchedule 메서드 ==========
     @Transactional
     public ApiResponse updateSchedule(ScheduleRegistResDTO dto, HttpServletRequest request) {
         try {
@@ -595,6 +588,7 @@ public class ScheduleCommandService {
             if (!membershipInfo.get("resultCode").equals("A200")) {
                 return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(), ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
             }
+            String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
 
             // 3. Schedule 조회
             Schedule schedule = scheduleRepository.findById(String.valueOf(dto.getScheduleNum()))
@@ -640,7 +634,7 @@ public class ScheduleCommandService {
                             .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
                     PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
-                            .membershipNo("1")
+                            .membershipNo(membershipNo)
                             .build();
 
                     // 새 Plan 생성
@@ -709,177 +703,31 @@ public class ScheduleCommandService {
     @Transactional
     public ApiResponse deleteSchedule(Integer scheduleNum, HttpServletRequest request) {
 
-        try {
-            // 1. API SECRET KEY 검증
-            if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
-                return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
-            }
-
-            // 2. 회원번호 조회
-            Map<String, Object> membershipInfo = membershipUtil.membershipNoService(request);
-            if (!membershipInfo.get("resultCode").equals("A200")) {
-                return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(), ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
-            }
-            String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
-
-            // 3. 일정 조회 및 삭제
-            Schedule schedule = scheduleRepository.findByScheduleNumAndMembershipNo(scheduleNum, membershipNo)
-                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
-
-            schedule.markDeleted();  // del_yn=Y로 변경
-
-            return ApiResponse.success(null, "일정 삭제 성공");
-
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
+        // 1. API SECRET KEY 검증
+        if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
+            throw new BasicException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
         }
-    }
-    // ========== updateSchedule 메서드 ==========
-    @Transactional
-    public ApiResponse updateSchedule(ScheduleRegistResDTO dto) {
 
-        try {
-            // 1) Schedule 조회
-            Schedule schedule = scheduleRepository.findById(String.valueOf(dto.getScheduleNum()))
-                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
-
-            // 2) Schedule 기본 정보 업데이트
-            schedule.updateBasicInfo(
-                    dto.getScheduleNm(),
-                    dto.getStartDate(),
-                    dto.getEndDate()
-            );
-
-            // 3) ScheduleTag 전체 삭제 후 재등록
-            scheduleTagRepository.deleteBySchedule(schedule);
-
-            if (dto.getScheduleTagRegistResDTOList() != null) {
-                for (TagRegistResDTO tagReq : dto.getScheduleTagRegistResDTOList()) {
-                    Tag tag = tagRepository.findById(tagReq.getTagNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
-
-                    scheduleTagRepository.save(
-                            ScheduleTag.builder()
-                                    .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
-                                    .schedule(schedule)
-                                    .tag(tag)
-                                    .build()
-                    );
-                }
-            }
-
-            // 4) 기존 Plan은 soft delete 처리
-            List<Plan> oldPlans = planRepository.findBySchedule(schedule);
-            for (Plan p : oldPlans) {
-                p.markDeleted();
-            }
-
-            // 5) 새 Plan + PlanTag + PlanRegion + Place 저장
-            if (dto.getPlanRegistResDTOList() != null) {
-
-                for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
-
-                    Item item = itemRepository.findById(planRes.getItemNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
-
-                    PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
-                            .membershipNo("1")
-                            .build();
-
-                    // 새 Plan 생성
-                    Plan plan = Plan.builder()
-                            .planNm(planRes.getPlanNm())
-                            .startTime(planRes.getStartTime())
-                            .endTime(planRes.getEndTime())
-                            .planLink(planRes.getPlanLink())
-                            .planDescription(planRes.getPlanDescription())
-                            .planAddress(planRes.getPlanAddress())
-                            .schedule(schedule)
-                            .user(user)
-                            .item(item)
-                            .delYn("N")
-                            .build();
-
-                    planRepository.save(plan);
-
-                    // PlanTag 저장
-                    if (planRes.getPlanTagRegistResDTOList() != null) {
-                        for (TagRegistResDTO tagRes : planRes.getPlanTagRegistResDTOList()) {
-                            Tag tag = tagRepository.findById(tagRes.getTagNum())
-                                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
-
-                            planTagRepository.save(
-                                    new PlanTag(new PlanTagId(tag.getTagNum(), plan.getPlanNum()), plan, tag)
-                            );
-                        }
-                    }
-
-                    // PlanRegion + Place 저장
-                    if (planRes.getRegionNum() != null) {
-                        Region region = regionRepository.findById(planRes.getRegionNum())
-                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
-
-                        // PlanRegion
-                        PlanRegionId regionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
-                        planRegionRepository.save(new PlanRegion(regionId, plan, region));
-
-                        // Place
-                        Place place = Place.builder()
-                                .region(region)
-                                .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                                .address(planRes.getPlanAddress())
-                                .planLink(planRes.getPlanLink())
-                                .placeDescription(planRes.getPlanDescription())
-                                .plan(plan)
-                                .build();
-
-                        placeRepository.save(place);
-                    }
-                }
-            }
-
-            return ApiResponse.success(true, "일정 수정 성공");
-
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
-
+        // 2. 회원번호 조회
+        Map<String, Object> membershipInfo = membershipUtil.membershipNoService(request);
+        if (!membershipInfo.get("resultCode").equals("A200")) {
+            throw new BasicException(ErrorCode.NOT_EXIST_ACCESS_AUTH);
         }
-    }
+        String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
 
-    @Transactional
-    public ApiResponse deleteSchedule(Integer scheduleNum, String membershipNo) {
+        // 3. 일정 조회 및 삭제
+        Schedule schedule = scheduleRepository.findByScheduleNumAndMembershipNo(scheduleNum, membershipNo)
+                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
-        try {
-            // 1) Schedule 조회
-            Schedule schedule = scheduleRepository.findById(String.valueOf(scheduleNum))
-                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
+        schedule.markDeleted();
 
-            // 2) 권한 체크 (본인 일정인지 확인)
-            if (!schedule.getMembershipNo().equals(membershipNo)) {
-                return ApiResponse.error(ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode(),
-                        ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage());
-            }
-
-            // 3) Schedule soft delete
-            schedule.markDeleted();
-
-            // 4) 관련 Plan들도 soft delete
-            List<Plan> plans = planRepository.findBySchedule(schedule);
-            for (Plan plan : plans) {
-                plan.markDeleted();
-            }
-
-            return ApiResponse.success(null, "일정 삭제 성공");
-
-        } catch (BasicException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
+        // 4. 관련 Plan들도 soft delete
+        List<Plan> plans = planRepository.findBySchedule(schedule);
+        for (Plan plan : plans) {
+            plan.markDeleted();
         }
+
+        return ApiResponse.success(null, "일정 삭제 성공");
     }
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴
