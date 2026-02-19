@@ -6,7 +6,9 @@ import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.controller.ScheduleController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
@@ -17,6 +19,8 @@ import java.util.List;
 @Tag(name = "장소", description = "장소 관련 API")
 @RestController
 @RequestMapping("/api/v1/place")
+@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "apiKeyAuth")
 public class PlaceController {
 
     private static final Logger logger = LoggerFactory.getLogger(ScheduleController.class);
@@ -36,22 +40,8 @@ public class PlaceController {
                     "- regionNum은 쓰지 않는 필드입니다. (null 값이 전달됨)")
     @GetMapping("/keyword-search")
     public ApiResponse searchPlace(@Parameter(description = "검색 키워드", example = "스타벅스")
-                                      @RequestParam String searchKeyword) {
-
+                                      @RequestParam String searchKeyword, HttpServletRequest request) {
         logger.info("CALL /place/keyword-search");
-        logger.info("[input] searchKeyword={}", searchKeyword);
-
-        List<KakaoPlaceResDTO> result;
-        try {
-            result = placeQueryService.searchPlace(searchKeyword);
-
-            if (result == null) return ApiResponse.error("404", "장소 검색 실패");
-
-        } catch (Exception e) {
-            return ApiResponse.error("404", "장소 검색 실패");
-        }
-
-
-        return ApiResponse.success(result, "장소 검색 성공");
+        return placeQueryService.searchPlace(searchKeyword, request);
     }
 }
