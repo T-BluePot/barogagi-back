@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class CategoryQueryService {
-    private static final Logger logger = LoggerFactory.getLogger(ScheduleQueryService.class);
+    private static final Logger logger = LoggerFactory.getLogger(CategoryQueryService.class);
 
     private final MembershipUtil membershipUtil;
     private final CategoryMapper categoryMapper;
@@ -43,10 +43,8 @@ public class CategoryQueryService {
             if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
                 return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
             }
-            logger.info("Category list retrieved !!");
 
             List<CategoryVO> result = categoryMapper.selectCategoryList();
-            logger.info("Category list retrieved successfully 1: {}", result);
 
             List<CategoryResDto> categoryResDtoList = result.stream()
                     .map(vo -> CategoryResDto.builder()
@@ -55,7 +53,6 @@ public class CategoryQueryService {
                             .build())
                     .collect(Collectors.toList());
 
-            logger.info("Category list retrieved successfully: {}", categoryResDtoList);
             return ApiResponse.success(categoryResDtoList, "카테고리 목록 조회 성공");
         } catch (BusinessException e) {
             return ApiResponse.error(e.getCode(), e.getMessage());
