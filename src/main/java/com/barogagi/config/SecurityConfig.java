@@ -1,7 +1,7 @@
 package com.barogagi.config;
 
-import com.barogagi.member.oauth.join.service.CustomOidcUserService;
-import com.barogagi.member.oauth.join.service.DelegatingOAuth2UserService;
+import com.barogagi.member.join.oauth.service.CustomOidcUserService;
+import com.barogagi.member.join.oauth.service.DelegatingOAuth2UserService;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class SecurityConfig {
             "/api/v1/terms/**",  // 약관 관련
             "/api/v1/home/tags/popular",  // 인기 태그 조회
             "/api/v1/home/regions/popular",  // 인기 지역 조회
-            "/api/v1/verification-codes/**"
+            "/api/v1/verification-codes/**"  // 인증 번호 발송
     };
 
     @Bean
@@ -69,7 +69,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(u -> u
                                 .oidcUserService(customOidcUserService)   // Google
-                                .userService(delegatingOAuth2UserService)      // Naver, Kakao
+                                .userService(delegatingOAuth2UserService) // Naver, Kakao
                         )
                         .successHandler(oAuth2LoginSuccessHandler)  // 로그인 성공 핸들러 (토큰 발급 등)
                 )

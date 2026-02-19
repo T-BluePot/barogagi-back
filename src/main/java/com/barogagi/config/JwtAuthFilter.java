@@ -1,8 +1,8 @@
 package com.barogagi.config;
 
-import com.barogagi.member.info.dto.Member;
-import com.barogagi.member.info.service.MemberService;
+import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
 import com.barogagi.util.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
@@ -16,16 +16,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwt;
-    private final MemberService memberService;
+    private final UserMembershipRepository userMembershipRepository;
 
-    public JwtAuthFilter(JwtUtil jwt, MemberService memberService) {
+    public JwtAuthFilter(JwtUtil jwt,
+                         UserMembershipRepository userMembershipRepository) {
         this.jwt = jwt;
-        this.memberService = memberService;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     @Override
@@ -40,10 +42,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 String membershipNo = jwt.getMembershipNo(claims);
                 // 회원 조회
-                Member member = memberService.findByMembershipNo(membershipNo);
+                Optional<UserMembershipInfo> member = userMembershipRepository.findById(membershipNo);
 
                 // 인증 컨텍스트 설정(권한 필요 없으면 빈 리스트)
-                var auth = new UsernamePasswordAuthenticationToken(member, null, null);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(member, null, null);
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
                 // 필요 시 요청 속성에도 실어두기

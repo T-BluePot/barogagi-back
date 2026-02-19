@@ -9,18 +9,24 @@ import java.util.regex.Pattern;
 @Service
 public class Validator {
 
+    private final InputValidate inputValidate;
+
     // 금칙어 목록 예시 (확장 가능)
     private static final String[] BLOCKED_WORDS = {"admin", "운영자"};
 
     private final String API_SECRET_KEY;
 
     @Autowired
-    public Validator(Environment environment) {
+    public Validator(Environment environment, InputValidate inputValidate) {
+        this.inputValidate = inputValidate;
         this.API_SECRET_KEY = environment.getProperty("api.secret-key");
     }
 
     // API SECRET KEY 검증
     public boolean apiSecretKeyCheck(String apiSecretKey) {
+
+        if(inputValidate.isEmpty(apiSecretKey)) {return false;}
+
         return apiSecretKey.equals(API_SECRET_KEY);
     }
 
@@ -81,5 +87,10 @@ public class Validator {
             }
         }
         return true;
+    }
+
+    // Integer 검증
+    public boolean isInvalidInteger(Integer value) {
+        return value == null || value < 0;
     }
 }

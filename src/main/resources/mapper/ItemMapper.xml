@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.barogagi.plan.query.mapper.ItemMapper">
+<mapper namespace="com.barogagi.item.query.mapper.ItemMapper">
 
     <!-- resultMap -->
 
@@ -14,4 +14,17 @@
         WHERE   ITEM_NUM = #{itemNum}
         ]]>
     </select>
+
+    <select id="selectItemList" parameterType="int" resultType="com.barogagi.item.query.vo.ItemVO">
+        <![CDATA[
+        SELECT
+              ITEM_NM as itemNm
+            , ITEM_NUM as itemNum
+        FROM    ITEM
+        WHERE   CATEGORY_NUM = #{categoryNum}
+        ORDER BY ITEM_NUM ASC
+        ]]>
+    </select>
+
+
 </mapper>

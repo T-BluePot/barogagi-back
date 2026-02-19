@@ -1,6 +1,7 @@
 package com.barogagi.terms.dto;
 
 
+import com.barogagi.terms.domain.AgreeYn;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class TermsProcessDTO {
     private int termsNum = 0;
-    private String agreeYn = "";
+    private AgreeYn agreeYn;
 }

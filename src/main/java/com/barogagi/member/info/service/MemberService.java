@@ -1,46 +1,39 @@
 package com.barogagi.member.info.service;
 
-import com.barogagi.member.basic.join.dto.NickNameDTO;
-import com.barogagi.member.basic.join.service.JoinService;
-import com.barogagi.member.info.dto.Member;
+import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.info.dto.MemberRequestDTO;
+import com.barogagi.member.info.dto.UserInfoResponseDTO;
 import com.barogagi.member.info.exception.MemberInfoException;
-import com.barogagi.member.info.mapper.MemberMapper;
+import com.barogagi.member.join.basic.dto.Gender;
+import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
+import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
-    private final MemberMapper memberMapper;
     private final MembershipUtil membershipUtil;
     private final EncryptUtil encryptUtil;
-    private final JoinService joinService;
     private final InputValidate inputValidate;
+    private final UserMembershipRepository userMembershipRepository;
+    private final MemberTxService memberTxService;
+    private final Validator validator;
 
-    @Autowired
-    public MemberService(MemberMapper memberMapper,
-                         MembershipUtil membershipUtil,
-                         EncryptUtil encryptUtil,
-                         JoinService joinService,
-                         InputValidate inputValidate)
-    {
-        this.memberMapper = memberMapper;
-        this.membershipUtil = membershipUtil;
-        this.encryptUtil = encryptUtil;
-        this.joinService = joinService;
-        this.inputValidate = inputValidate;
-    }
-
-    public ApiResponse selectMemberInfo(HttpServletRequest request) {
+    public ApiResponse getUserInfo(HttpServletRequest request) {
 
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
@@ -53,7 +46,7 @@ public class MemberService {
         String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
         // 2. 회원 정보 조회
-        Member memberInfo = this.findByMembershipNo(membershipNo);
+        UserInfoResponseDTO memberInfo = userMembershipRepository.findByMembershipNo(membershipNo);
         if(null == memberInfo) {
             throw new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO);
         }
@@ -74,7 +67,7 @@ public class MemberService {
         );
     }
 
-    public ApiResponse updateMemberProcess(HttpServletRequest request, MemberRequestDTO memberRequestDTO) {
+    public ApiResponse updateUserInfo(HttpServletRequest request, MemberRequestDTO memberRequestDTO) {
 
         // 1. 회원번호 구하기
         Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
@@ -88,52 +81,54 @@ public class MemberService {
         String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
         // 2. 회원 정보 조회
-        Member memberInfo = this.findByMembershipNo(membershipNo);
-        if(null == memberInfo) {
-            throw new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO);
-        }
+        UserMembershipInfo memberInfo = userMembershipRepository.findById(membershipNo).orElseThrow(() -> new MemberInfoException(ErrorCode.NOT_FOUND_USER_INFO));
 
-        // 3. 데이터 처리
+        // 3. 데이터 처리 & update
         // 생년월일
         if(!inputValidate.isEmpty(memberRequestDTO.getBirth())) {
-            memberInfo.setBirth(memberRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+            memberRequestDTO.setBirth(memberRequestDTO.getBirth().replaceAll("[^0-9]", ""));
+
+            // 8자리 숫자인지 확인
+            if (!memberRequestDTO.getBirth().matches("^\\d{8}$")) {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
+
+            // 실제 날짜인지 검증
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
+            try {
+                LocalDate.parse(memberRequestDTO.getBirth(), formatter);
+            } catch (DateTimeParseException e) {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_BIRTH_DATE_FORMAT);
+            }
+
+            memberTxService.updateBirth(memberInfo, memberRequestDTO.getBirth());
+
         }
 
         // 성별 (M : 남 / W : 여)
         if(!inputValidate.isEmpty(memberRequestDTO.getGender())) {
-            memberInfo.setGender(memberRequestDTO.getGender());
+            if("M".equals(memberRequestDTO.getGender())) {
+                memberTxService.updateGender(memberInfo, Gender.M);
+            } else if("W".equals(memberRequestDTO.getGender())) {
+                memberTxService.updateGender(memberInfo, Gender.W);
+            } else {
+                throw new MemberInfoException(ErrorCode.FAIL_INVALID_GENDER);
+            }
         }
 
         // 닉네임(중복X)
         if(!inputValidate.isEmpty(memberRequestDTO.getNickName())) {
-            NickNameDTO nickNameRequest = new NickNameDTO();
-            nickNameRequest.setNickName(memberRequestDTO.getNickName());
-            int nickNameCnt = joinService.selectNicknameCnt(nickNameRequest);
-
-            if(nickNameCnt > 0) {
+            if(!validator.isValidNickname(memberRequestDTO.getNickName())) {
+                throw new MemberInfoException(ErrorCode.INVALID_NICKNAME);
+            }
+            boolean existsNickname = userMembershipRepository.existsByNickName(memberRequestDTO.getNickName());
+            if(existsNickname) {
                 throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);
             }
-
-            memberInfo.setNickName(memberRequestDTO.getNickName());
-        }
-
-        int updateMemberInfo = this.updateMemberInfo(memberInfo);
-        if(updateMemberInfo <= 0) {
-            throw new MemberInfoException(ErrorCode.FAIL_UPDATE_USER_INFO);
+            memberTxService.updateNickName(memberInfo, memberRequestDTO.getNickName());
         }
 
         return ApiResponse.result(ErrorCode.SUCCESS_UPDATE_USER_INFO);
-    }
-
-    public Member findByMembershipNo(String membershipNo) {
-        return memberMapper.findByMembershipNo(membershipNo);
-    }
-
-    public Member selectUserMembershipInfo(String userId) {
-        return memberMapper.selectUserMembershipInfo(userId);
-    }
-
-    public int updateMemberInfo(Member member) {
-        return memberMapper.updateMemberInfo(member);
     }
 }

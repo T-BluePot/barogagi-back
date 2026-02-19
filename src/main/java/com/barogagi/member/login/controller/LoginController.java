@@ -30,8 +30,8 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/login")
-    public ApiResponse basicMemberLogin(@RequestBody LoginDTO loginRequestDTO){
-        return loginService.login(loginRequestDTO);
+    public ApiResponse basicMemberLogin(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody LoginDTO loginRequestDTO){
+        return loginService.login(apiSecretKey, loginRequestDTO);
     }
 
     @Operation(summary = "아이디 찾기 기능", description = "아이디 찾기 기능입니다.",
@@ -43,8 +43,8 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/find-user")
-    public ApiResponse findUser(@RequestBody SearchUserIdDTO searchUserIdRequestDTO){
-        return loginService.findUser(searchUserIdRequestDTO);
+    public ApiResponse findUserIdByTel(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String tel){
+        return loginService.findUserIdByTel(apiSecretKey, tel);
     }
 
     @Operation(summary = "비밀번호 재설정 기능", description = "비밀번호 재설정 기능입니다.",
@@ -53,11 +53,12 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "U300", description = "비밀번호 재설정에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "U400", description = "해당 아이디의 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/password-reset/confirm")
-    public ApiResponse updatePassword(@RequestBody LoginDTO vo){
-        return loginService.updatePasswordProcess(vo);
+    public ApiResponse resetPassword(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody LoginDTO vo){
+        return loginService.resetPassword(apiSecretKey, vo);
     }
 
     @Operation(summary = "토큰 재발급", description = "Access 토큰 만료 시, Refresh 토큰으로 Access 토큰 재발급",
@@ -70,8 +71,8 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/token/refresh")
-    public ApiResponse refresh(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        return loginService.refreshToken(refreshTokenRequestDTO);
+    public ApiResponse refresh(@RequestHeader("REFRESH-TOKEN") String refreshToken) {
+        return loginService.refreshToken(refreshToken);
     }
 
     @Operation(summary = "현재 기기 로그아웃", description = "현재 기기 로그아웃: 전달된 refreshToken이 속한 (membershipNo, deviceId)의 VALID 토큰들을 REVOKE",
@@ -81,7 +82,7 @@ public class LoginController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/logout")
-    public ApiResponse logout(@RequestBody RefreshTokenRequestDTO refreshTokenRequestDTO) {
-        return loginService.logout(refreshTokenRequestDTO);
+    public ApiResponse logout(@RequestHeader("REFRESH-TOKEN") String refreshToken) {
+        return loginService.logout(refreshToken);
     }
 }
