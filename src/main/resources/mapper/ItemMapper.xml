@@ -22,6 +22,7 @@
             , ITEM_NUM as itemNum
         FROM    ITEM
         WHERE   CATEGORY_NUM = #{categoryNum}
+        ORDER BY ITEM_NUM ASC
         ]]>
     </select>
 
