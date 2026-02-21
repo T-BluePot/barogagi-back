@@ -109,7 +109,8 @@ public enum ErrorCode {
 
     // Schedule
     SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
-    SUCCESS_SCHEDULE_SAVE(HttpStatus.CREATED, "S202", "일정 저장에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_SAVE(HttpStatus.OK, "S202", "일정 저장에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_DELETE(HttpStatus.OK, "S203", "일정 삭제에 성공하였습니다.", false),
     FOUND_INFO_SCHEDULE(HttpStatus.OK, "S202", "일정 조회에 성공하였습니다.", false),
     FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", false),
     NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S401", "일정 정보를 찾을 수 없습니다.", false),
