@@ -72,7 +72,7 @@ public class TagQueryService {
             }
 
             // 2. 필수 입력값(tagType) 확인
-            if (inputValidate.isEmpty(String.valueOf(tagSearchReqDTO.getTagType()))) {
+            if (inputValidate.isEmpty(tagSearchReqDTO.getTagType())) {
                 throw new TagException(ErrorCode.EMPTY_DATA);
             }
 
