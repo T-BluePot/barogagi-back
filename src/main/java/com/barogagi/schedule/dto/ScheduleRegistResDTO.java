@@ -5,15 +5,16 @@ import com.barogagi.plan.dto.PlanRegistResDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
+@Setter
+@NoArgsConstructor
 @ToString
 @Builder(toBuilder = true)
+@AllArgsConstructor
 @Schema(description = "일정 등록 응답 DTO")
 public class ScheduleRegistResDTO {
     private Integer scheduleNum;    // 일정 번호
