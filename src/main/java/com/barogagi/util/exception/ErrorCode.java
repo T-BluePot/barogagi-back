@@ -28,7 +28,8 @@ public enum ErrorCode {
 
 
     // Region
-    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R001", "지역 정보를 찾을 수 없습니다.", false),
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R101", "지역 정보를 찾을 수 없습니다.", false),
+    REGION_GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "R102", "지역의 Geocode를 찾을 수 없습니다.", false),
 
     // Nickname
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "N102", "적합하지 않는 닉네임입니다.", false),
@@ -107,11 +108,19 @@ public enum ErrorCode {
     FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
 
     // Schedule
-    SUCCESS_SCHEDULE_SAVE(HttpStatus.CREATED, "S201", "일정 저장에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_DELETE(HttpStatus.OK, "S203", "일정 삭제에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_SAVE(HttpStatus.OK, "S204", "일정 저장에 성공하였습니다.", false),
     FOUND_INFO_SCHEDULE(HttpStatus.OK, "S202", "일정 조회에 성공하였습니다.", false),
     FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", false),
     NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S401", "일정 정보를 찾을 수 없습니다.", false),
     ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S402", "이미 삭제된 일정입니다.", false),
+
+    // Ai
+    AI_RECOMMENDATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "I101", "AI 응답에 실패하였습니다.", false),
+
+    // Place
+    PLACE_SEARCH_EMPTY(HttpStatus.NOT_FOUND, "P101", "지역 검색 결과를 찾을 수 없습니다.", false),
 
     // Tag
     SUCCESS_FOUND_TAG(HttpStatus.OK, "G200", "태그 조회에 성공하였습니다.", false),

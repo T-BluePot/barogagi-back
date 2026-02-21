@@ -21,7 +21,7 @@ public class Schedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "SCHEDULE_NUM")
-    private int scheduleNum;            // 일정 번호 (PK)
+    private Integer scheduleNum;            // 일정 번호 (PK)
 
     @Column(name = "MEMBERSHIP_NO", nullable = false)
     private String membershipNo;           // 회원 번호 (FK)

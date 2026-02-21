@@ -76,6 +76,10 @@ public interface SwaggerScheduleController {
                     "- 사용자가 이 API로 생성된 일정을 확인한 후 '일정 생성하기' 버튼을 누르면 '일정 등록' API를 호출해 주세요.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S201",
+                            description = "일정 생성 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "API SECRET KEY 불일치"
                     ),
@@ -84,12 +88,24 @@ public interface SwaggerScheduleController {
                             description = "접근 권한이 존재하지 않습니다."
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "S203",
-                            description = "일정 저장 성공"
+                            responseCode = "R101",
+                            description = "지역 정보를 찾을 수 없습니다. (plan, schedule 모두 지역 없음)"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "404",
-                            description = "일정 저장 실패"
+                            responseCode = "T201",
+                            description = "카테고리 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "P101",
+                            description = "장소 검색 결과가 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "I101",
+                            description = "AI 응답에 실패하였습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C500",
+                            description = "서버 오류가 발생했습니다."
                     )
             }
     )
@@ -102,28 +118,64 @@ public interface SwaggerScheduleController {
                             examples = @ExampleObject(
                                     name = "일정 등록 요청 예시",
                                     value = "{\n" +
-                                            "  \"scheduleNm\": \"서울 카페투어\",\n" +
-                                            "  \"startDate\": \"2025-12-01\",\n" +
-                                            "  \"endDate\": \"2025-12-01\",\n" +
-                                            "  \"comment\": \"분위기 좋은 카페 추천해주세요\",\n" +
+                                            "  \"scheduleNm\": \"종로 맛집 투어\",\n" +
+                                            "  \"startDate\": \"2026-03-01\",\n" +
+                                            "  \"endDate\": \"2026-03-01\",\n" +
+                                            "  \"comment\": \"종로구 맛집 추천해주세요\",\n" +
                                             "  \"scheduleTagRegistReqDTOList\": [\n" +
-                                            "    { \"tagNm\": \"핫플\", \"tagNum\": 5 },\n" +
-                                            "    { \"tagNm\": \"활동적인\", \"tagNum\": 8 }\n" +
+                                            "    { \"tagNm\": \"활동적인\", \"tagNum\": 8 },\n" +
+                                            "    { \"tagNm\": \"차분한\", \"tagNum\": 7 },\n" +
+                                            "    { \"tagNm\": \"즐거운\", \"tagNum\": 6 }\n" +
+                                            "  ],\n" +
+                                            "  \"scheduleRegionRegistReqDTOList\": [\n" +
+                                            "    { \"regionNum\": 1 },\n" +
+                                            "    { \"regionNum\": 2 },\n" +
+                                            "    { \"regionNum\": 3 },\n" +
+                                            "    { \"regionNum\": 4 }\n" +
                                             "  ],\n" +
                                             "  \"planRegistReqDTOList\": [\n" +
                                             "    {\n" +
                                             "      \"startTime\": \"08:00\",\n" +
                                             "      \"endTime\": \"09:00\",\n" +
-                                            "      \"itemNum\": 10,\n" +
+                                            "      \"itemNum\": 7,\n" +
                                             "      \"categoryNum\": 2,\n" +
+                                            "      \"isUserAdded\": \"N\",\n" +
+                                            "      \"isRandomCategory\": \"N\",\n" +
+                                            "      \"regionRegistReqDTOList\": [\n" +
+                                            "        { \"regionNum\": 1 },\n" +
+                                            "        { \"regionNum\": 3 }\n" +
+                                            "      ],\n" +
+                                            "      \"planTagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"맛집\", \"tagNum\": 11 },\n" +
+                                            "        { \"tagNm\": \"조용한\", \"tagNum\": 16 }\n" +
+                                            "      ]\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"startTime\": \"09:00\",\n" +
+                                            "      \"endTime\": \"11:00\",\n" +
+                                            "      \"itemNum\": 18,\n" +
+                                            "      \"categoryNum\": 5,\n" +
+                                            "      \"isUserAdded\": \"N\",\n" +
+                                            "      \"isRandomCategory\": \"N\",\n" +
+                                            "      \"regionRegistReqDTOList\": [],\n" +
+                                            "      \"planTagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"박물관\", \"tagNum\": 21 },\n" +
+                                            "        { \"tagNm\": \"미술관\", \"tagNum\": 22 },\n" +
+                                            "        { \"tagNm\": \"이색체험\", \"tagNum\": 23 }\n" +
+                                            "      ]\n" +
+                                            "    },\n" +
+                                            "    {\n" +
+                                            "      \"startTime\": \"11:00\",\n" +
+                                            "      \"endTime\": \"13:00\",\n" +
+                                            "      \"itemNum\": 1,\n" +
+                                            "      \"categoryNum\": 1,\n" +
                                             "      \"isUserAdded\": \"N\",\n" +
                                             "      \"isRandomCategory\": \"Y\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
-                                            "        { \"regionNum\": 1 }\n" +
-                                            "      ],\n" +
-                                            "      \"planTagRegistReqDTOList\": [\n" +
-                                            "        { \"tagNm\": \"디저트맛집\", \"tagNum\": 14 },\n" +
-                                            "        { \"tagNm\": \"인스타핫플\", \"tagNum\": 15 }\n" +
+                                            "        { \"regionNum\": 2 }\n" +
+                                            "      ],\n" +                                            "      \"planTagRegistReqDTOList\": [\n" +
+                                            "        { \"tagNm\": \"웨이팅 없는\", \"tagNum\": 13 },\n" +
+                                            "        { \"tagNm\": \"맛집\", \"tagNum\": 11 }\n" +
                                             "      ]\n" +
                                             "    },\n" +
                                             "    {\n" +
@@ -165,6 +217,10 @@ public interface SwaggerScheduleController {
                     "- '일정 생성하기' 버튼을 눌렀을 때 호출되는 API입니다.<br>" +
                     "- '일정 생성' API로 받은 응답 DTO를 그대로 보내주세요.",
             responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S204",
+                            description = "일정 저장 성공"
+                    ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "API SECRET KEY 불일치"
@@ -353,6 +409,10 @@ public interface SwaggerScheduleController {
                     "- '일정 조회' API로 받은 응답 DTO를 수정하여 보내주세요.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S204",
+                            description = "일정 저장 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "잘못된 접근입니다."
                     ),
@@ -375,10 +435,6 @@ public interface SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "R201",
                             description = "지역 정보를 찾을 수 없습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "일정 수정 성공"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
@@ -465,6 +521,10 @@ public interface SwaggerScheduleController {
             description = "일정 전체를 DB에서 삭제하는 기능입니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S203",
+                            description = "일정 삭제 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "잘못된 접근입니다."
                     ),
@@ -475,10 +535,6 @@ public interface SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "S401",
                             description = "일정 정보를 찾을 수 없습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "일정 삭제 성공"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
