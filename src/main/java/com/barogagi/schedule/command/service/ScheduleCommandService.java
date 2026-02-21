@@ -92,9 +92,6 @@ public class ScheduleCommandService {
     @Value("${kakao.radius}")
     private int radius;
 
-    @Value("${naver.display}")
-    private int naverBlogDisplay;
-
     @Autowired
     public ScheduleCommandService(CategoryMapper categoryMapper, ItemMapper itemMapper,
                                   KakaoPlaceClient kakaoPlaceClient, TavilyClient tavilyClient,
