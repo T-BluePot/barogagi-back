@@ -1,9 +1,11 @@
 package com.barogagi.ai.client;
 
+import com.barogagi.ai.constant.AiPrompt;
 import com.barogagi.ai.dto.AIReqWrapper;
 import com.barogagi.ai.dto.AIResDTO;
 import com.barogagi.ai.dto.ChatMessage;
 import com.barogagi.ai.dto.ChatRequest;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,15 +34,16 @@ public class AIClient {
     @Value("${ai.api.key}")
     private String aiApiKey;
 
-    @Value("${ai.prompt.system}")
-    private String aiPrompt;
-
     @Value("${ai.model}")
     private String aiModel;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private static final ObjectMapper OM = new ObjectMapper();
 
+
+    /**
+     * 2차 AI 호출: 카카오 장소 목록에서 추천 장소 선정 + 한줄 소개
+     */
     public AIResDTO recommandPlace(AIReqWrapper aiReqWrapper) {
         String url = aiBaseUrl + aiPath;
 
@@ -52,43 +56,28 @@ public class AIClient {
         HttpEntity<ChatRequest> entity = new HttpEntity<>(chatRequest, headers);
 
         ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                entity,
-                String.class
-        );
+                url, HttpMethod.POST, entity, String.class);
 
         String body = response.getBody();
 
-        ObjectMapper om = new ObjectMapper();
         try {
-            // 1) content 추출
-            JsonNode root = om.readTree(body);
-            JsonNode contentNode = root.path("choices").get(0).path("message").path("content");
-            String content = contentNode.asText();
-
-            // 2) 코드펜스/여분 공백 제거
+            JsonNode root = OM.readTree(body);
+            String content = root.path("choices").get(0).path("message").path("content").asText();
             content = stripCodeFence(content);
-
-            // 3) content(JSON 문자열) -> DTO
-            AIResDTO dto = om.readValue(content, AIResDTO.class);
-            return dto;
+            return OM.readValue(content, AIResDTO.class);
 
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            // JsonMappingException 포함해서 모두 여기서 처리됨
-            return null; // 혹은 throw new IllegalStateException("AI 응답 파싱 실패", e);
+            logger.error("AI 추천 응답 파싱 실패: error={}", e.getMessage());
+            return null;
         }
     }
 
-    // ai에게 요청 가능한 형태로 변경
     private ChatRequest buildChatRequest(AIReqWrapper wrapper) {
-        // system 메시지
         ChatMessage systemMsg = ChatMessage.builder()
                 .role("system")
-                .content(aiPrompt)
+                .content(AiPrompt.RECOMMEND_PLACE_SYSTEM)
                 .build();
 
-        // user 메시지: AIReqWrapper → 문자열 변환
         StringBuilder sb = new StringBuilder();
         sb.append("comment: ").append(wrapper.getComment()).append("\n");
         sb.append("tags: ").append(String.join(", ", wrapper.getTags())).append("\n\n");
@@ -109,5 +98,74 @@ public class AIClient {
                 .messages(List.of(systemMsg, userMsg))
                 .max_tokens(500)
                 .build();
+    }
+
+
+    /**
+     * 1차 AI 호출: Tavily 웹 검색 결과에서 실제 장소명 추출
+     */
+    public List<String> extractPlaceNames(String webContent, String categoryNm, String regionName,
+                                          List<String> tagNames, int maxCount) {
+
+        String tagStr = (tagNames != null && !tagNames.isEmpty())
+                ? String.join(", ", tagNames)
+                : categoryNm;
+
+        String prompt = String.format(AiPrompt.EXTRACT_PLACE_NAMES_USER,
+                regionName, categoryNm, categoryNm, tagStr, maxCount, webContent);
+
+        try {
+            String aiResponse = callAIForText(AiPrompt.EXTRACT_PLACE_NAMES_SYSTEM, prompt, 300);
+
+            if (aiResponse == null || aiResponse.isBlank()) {
+                logger.warn("AI 장소명 추출 응답이 비어있습니다.");
+                return Collections.emptyList();
+            }
+
+            String cleaned = stripCodeFence(aiResponse).trim();
+            List<String> placeNames = OM.readValue(cleaned, new TypeReference<List<String>>() {});
+
+            logger.info("AI 장소명 추출 완료: count={}, names={}", placeNames.size(), placeNames);
+            return placeNames;
+
+        } catch (Exception e) {
+            logger.error("AI 장소명 추출 실패: error={}", e.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
+
+    /**
+     * AI에 프롬프트를 보내고 content 텍스트를 그대로 반환
+     */
+    private String callAIForText(String systemPrompt, String userPrompt, int maxTokens) {
+        String url = aiBaseUrl + aiPath;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(aiApiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+        ChatRequest chatRequest = ChatRequest.builder()
+                .model(aiModel)
+                .messages(List.of(
+                        ChatMessage.builder().role("system").content(systemPrompt).build(),
+                        ChatMessage.builder().role("user").content(userPrompt).build()
+                ))
+                .max_tokens(maxTokens)
+                .build();
+
+        try {
+            HttpEntity<ChatRequest> entity = new HttpEntity<>(chatRequest, headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, String.class);
+
+            JsonNode root = OM.readTree(response.getBody());
+            return root.path("choices").get(0).path("message").path("content").asText();
+
+        } catch (Exception e) {
+            logger.error("callAIForText 실패: error={}", e.getMessage());
+            return null;
+        }
     }
 }

@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ScheduleRepository extends JpaRepository<Schedule, String>{
-    Optional<Schedule> findByScheduleNumAndMembershipNo(Integer scheduleNum, String membershipNo);
-}
+public interface ScheduleRepository extends JpaRepository<Schedule, Integer>{
+    Optional<Schedule> findByScheduleNumAndMembershipNo(Integer scheduleNum, String membershipNo);}
