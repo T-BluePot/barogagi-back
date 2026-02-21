@@ -114,7 +114,9 @@ public enum ErrorCode {
     ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S402", "이미 삭제된 일정입니다.", false),
 
     // Tag
-    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G201", "태그 정보를 찾을 수 없습니다.", false),
+    SUCCESS_FOUND_TAG(HttpStatus.OK, "G200", "태그 조회에 성공하였습니다.", false),
+    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G101", "태그 정보를 찾을 수 없습니다.", false),
+    INVALID_TAG_TYPE(HttpStatus.BAD_REQUEST, "G102", "유효하지 않은 태그 타입입니다.", false),
 
     // Item
     NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다.", false),
