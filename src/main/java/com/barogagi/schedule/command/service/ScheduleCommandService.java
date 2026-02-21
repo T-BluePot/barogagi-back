@@ -46,6 +46,8 @@ import com.barogagi.tag.command.repository.TagRepository;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
+import com.barogagi.taviliy.client.TavilyClient;
+import com.barogagi.taviliy.dto.TavilyResultDTO;
 import com.barogagi.terms.exception.TermsException;
 import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.Validator;
@@ -73,7 +75,7 @@ public class ScheduleCommandService {
     private final CategoryMapper categoryMapper;
     private final ItemMapper itemMapper;
     private final KakaoPlaceClient kakaoPlaceClient;
-    private final NaverBlogClient naverBlogClient;
+    private final TavilyClient tavilyClient;
     private final AIClient aiClient;
 
     private final TagQueryService tagQueryService;
@@ -101,7 +103,7 @@ public class ScheduleCommandService {
 
     @Autowired
     public ScheduleCommandService(CategoryMapper categoryMapper, ItemMapper itemMapper,
-                                  KakaoPlaceClient kakaoPlaceClient, NaverBlogClient naverBlogClient,
+                                  KakaoPlaceClient kakaoPlaceClient, TavilyClient tavilyClient,
                                   AIClient aiClient, TagQueryService tagQueryService, RegionGeoCodeService regionGeoCodeService,
                                   ScheduleRepository scheduleRepository, ScheduleTagRepository scheduleTagRepository,
                                   TagRepository tagRepository, ItemRepository itemRepository,
@@ -112,7 +114,7 @@ public class ScheduleCommandService {
         this.itemMapper = itemMapper;
         this.categoryMapper = categoryMapper;
         this.kakaoPlaceClient = kakaoPlaceClient;
-        this.naverBlogClient = naverBlogClient;
+        this.tavilyClient = tavilyClient;
         this.aiClient = aiClient;
         this.tagQueryService = tagQueryService;
         this.regionGeoCodeService = regionGeoCodeService;
@@ -192,28 +194,27 @@ public class ScheduleCommandService {
         }
     }
 
-
-
     /**
      * AI 기반 플랜 생성 처리.
      *
-     * 지역 → 카카오 장소 검색 → 네이버 블로그 보강 → AI 추천 순서로 진행하여
+     * Tavily 웹 검색 → AI 장소명 추출 → 카카오 장소 상세 조회 → AI 추천 순서로 진행하여
      * 최종 추천 장소를 선정하고 플랜 응답 DTO를 생성한다.
      *
      * 처리 흐름:
      * 1. 지역 결정 - plan 지역이 있으면 그대로 사용, 없으면 schedule 지역 중 랜덤 1개 선택
      * 2. 카테고리 결정 - 랜덤 카테고리 옵션 적용 및 카테고리명 조회
-     * 3. 지역별 Kakao 장소 검색 후 결과 평탄화
-     * 4. Naver 블로그 검색으로 장소별 title/description 보강
-     * 5. AI API 호출하여 추천 장소 인덱스 수신
-     * 6. 추천 장소 기반 응답 DTO 생성
+     * 3. 지역별 Tavily 웹 검색으로 장소 관련 웹 콘텐츠 수집
+     * 4. AI 1차 호출 - Tavily content에서 실제 장소명 추출
+     * 5. 추출된 장소명으로 Kakao 장소 검색하여 정확한 주소/URL 획득
+     * 6. AI 2차 호출 - 카카오 장소 목록에서 추천 장소 선정 + 한줄 소개 생성
+     * 7. 추천 장소 기반 응답 DTO 생성
      *
      * @param scheduleRegistReqDTO 일정 등록 요청 DTO (comment, 지역 리스트 등 포함)
      * @param plan                 플랜 등록 요청 DTO (카테고리, 태그, 지역 등 포함)
      * @return 생성된 플랜 응답 DTO
      * @throws ScheduleException ErrorCode.REGION_NOT_FOUND           – plan과 schedule 모두 지역이 없을 때
      * @throws ScheduleException ErrorCode.NOT_FOUND_CATEGORY         – 카테고리 번호 조회 실패 또는 카테고리명이 없을 때
-     * @throws ScheduleException ErrorCode.PLACE_SEARCH_EMPTY         – Kakao 장소 검색 결과가 없을 때
+     * @throws ScheduleException ErrorCode.PLACE_SEARCH_EMPTY         – 장소 검색 결과가 없을 때
      * @throws ScheduleException ErrorCode.AI_RECOMMENDATION_FAILED   – AI 추천 응답이 null일 때
      */
     private PlanRegistResDTO handleAIPlan(ScheduleRegistReqDTO scheduleRegistReqDTO, PlanRegistReqDTO plan) {
@@ -222,8 +223,6 @@ public class ScheduleCommandService {
         List<RegionRegistReqDTO> resolvedRegions = resolveRegions(plan, scheduleRegistReqDTO);
 
         int limitPlace = calLimitPlace(resolvedRegions.size());
-
-        List<List<KakaoPlaceResDTO>> allKakaoPlaceResults = new ArrayList<>();
 
         // ---------- 1) 카테고리 결정 ----------
         if ("Y".equals(plan.getIsRandomCategory())) {
@@ -241,11 +240,21 @@ public class ScheduleCommandService {
         if (categoryNm == null || categoryNm.isBlank()) {
             throw new ScheduleException(ErrorCode.NOT_FOUND_CATEGORY);
         }
-        String queryString = categoryNm;
 
         String itemNm = itemMapper.selectItemNmBy(plan.getItemNum());
 
-        // ---------- 2) 지역별 Kakao 장소 검색 ----------
+        // 태그 정보 미리 조회 (장소명 추출 + 추천에서 모두 사용)
+        List<Integer> tagNums = Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
+                .orElseGet(List::of)
+                .stream()
+                .map(TagRegistReqDTO::getTagNum)
+                .collect(Collectors.toList());
+
+        List<String> tagNames = tagQueryService.findTagNmByTagNum(tagNums);
+
+        // ---------- 2) Tavily 웹 검색 → AI 장소명 추출 → 카카오 상세 검색 ----------
+        List<KakaoPlaceResDTO> flatKakao = new ArrayList<>();
+
         for (RegionRegistReqDTO region : resolvedRegions) {
             RegionGeoCodeResDTO geo = regionGeoCodeService.getGeocode(region.getRegionNum());
             if (geo == null) {
@@ -265,70 +274,67 @@ public class ScheduleCommandService {
 
             String regionName = pickRegionName(updatedRegion);
 
-            List<KakaoPlaceResDTO> oneRegionPlaces =
-                    kakaoPlaceClient.searchKakaoPlace(queryString, geo.getX(), geo.getY(), radius, limitPlace);
-            allKakaoPlaceResults.add(oneRegionPlaces);
+            // Step 1: Tavily 웹 검색 (태그도 검색어에 포함)
+            String tagKeyword = tagNames.isEmpty() ? "" : " " + tagNames.get(0);
+            String tavilyQuery = categoryNm + tagKeyword + " " + regionName + " 추천 장소";
+            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, limitPlace);
 
+            logger.info("tavily search: query={}, resultSize={}", tavilyQuery, tavilyResults.size());
 
-            logger.info("kakao search result: query={}, x={}, y={}, radius={}, limit={}, resultSize={}",
-                    queryString, geo.getX(), geo.getY(), radius, limitPlace,
-                    oneRegionPlaces != null ? oneRegionPlaces.size() : "null");
+            if (tavilyResults.isEmpty()) {
+                logger.warn("Tavily 검색 결과 없음. query={}", tavilyQuery);
+                continue;
+            }
 
-            if (oneRegionPlaces != null) {
-                oneRegionPlaces.forEach(k -> k.setRegionNum(region.getRegionNum()));
+            // Step 2: Tavily content를 합쳐서 AI에게 장소명 추출 요청
+            String combinedContent = tavilyResults.stream()
+                    .map(TavilyResultDTO::getContent)
+                    .filter(c -> c != null && !c.isBlank())
+                    .collect(Collectors.joining("\n"));
+
+            List<String> extractedPlaceNames = aiClient.extractPlaceNames(
+                    combinedContent, categoryNm, regionName, tagNames, limitPlace);
+
+            logger.info("AI 장소명 추출: category={}, region={}, extracted={}",
+                    categoryNm, regionName, extractedPlaceNames);
+
+            if (extractedPlaceNames == null || extractedPlaceNames.isEmpty()) {
+                logger.warn("AI 장소명 추출 결과 없음. category={}, region={}", categoryNm, regionName);
+                continue;
+            }
+
+            // Step 3: 추출된 장소명 → 카카오 검색 (매칭 성공한 것만 사용)
+            for (String placeName : extractedPlaceNames) {
+                KakaoPlaceResDTO matched = searchKakaoWithRetry(
+                        placeName, regionName, geo.getX(), geo.getY());
+
+                if (matched != null) {
+                    matched.setRegionNum(region.getRegionNum());
+                    flatKakao.add(matched);
+                    logger.info("카카오 매칭 성공: placeName={}, placeUrl={}",
+                            matched.getPlaceName(), matched.getPlaceUrl());
+                } else {
+                    logger.info("카카오 매칭 실패, skip. placeName={}", placeName);
+                }
             }
 
             logger.info("resolved regionName={} for regionNum={}", regionName, updatedRegion.getRegionNum());
         }
 
-        // Kakao 평탄화
-        List<KakaoPlaceResDTO> flatKakao = allKakaoPlaceResults.stream()
-                .filter(Objects::nonNull)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-
         if (flatKakao.isEmpty()) {
             throw new ScheduleException(ErrorCode.PLACE_SEARCH_EMPTY);
         }
 
-        // ---------- 3) Naver 블로그로 title/description 만들기 ----------
-        List<NaverBlogResDTO> allBlogsFlat = new ArrayList<>();
-        for (KakaoPlaceResDTO k : flatKakao) {
-            String query = k.getPlaceName() + " " + k.getRoadAddressName();
-            List<NaverBlogResDTO> blogs = naverBlogClient.searchNaverBlog(query, naverBlogDisplay);
-            if (blogs != null) {
-                allBlogsFlat.addAll(blogs);
-            }
-        }
-        logger.info("allNaverBlogResults.size={}", allBlogsFlat.size());
-
-        List<AIReqDTO> placeList = new ArrayList<>();
-        for (int i = 0; i < flatKakao.size(); i++) {
-            KakaoPlaceResDTO k = flatKakao.get(i);
-            String title = k.getPlaceName();
-            String desc  = Optional.ofNullable(k.getCategoryGroupName()).orElse("카테고리 정보 없음")
-                    + " · " + Optional.ofNullable(k.getRoadAddressName()).orElse(k.getAddressName());
-
-            if (i < allBlogsFlat.size()) {
-                NaverBlogResDTO b = allBlogsFlat.get(i);
-                title = stripHtml(b.getTitle());
-                desc  = stripHtml(b.getDescription());
-            }
-
-            placeList.add(AIReqDTO.builder()
-                    .title(title)
-                    .description(desc)
-                    .build());
-        }
-
-        // ---------- 4) AI 호출 ----------
-        List<Integer> tagNums = Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
-                .orElseGet(List::of)
-                .stream()
-                .map(TagRegistReqDTO::getTagNum)
+        // ---------- 3) AI 2차 호출: 추천 장소 선정 + 한줄 소개 ----------
+        List<AIReqDTO> placeList = flatKakao.stream()
+                .map(k -> AIReqDTO.builder()
+                        .title(k.getPlaceName())
+                        .description(
+                                "카테고리: " + Optional.ofNullable(k.getCategoryGroupName()).orElse(categoryNm)
+                                        + " / 주소: " + Optional.ofNullable(k.getRoadAddressName())
+                                        .orElse(Optional.ofNullable(k.getAddressName()).orElse("주소 없음")))
+                        .build())
                 .collect(Collectors.toList());
-
-        List<String> tagNames = tagQueryService.findTagNmByTagNum(tagNums);
 
         AIReqWrapper aiReqWrapper = AIReqWrapper.builder()
                 .tags(tagNames)
@@ -341,15 +347,15 @@ public class ScheduleCommandService {
             throw new ScheduleException(ErrorCode.AI_RECOMMENDATION_FAILED);
         }
 
-        // ---------- 5) AI가 고른 index → Kakao place 선택 ----------
-        Integer chosenIdx = aiRes.getRecommandPlaceIndex();
-        if (chosenIdx == null || chosenIdx < 0 || chosenIdx >= flatKakao.size()) {
+        // ---------- 4) AI가 고른 index → place 선택 ----------
+        int chosenIdx = aiRes.getRecommandPlaceIndex();
+        if (chosenIdx < 0 || chosenIdx >= flatKakao.size()) {
             logger.warn("AI 추천 인덱스 유효하지 않음(idx={}), fallback=0", chosenIdx);
             chosenIdx = 0;
         }
         KakaoPlaceResDTO aiChosen = flatKakao.get(chosenIdx);
 
-        // ---------- 6) 응답 DTO 생성 ----------
+        // ---------- 5) 응답 DTO 생성 ----------
         String regionNm = resolveRegionNm(aiChosen.getRegionNum());
 
         return PlanRegistResDTO.builder()
@@ -380,14 +386,40 @@ public class ScheduleCommandService {
     }
 
 
+    /**
+     * 카카오 장소 검색 (재시도 포함)
+     * 1차: "장소명 + 지역명" 으로 검색
+     * 2차: "장소명"만으로 재검색
+     * 둘 다 실패 시 null 반환
+     */
+    private KakaoPlaceResDTO searchKakaoWithRetry(String placeName, String regionName, String x, String y) {
+        // 1차: 장소명 + 지역명
+        String query1 = placeName + " " + regionName;
+        List<KakaoPlaceResDTO> results = kakaoPlaceClient.searchKakaoPlace(query1, x, y, radius, 1);
+        logger.info("kakao 1차: query={}, resultSize={}", query1, results != null ? results.size() : "null");
+
+        if (results != null && !results.isEmpty()) {
+            return results.get(0);
+        }
+
+        // 2차: 장소명만
+        List<KakaoPlaceResDTO> retry = kakaoPlaceClient.searchKakaoPlace(placeName, x, y, radius, 1);
+        logger.info("kakao 2차: query={}, resultSize={}", placeName, retry != null ? retry.size() : "null");
+
+        if (retry != null && !retry.isEmpty()) {
+            return retry.get(0);
+        }
+
+        return null;
+    }
+
+
     private List<RegionRegistReqDTO> resolveRegions(PlanRegistReqDTO plan, ScheduleRegistReqDTO schedule) {
-        // plan에 지역이 있으면 그대로 사용
         if (plan.getRegionRegistReqDTOList() != null && !plan.getRegionRegistReqDTOList().isEmpty()) {
             logger.info("plan 자체 지역 사용. size={}", plan.getRegionRegistReqDTOList().size());
             return plan.getRegionRegistReqDTOList();
         }
 
-        // plan에 없으면 schedule 지역에서 랜덤 1개
         List<RegionRegistReqDTO> scheduleRegions = schedule.getScheduleRegionRegistReqDTOList();
         if (scheduleRegions == null || scheduleRegions.isEmpty()) {
             throw new ScheduleException(ErrorCode.REGION_NOT_FOUND);
