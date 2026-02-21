@@ -218,6 +218,10 @@ public interface SwaggerScheduleController {
                     "- '일정 생성' API로 받은 응답 DTO를 그대로 보내주세요.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S204",
+                            description = "일정 저장 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "API SECRET KEY 불일치"
                     ),
@@ -405,6 +409,10 @@ public interface SwaggerScheduleController {
                     "- '일정 조회' API로 받은 응답 DTO를 수정하여 보내주세요.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S204",
+                            description = "일정 저장 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "잘못된 접근입니다."
                     ),
@@ -427,10 +435,6 @@ public interface SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "R201",
                             description = "지역 정보를 찾을 수 없습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "일정 수정 성공"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
@@ -517,6 +521,10 @@ public interface SwaggerScheduleController {
             description = "일정 전체를 DB에서 삭제하는 기능입니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S203",
+                            description = "일정 삭제 성공"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "A100",
                             description = "잘못된 접근입니다."
                     ),
@@ -527,10 +535,6 @@ public interface SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "S401",
                             description = "일정 정보를 찾을 수 없습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "일정 삭제 성공"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
