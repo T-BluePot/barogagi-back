@@ -156,8 +156,6 @@ public class ScheduleCommandService {
             String scheduleNm = scheduleRegistReqDTO.getScheduleNm();
             String startDate = scheduleRegistReqDTO.getStartDate();
             String endDate = scheduleRegistReqDTO.getEndDate();
-//            List<RegionRegistReqDTO> regions = scheduleRegistReqDTO.getRegionRegistReqDTOList();
-
 
             for (PlanRegistReqDTO plan : scheduleRegistReqDTO.getPlanRegistReqDTOList()) {
 
@@ -652,7 +650,10 @@ public class ScheduleCommandService {
         }
         logger.info("END DB SAVE!");
 
-        return ApiResponse.success(schedule.getScheduleNum(), "일정 저장 성공");
+        return ApiResponse.resultData(
+                schedule.getScheduleNum(),
+                ErrorCode.SUCCESS_SCHEDULE_SAVE.getCode(),
+                ErrorCode.SUCCESS_SCHEDULE_SAVE.getMessage());
 
     }
 
@@ -672,15 +673,11 @@ public class ScheduleCommandService {
             String membershipNo = String.valueOf(membershipInfo.get("membershipNo"));
 
             // 3. Schedule 조회
-            Schedule schedule = scheduleRepository.findById(String.valueOf(dto.getScheduleNum()))
+            Schedule schedule = scheduleRepository.findByScheduleNumAndMembershipNo(dto.getScheduleNum(), membershipNo)
                     .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
             // 4. Schedule 기본 정보 업데이트
-            schedule.updateBasicInfo(
-                    dto.getScheduleNm(),
-                    dto.getStartDate(),
-                    dto.getEndDate()
-            );
+            schedule.updateBasicInfo(dto.getScheduleNm(), dto.getStartDate(), dto.getEndDate());
 
             // 5. ScheduleTag 전체 삭제 후 재등록
             scheduleTagRepository.deleteBySchedule(schedule);
@@ -718,7 +715,6 @@ public class ScheduleCommandService {
                             .membershipNo(membershipNo)
                             .build();
 
-                    // 새 Plan 생성
                     Plan plan = Plan.builder()
                             .planNm(planRes.getPlanNm())
                             .startTime(planRes.getStartTime())
@@ -740,22 +736,17 @@ public class ScheduleCommandService {
                             Tag tag = tagRepository.findById(tagRes.getTagNum())
                                     .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_TAG));
 
-                            planTagRepository.save(
-                                    new PlanTag(new PlanTagId(tag.getTagNum(), plan.getPlanNum()), plan, tag)
-                            );
+                            planTagRepository.save(new PlanTag(new PlanTagId(tag.getTagNum(), plan.getPlanNum()), plan, tag));
                         }
                     }
 
                     // PlanRegion + Place 저장
                     if (planRes.getRegionNum() != null) {
                         Region region = regionRepository.findById(planRes.getRegionNum())
-                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION)); // 수정: NOT_FOUND_TAG -> NOT_FOUND_REGION
+                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
-                        // PlanRegion
-                        PlanRegionId regionId = new PlanRegionId(plan.getPlanNum(), region.getRegionNum());
-                        planRegionRepository.save(new PlanRegion(regionId, plan, region));
+                        planRegionRepository.save(new PlanRegion(new PlanRegionId(plan.getPlanNum(), region.getRegionNum()), plan, region));
 
-                        // Place
                         Place place = Place.builder()
                                 .region(region)
                                 .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
@@ -773,10 +764,10 @@ public class ScheduleCommandService {
             return ApiResponse.success(true, "일정 수정 성공");
 
         } catch (BasicException e) {
-            logger.error("일정 수정 실패 - BasicException: {}", e.getMessage());
+            logger.error("일정 수정 실패 - BasicException: {}, Code: {}", e.getMessage(), e.getCode());
             return ApiResponse.error(e.getCode(), e.getMessage());
         } catch (Exception e) {
-            logger.error("일정 수정 실패 - Exception", e);
+            logger.error("일정 수정 실패 - Unexpected Exception", e);
             return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
         }
     }
@@ -807,8 +798,10 @@ public class ScheduleCommandService {
         for (Plan plan : plans) {
             plan.markDeleted();
         }
-
-        return ApiResponse.success(null, "일정 삭제 성공");
+        return ApiResponse.resultData(
+                null,
+                ErrorCode.SUCCESS_SCHEDULE_DELETE.getCode(),
+                ErrorCode.SUCCESS_SCHEDULE_DELETE.getMessage());
     }
 
     // 후보지역 수에 따라 각 지역의 후보장소 수를 리턴
@@ -834,11 +827,4 @@ public class ScheduleCommandService {
             return region.getRegionLevel1();
         }
     }
-
-//    private String firstRegionName(List<RegionRegistReqDTO> regions) {
-//        if (regions == null || regions.isEmpty()) return null;
-//        // RegionRegistReqDTO에 regionName 같은 필드가 있다면 그걸 반환
-//        // 예시로 cityName+district 조합 등을 사용
-//        return Optional.ofNullable(regions.get(0).getRegionName()).orElse(null);
-//    }
 }
