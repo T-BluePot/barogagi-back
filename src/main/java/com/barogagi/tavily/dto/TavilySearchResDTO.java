@@ -1,4 +1,4 @@
-package com.barogagi.taviliy.dto;
+package com.barogagi.tavily.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

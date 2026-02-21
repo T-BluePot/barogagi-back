@@ -1,9 +1,9 @@
-package com.barogagi.taviliy.client;
+package com.barogagi.tavily.client;
 
 
-import com.barogagi.taviliy.dto.TavilyResultDTO;
-import com.barogagi.taviliy.dto.TavilySearchReqDTO;
-import com.barogagi.taviliy.dto.TavilySearchResDTO;
+import com.barogagi.tavily.dto.TavilyResultDTO;
+import com.barogagi.tavily.dto.TavilySearchReqDTO;
+import com.barogagi.tavily.dto.TavilySearchResDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
