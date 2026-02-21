@@ -1,4 +1,4 @@
-package com.barogagi.taviliy.client;
+package com.barogagi.tavily.client;
 
 import lombok.Getter;
 import lombok.Setter;

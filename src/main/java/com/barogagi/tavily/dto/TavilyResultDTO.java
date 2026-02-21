@@ -1,4 +1,4 @@
-package com.barogagi.taviliy.dto;
+package com.barogagi.tavily.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -7,9 +7,6 @@ import com.barogagi.ai.dto.AIResDTO;
 import com.barogagi.config.exception.BusinessException;
 import com.barogagi.kakaoplace.client.KakaoPlaceClient;
 import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
-import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.naverblog.client.NaverBlogClient;
-import com.barogagi.naverblog.dto.NaverBlogResDTO;
 import com.barogagi.plan.command.entity.Item;
 import com.barogagi.plan.command.entity.Plan;
 import com.barogagi.plan.command.ex_entity.PlanUserMembershipInfo;
@@ -46,9 +43,8 @@ import com.barogagi.tag.command.repository.TagRepository;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
-import com.barogagi.taviliy.client.TavilyClient;
-import com.barogagi.taviliy.dto.TavilyResultDTO;
-import com.barogagi.terms.exception.TermsException;
+import com.barogagi.tavily.client.TavilyClient;
+import com.barogagi.tavily.dto.TavilyResultDTO;
 import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.BasicException;
@@ -65,8 +61,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-
-import static com.barogagi.util.HtmlUtils.stripHtml;
 
 @Service
 public class ScheduleCommandService {
