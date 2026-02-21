@@ -46,12 +46,24 @@ public class TagController {
                     "검색 결과는 최대 10개의 태그를 반환합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "A100",
-                            description = "잘못된 접근입니다."
+                            responseCode = "G200",
+                            description = "태그 조회에 성공하였습니다."
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "태그 조회 성공"
+                            responseCode = "G101",
+                            description = "태그 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "G102",
+                            description = "유효하지 않은 태그 타입입니다. (tagType이 유효한 Enum 값이 아니거나, tagType과 categoryNum 조합이 올바르지 않을 경우)"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C101",
+                            description = "정보를 입력해주세요. (tagType이 비어있을 경우)"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A100",
+                            description = "잘못된 접근입니다. (API 시크릿 키가 일치하지 않을 경우)"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
