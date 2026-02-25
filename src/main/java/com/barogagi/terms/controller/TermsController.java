@@ -17,7 +17,7 @@ public class TermsController {
 
     private final TermsService termsService;
 
-    @Operation(summary = "약관 목록 조회", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
+    @Operation(summary = "약관 목록 조회 기능", description = "약관 목록 조회 기능입니다. <br> 회원가입 시 사용할 경우 termsType 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 조회에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
@@ -30,7 +30,7 @@ public class TermsController {
         return termsService.termsListProcess(apiSecretKey, termsType);
     }
 
-    @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다. agreeYn은 Y 또는 N을 보내주세요.",
+    @Operation(summary = "약관 동의 여부 저장 기능", description = "약관 동의 여부 저장 기능입니다. agreeYn은 Y 또는 N을 보내주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 저장에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
