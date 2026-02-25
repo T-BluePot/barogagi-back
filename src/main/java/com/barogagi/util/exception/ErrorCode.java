@@ -21,23 +21,15 @@ public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다.", false),
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요.", false),
 
-    // Membership
-    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "MEMBERSHIP-404", "멤버십 정보가 없습니다.", false),
-    MEMBERSHIP_SERVICE_FAIL(HttpStatus.BAD_GATEWAY, "MEMBERSHIP-502", "멤버십 서비스 호출에 실패했습니다.", false),
-
     // Schedule
-    SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "SCH-001", "일정 저장에 실패했습니다.", false),
-    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "SCH-002", "일정 정보를 찾을 수 없습니다.", false),
-    SCHEDULE_ALREADY_DELETED(HttpStatus.NOT_FOUND, "SCH-003", "이미 삭제된 일정입니다.", false),
+    SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "일정 저장에 실패했습니다.", false),
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "S002", "일정 정보를 찾을 수 없습니다.", false),
+    SCHEDULE_ALREADY_DELETED(HttpStatus.NOT_FOUND, "S003", "이미 삭제된 일정입니다.", false),
 
-    // Tag
-    TAG_NOT_FOUND(HttpStatus.NOT_FOUND, "TAG-001", "태그 정보를 찾을 수 없습니다.", false),
-
-    // Item
-    ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "ITEM-001", "아이템 정보를 찾을 수 없습니다.", false),
 
     // Region
-    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "REGION-001", "지역 정보를 찾을 수 없습니다.", false),
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R101", "지역 정보를 찾을 수 없습니다.", false),
+    REGION_GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "R102", "지역의 Geocode를 찾을 수 없습니다.", false),
 
     // Nickname
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "N102", "적합하지 않는 닉네임입니다.", false),
@@ -113,7 +105,37 @@ public enum ErrorCode {
     FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", false),
     ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
     SUCCESS_CHECK_SMS(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
-    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false);
+    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
+
+    // Schedule
+    SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_DELETE(HttpStatus.OK, "S203", "일정 삭제에 성공하였습니다.", false),
+    SUCCESS_SCHEDULE_SAVE(HttpStatus.OK, "S204", "일정 저장에 성공하였습니다.", false),
+    FOUND_INFO_SCHEDULE(HttpStatus.OK, "S202", "일정 조회에 성공하였습니다.", false),
+    FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", false),
+    NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S401", "일정 정보를 찾을 수 없습니다.", false),
+    ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S402", "이미 삭제된 일정입니다.", false),
+
+    // Ai
+    AI_RECOMMENDATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "I101", "AI 응답에 실패하였습니다.", false),
+
+    // Place
+    PLACE_SEARCH_EMPTY(HttpStatus.NOT_FOUND, "P101", "지역 검색 결과를 찾을 수 없습니다.", false),
+
+    // Tag
+    SUCCESS_FOUND_TAG(HttpStatus.OK, "G200", "태그 조회에 성공하였습니다.", false),
+    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G101", "태그 정보를 찾을 수 없습니다.", false),
+    INVALID_TAG_TYPE(HttpStatus.BAD_REQUEST, "G102", "유효하지 않은 태그 타입입니다.", false),
+
+    // Item
+    NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다.", false),
+
+    // Category
+    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "T201", "카테고리 정보를 찾을 수 없습니다.", false),
+
+    // Region
+    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "R201", "지역 정보를 찾을 수 없습니다.", false);
+
 
     private final HttpStatus status;
     private final String code;

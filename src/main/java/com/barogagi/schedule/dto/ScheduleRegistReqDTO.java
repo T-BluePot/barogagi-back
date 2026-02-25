@@ -25,4 +25,7 @@ public class ScheduleRegistReqDTO {
 
     // 계획 리스트
     private List<PlanRegistReqDTO> planRegistReqDTOList;
+
+    // 지역 리스트
+    public List<RegionRegistReqDTO> scheduleRegionRegistReqDTOList;
 }

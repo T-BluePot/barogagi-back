@@ -28,16 +28,16 @@ public class PlanRegistResDTO {
     @Schema(description = "종료 시간", example = "09:00")
     public String endTime;
 
-    @Schema(description = "아이템 번호", example = "1")
+    @Schema(description = "아이템 번호", example = "2")
     public int itemNum;
 
-    @Schema(description = "아이템 명", example = "1")
+    @Schema(description = "아이템 명", example = "한식")
     public String itemNm;
 
     @Schema(description = "카테고리 번호", example = "1")
     public int categoryNum;
 
-    @Schema(description = "카테고리 명", example = "1")
+    @Schema(description = "카테고리 명", example = "식사")
     public String categoryNm;
 
     @Schema(description = "장소 번호")
