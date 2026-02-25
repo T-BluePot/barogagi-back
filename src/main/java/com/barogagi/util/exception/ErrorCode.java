@@ -42,6 +42,9 @@ public enum ErrorCode {
     AVAILABLE_USER_ID(HttpStatus.OK, "U200", "해당 아이디 사용이 가능합니다.", false),
     NOT_FOUND_USER_ID(HttpStatus.NOT_FOUND, "U400", "해당 아이디의 정보가 존재하지 않습니다.", false),
 
+    // tel
+    SUCCESS_DUPLICATE_PHONE_NUMBER(HttpStatus.OK, "T200", "중복된 계정이 존재하지 않습니다.", false),
+
     // SignUp
     INVALID_SIGN_UP(HttpStatus.BAD_REQUEST, "S102", "적합한 아이디, 비밀번호, 닉네임이 아닙니다.", false),
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다.", false),
