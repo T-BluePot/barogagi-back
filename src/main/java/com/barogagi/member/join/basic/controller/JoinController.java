@@ -4,7 +4,6 @@ import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.service.MemberAccountService;
 import com.barogagi.member.join.basic.service.MemberDuplicationService;
 import com.barogagi.member.join.basic.service.MemberSignupService;
-import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
 import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -70,6 +69,9 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S300", description = "회원가입에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S400", description = "동일한 전화번호로 중복 회원가입이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S401", description = "올바른 생년월일 형식이 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T401", description = "유효한 약관이 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T400", description = "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping
