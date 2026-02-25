@@ -1,6 +1,6 @@
-package com.barogagi.plan.query.mapper;
+package com.barogagi.category.query.mapper;
 
-import com.barogagi.plan.query.vo.PlanDetailVO;
+import com.barogagi.category.query.vo.CategoryVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -12,4 +12,6 @@ public interface CategoryMapper {
     String selectCategoryNmBy(int categoryNum);
 
     int selectRandomCategoryNum();
+
+    List<CategoryVO> selectCategoryList();
 }
