@@ -5,6 +5,7 @@ import com.barogagi.terms.dto.*;
 import com.barogagi.terms.service.TermsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +33,7 @@ public class TermsController {
     @Operation(summary = "약관 동의 여부 저장", description = "약관 동의 여부 저장 기능입니다. agreeYn은 Y 또는 N을 보내주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "약관 저장에 성공하였습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "해당 사용자의 정보가 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
@@ -41,7 +42,7 @@ public class TermsController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T401", description = "유효한 약관이 아닙니다.")
             })
     @PostMapping("/terms-agreements")
-    public ApiResponse insertTermsAgree(@RequestHeader("API-KEY") String apiSecretKey, @RequestBody TermsDTO termsDTO) {
-        return termsService.termsAgreementsProcess(apiSecretKey, termsDTO);
+    public ApiResponse insertTermsAgree(HttpServletRequest request, @RequestBody TermsDTO termsDTO) {
+        return termsService.termsAgreementsProcess(request, termsDTO);
     }
 }
