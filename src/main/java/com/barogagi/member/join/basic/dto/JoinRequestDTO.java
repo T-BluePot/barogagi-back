@@ -1,5 +1,6 @@
 package com.barogagi.member.join.basic.dto;
 
+import com.barogagi.terms.dto.TermsDTO;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.Getter;
@@ -33,4 +34,6 @@ public class JoinRequestDTO {
 
     // 회원가입 종류
     private String joinType = "BASIC";
+
+    private TermsDTO termsDTO;
 }

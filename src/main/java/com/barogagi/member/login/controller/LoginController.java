@@ -20,7 +20,7 @@ public class LoginController {
         this.loginService = loginService;
     }
 
-    @Operation(summary = "로그인", description = "로그인 기능입니다.",
+    @Operation(summary = "로그인 기능", description = "로그인 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "R200", description = "로그인에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
@@ -61,7 +61,7 @@ public class LoginController {
         return loginService.resetPassword(apiSecretKey, vo);
     }
 
-    @Operation(summary = "토큰 재발급", description = "Access 토큰 만료 시, Refresh 토큰으로 Access 토큰 재발급",
+    @Operation(summary = "토큰 재발급 기능", description = "Access 토큰 만료 시, Refresh 토큰으로 Access 토큰 재발급",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "R110", description = "로그인을 진행해주세요."),
@@ -75,7 +75,7 @@ public class LoginController {
         return loginService.refreshToken(refreshToken);
     }
 
-    @Operation(summary = "현재 기기 로그아웃", description = "현재 기기 로그아웃: 전달된 refreshToken이 속한 (membershipNo, deviceId)의 VALID 토큰들을 REVOKE",
+    @Operation(summary = "현재 기기 로그아웃 기능", description = "현재 기기 로그아웃: 전달된 refreshToken이 속한 (membershipNo, deviceId)의 VALID 토큰들을 REVOKE",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L200", description = "로그아웃 되었습니다."),

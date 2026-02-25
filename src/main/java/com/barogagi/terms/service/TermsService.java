@@ -1,8 +1,5 @@
 package com.barogagi.terms.service;
 
-import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.member.login.service.LoginService;
-import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.domain.AgreeYn;
 import com.barogagi.terms.domain.TermsAgree;
@@ -14,8 +11,10 @@ import com.barogagi.terms.repository.TermsAgreeRepository;
 import com.barogagi.terms.repository.TermsRepository;
 import com.barogagi.terms.repository.spec.TermsSpec;
 import com.barogagi.util.InputValidate;
+import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
@@ -25,16 +24,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class TermsService {
     private final TermsRepository termsRepository;
     private final TermsAgreeRepository termsAgreeRepository;
-    private final UserMembershipRepository userMembershipRepository;
     private final Validator validator;
     private final InputValidate inputValidate;
-    private final LoginService loginService;
+    private final MembershipUtil membershipUtil;
 
     public ApiResponse termsListProcess(String apiSecretKey, String termsType) {
 
@@ -63,48 +62,25 @@ public class TermsService {
         );
     }
 
-    public ApiResponse termsAgreementsProcess(String apiSecretKey, TermsDTO termsDTO) {
+    public ApiResponse termsAgreementsProcess(HttpServletRequest request, TermsDTO termsDTO) {
 
-        // 1. API SECRET KEY 일치 여부 확인
-        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
-            throw new TermsException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        // 1. 회원번호 구하기
+        Map<String, Object> membershipNoInfo = membershipUtil.membershipNoService(request);
+        if(!membershipNoInfo.get("resultCode").equals("A200")) {
+            return ApiResponse.result(
+                    String.valueOf(membershipNoInfo.get("resultCode")),
+                    String.valueOf(membershipNoInfo.get("message"))
+            );
         }
 
+        String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
+
         // 2. 필수 입력값 확인
-        if(inputValidate.isEmpty(termsDTO.getUserId()) ||
-                termsDTO.getTermsAgreeList() == null ||
-                termsDTO.getTermsAgreeList().isEmpty()) {
+        if(termsDTO.getTermsAgreeList() == null || termsDTO.getTermsAgreeList().isEmpty()) {
             throw new TermsException(ErrorCode.EMPTY_DATA);
         }
 
-        UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(termsDTO.getUserId());
-        if(null == userMembershipInfo) {
-            throw new TermsException(ErrorCode.NOT_FOUND_USER_INFO);
-        }
-
-        List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
-        List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
-
-        for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
-            Terms term = termsRepository.findById(termsProcessDTO.getTermsNum()).orElseThrow(() -> new TermsException(ErrorCode.NOT_FOUND_TERMS));
-
-            // 유효한 약관이 아닐 경우
-            if(!"Y".equals(term.getUseYn()) || !term.getTermsType().equals(termsDTO.getTermsType())) {
-                throw new TermsException(ErrorCode.FAIL_INVALID_TERMS);
-            }
-
-            // 약관이 필수 약관일 경우 agreeYn은 무조건 Y이어야 한다.
-            if("Y".equals(term.getEssentialYn()) && termsProcessDTO.getAgreeYn() == AgreeYn.N) {
-                throw new TermsException(ErrorCode.FAIL_REQUIRED_TERMS_NOT_AGREED);
-            }
-
-            TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
-            termsAgreeDTO.setMembershipNo(userMembershipInfo.getMembershipNo());
-            termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
-            termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
-            termsAgreeDTOList.add(termsAgreeDTO);
-        }
-        String resCode = this.insertTermsAgreeList(termsAgreeDTOList);
+        String resCode = this.insertTermsAgree(termsDTO, membershipNo);
 
         if(!resCode.equals("200")) {
             throw new TermsException(ErrorCode.FAIL_INSERT_TERMS);
@@ -129,7 +105,6 @@ public class TermsService {
     }
 
     // 약관 동의 여부 저장
-    @Transactional
     public boolean insertTermsAgreeInfo(TermsAgreeDTO vo) {
 
         try {
@@ -157,5 +132,32 @@ public class TermsService {
             }
         }
         return "200";
+    }
+
+    public String insertTermsAgree(TermsDTO termsDTO, String membershipNo) {
+        List<TermsAgreeDTO> termsAgreeDTOList = new ArrayList<>();
+        List<TermsProcessDTO> termsAgreeList = termsDTO.getTermsAgreeList();
+
+        for(TermsProcessDTO termsProcessDTO : termsAgreeList) {
+            Terms term = termsRepository.findById(termsProcessDTO.getTermsNum()).orElseThrow(() -> new TermsException(ErrorCode.NOT_FOUND_TERMS));
+
+            // 유효한 약관이 아닐 경우
+            if(!"Y".equals(term.getUseYn()) || !term.getTermsType().equals(termsDTO.getTermsType())) {
+                throw new TermsException(ErrorCode.FAIL_INVALID_TERMS);
+            }
+
+            // 약관이 필수 약관일 경우 agreeYn은 무조건 Y이어야 한다.
+            if("Y".equals(term.getEssentialYn()) && termsProcessDTO.getAgreeYn() == AgreeYn.N) {
+                throw new TermsException(ErrorCode.FAIL_REQUIRED_TERMS_NOT_AGREED);
+            }
+
+            TermsAgreeDTO termsAgreeDTO = new TermsAgreeDTO();
+            termsAgreeDTO.setMembershipNo(membershipNo);
+            termsAgreeDTO.setTermsNum(termsProcessDTO.getTermsNum());
+            termsAgreeDTO.setAgreeYn(termsProcessDTO.getAgreeYn());
+            termsAgreeDTOList.add(termsAgreeDTO);
+        }
+
+        return this.insertTermsAgreeList(termsAgreeDTOList);
     }
 }
