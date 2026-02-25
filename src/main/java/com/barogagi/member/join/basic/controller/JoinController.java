@@ -4,7 +4,6 @@ import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.service.MemberAccountService;
 import com.barogagi.member.join.basic.service.MemberDuplicationService;
 import com.barogagi.member.join.basic.service.MemberSignupService;
-import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
 import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,7 +43,7 @@ public class JoinController {
         return memberDuplicationService.existsByUserId(apiSecretKey, userId);
     }
 
-    @Operation(summary = "닉네임 중복 체크 API", description = "닉네임 중복 체크 API",
+    @Operation(summary = "닉네임 중복 체크 기능", description = "닉네임 중복 체크 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "N200", description = "사용 가능한 닉네임입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
@@ -56,6 +55,19 @@ public class JoinController {
     @GetMapping("/nickname/exists")
     public ApiResponse existsByNickname(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String nickname){
         return memberDuplicationService.existsByNickname(apiSecretKey, nickname);
+    }
+
+    @Operation(summary = "전화번호 중복 체크 기능", description = "전화번호 중복 체크 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "잘못된 접근입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S400", description = "동일한 전화번호로 중복 회원가입이 불가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T200", description = "중복된 계정이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다.")
+            })
+    @GetMapping("/tel/exists")
+    public ApiResponse existsByTel(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam String tel) {
+        return memberDuplicationService.existsByTel(apiSecretKey, tel);
     }
 
     @Operation(summary = "회원가입 정보 저장 기능", description = "회원가입 정보 저장 기능입니다. JOIN_TYPE 값은 넘겨주지 않으셔도 됩니다.",
@@ -70,6 +82,9 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S300", description = "회원가입에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S400", description = "동일한 전화번호로 중복 회원가입이 불가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S401", description = "올바른 생년월일 형식이 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T401", description = "유효한 약관이 아닙니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T400", description = "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping
@@ -77,7 +92,7 @@ public class JoinController {
         return memberSignupService.signupBasic(apiSecretKey, joinRequestDTO);
     }
 
-    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 API",
+    @Operation(summary = "회원 탈퇴 기능", description = "회원 탈퇴 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "R301", description = "유효하지 않은 refresh token입니다."),

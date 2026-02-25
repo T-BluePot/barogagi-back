@@ -16,6 +16,9 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
     // 닉네임 중복 여부(true : 존재, false : 민존재)
     boolean existsByNickName(String nickName);
 
+    // 전화번호 중복 여부
+    boolean existsByTel(String tel);
+
     UserMembershipInfo findByUserId(String userId);
 
     UserInfoResponseDTO findByMembershipNo(String membershipNo);

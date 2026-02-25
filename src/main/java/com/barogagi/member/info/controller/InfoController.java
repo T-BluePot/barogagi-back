@@ -19,7 +19,7 @@ public class InfoController {
         this.memberService = memberService;
     }
 
-    @Operation(summary = "회원 정보 조회", description = "회원 정보 조회 기능입니다.",
+    @Operation(summary = "회원 정보 조회 기능", description = "회원 정보 조회 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "회원 정보가 존재하지 않습니다."),
@@ -31,7 +31,7 @@ public class InfoController {
         return memberService.getUserInfo(request);
     }
 
-    @Operation(summary = "회원 정보 수정", description = "회원 정보 조회 수정입니다.",
+    @Operation(summary = "회원 정보 수정 기능", description = "회원 정보 조회 수정입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "L102", description = "회원 정보가 존재하지 않습니다."),

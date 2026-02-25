@@ -11,7 +11,6 @@ import java.util.List;
 @Getter
 @Setter
 public class TermsDTO {
-    private String userId = "";
 
     private String termsType = "";
 

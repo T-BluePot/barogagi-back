@@ -3,6 +3,7 @@ package com.barogagi.member.join.basic.service;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
@@ -16,6 +17,7 @@ public class MemberDuplicationService {
 
     private final Validator validator;
     private final InputValidate inputValidate;
+    private final EncryptUtil encryptUtil;
     private final UserMembershipRepository userMembershipRepository;
 
     // 아이디 중복 체크
@@ -72,5 +74,32 @@ public class MemberDuplicationService {
         }
 
         return ApiResponse.result(ErrorCode.AVAILABLE_NICKNAME);
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse existsByTel(String apiSecretKey, String tel) {
+
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new JoinException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        }
+
+        // 2. 필수 입력값 확인
+        if(inputValidate.isEmpty(tel)) {
+            throw new JoinException(ErrorCode.EMPTY_DATA);
+        }
+
+        // 3. 암호화
+        String encTel = encryptUtil.encrypt(tel.replaceAll("[^0-9]", ""));
+
+
+        // 3. 전화번호 중복 여부 확인
+        boolean existsTel = userMembershipRepository.existsByTel(encTel);
+
+        if(existsTel) {
+            throw new JoinException(ErrorCode.FAIL_DUPLICATE_PHONE_NUMBER);
+        }
+
+        return ApiResponse.result(ErrorCode.SUCCESS_DUPLICATE_PHONE_NUMBER);
     }
 }
