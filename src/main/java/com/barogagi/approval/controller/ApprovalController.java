@@ -21,7 +21,7 @@ public class ApprovalController {
         this.approvalService = approvalService;
     }
 
-    @Operation(summary = "인증번호 발송", description = "휴대전화번호로 인증번호 발송하는 기능입니다. <br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
+    @Operation(summary = "인증번호 발송 기능", description = "휴대전화번호로 인증번호 발송하는 기능입니다. <br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A200", description = "인증번호 발송에 성공하었습니다."),
@@ -35,7 +35,7 @@ public class ApprovalController {
         return approvalService.approvalTelSend(apiSecretKey, approvalSendVO);
     }
 
-    @Operation(summary = "인증번호 일치 여부 확인", description = "휴대전화번호에 발송된 인증번호와 입력된 인증번호가 동일한지 확인." +
+    @Operation(summary = "인증번호 일치 여부 확인 기능", description = "휴대전화번호에 발송된 인증번호와 입력된 인증번호가 동일한지 확인." +
             "<br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요." +
             "<br> authCode에는 인증번호를 넣어주세요." +
             "<br> tel에는 전화번호를 넣어주세요.",

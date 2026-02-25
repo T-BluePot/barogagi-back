@@ -7,6 +7,9 @@ import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.login.dto.UserIdDTO;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.terms.exception.TermsException;
+import com.barogagi.terms.repository.TermsRepository;
+import com.barogagi.terms.service.TermsService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
@@ -34,7 +37,10 @@ public class MemberSignupService {
     private final EncryptUtil encryptUtil;
     private final PasswordConfig passwordConfig;
 
+    private final TermsService termsService;
+
     private final UserMembershipRepository userMembershipRepository;
+    private final TermsRepository termsRepository;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -52,7 +58,9 @@ public class MemberSignupService {
         // 선택 입력값(이메일, 생년월일, 성별, 닉네임)
         if(inputValidate.isEmpty(joinRequestDTO.getUserId())
                 || inputValidate.isEmpty(joinRequestDTO.getPassword())
-                || inputValidate.isEmpty(joinRequestDTO.getTel())) {
+                || inputValidate.isEmpty(joinRequestDTO.getTel())
+                || joinRequestDTO.getTermsDTO().getTermsAgreeList() == null
+                || joinRequestDTO.getTermsDTO().getTermsAgreeList().isEmpty()) {
             throw new JoinException(ErrorCode.EMPTY_DATA);
         }
 
@@ -118,6 +126,13 @@ public class MemberSignupService {
         String membershipNo = this.signUp(joinRequestDTO);
         if(membershipNo.isEmpty()){
             throw new JoinException(ErrorCode.FAIL_SIGN_UP);
+        }
+
+        // 12. 약관 동의 내용 저장
+        String resCode = termsService.insertTermsAgree(joinRequestDTO.getTermsDTO(), membershipNo);
+
+        if(!resCode.equals("200")) {
+            throw new TermsException(ErrorCode.FAIL_INSERT_TERMS);
         }
 
         return ApiResponse.result(ErrorCode.SUCCESS_SIGN_UP);
