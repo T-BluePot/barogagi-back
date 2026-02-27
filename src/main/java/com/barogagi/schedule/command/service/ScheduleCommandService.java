@@ -165,11 +165,20 @@ public class ScheduleCommandService {
             }
 
             // ---------- 6) ScheduleRegistResDTO 묶어서 리턴 ----------
+            List<TagRegistResDTO> tagResList = scheduleRegistReqDTO.getScheduleTagRegistReqDTOList()
+                    .stream()
+                    .map(tag -> TagRegistResDTO.builder()
+                            .tagNum(tag.getTagNum())
+                            .tagNm(tag.getTagNm())
+                            .build())
+                    .collect(Collectors.toList());
+
             ScheduleRegistResDTO result = ScheduleRegistResDTO.builder()
                     .scheduleNm(scheduleNm)
                     .startDate(startDate)
                     .endDate(endDate)
                     .planRegistResDTOList(planResList)
+                    .scheduleTagRegistResDTOList(tagResList)
                     .build();
 
             return ApiResponse.resultData(
