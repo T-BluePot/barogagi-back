@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.barogagi.util.exception.ErrorCode.FOUND_REGION;
+
 @Service
 public class RegionQueryService {
     private static final Logger logger = LoggerFactory.getLogger(RegionQueryService.class);
@@ -52,18 +54,18 @@ public class RegionQueryService {
      */
     public ApiResponse searchList(String regionQuery, HttpServletRequest request) {
         try {
-            // 1. API SECRET KEY 검증
             if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
                 return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(),
                         ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
             }
 
-            // 2. 지역 검색
-            List<RegionDetailVO> regionList = regionMapper.selectRegionByRegionNm(regionQuery);
+            List<RegionDetailVO> regionList = regionMapper.selectRegionByRegionNm(Arrays.asList(regionQuery.trim().split("\\s+")));
+
+            if (regionList == null || regionList.isEmpty()) {
+                return ApiResponse.error(ErrorCode.NOT_FOUND_REGION.getCode(), ErrorCode.NOT_FOUND_REGION.getMessage());
+            }
 
             List<RegionSearchResDTO> result = new ArrayList<>();
-            Set<String> seen = new HashSet<>(); // 중복 방지
-
             for (RegionDetailVO r : regionList) {
                 List<String> parts = new ArrayList<>();
 
@@ -76,29 +78,17 @@ public class RegionQueryService {
                 if (r.getRegionLevel3() != null && !r.getRegionLevel3().isBlank()) {
                     parts.add(r.getRegionLevel3());
                 }
-
-                // 상위 주소 (레벨1~레벨3까지) → 중복 방지 후 추가
-                String upperAddress = String.join(" ", parts);
-                if (!upperAddress.isBlank() && seen.add(upperAddress)) {
-                    result.add(RegionSearchResDTO.builder()
-                            .regionNum(r.getRegionNum())
-                            .regionNm(upperAddress)
-                            .build());
-                }
-
-                // 레벨4 (동/면/리)
                 if (r.getRegionLevel4() != null && !r.getRegionLevel4().isBlank()) {
-                    String fullAddress = upperAddress + " " + r.getRegionLevel4();
-                    if (seen.add(fullAddress)) {
-                        result.add(RegionSearchResDTO.builder()
-                                .regionNum(r.getRegionNum())
-                                .regionNm(fullAddress)
-                                .build());
-                    }
+                    parts.add(r.getRegionLevel4());
                 }
+
+                result.add(RegionSearchResDTO.builder()
+                        .regionNum(r.getRegionNum())
+                        .regionNm(String.join(" ", parts))
+                        .build());
             }
 
-            return ApiResponse.success(result, "주소 목록 검색 성공");
+            return ApiResponse.resultData(result, FOUND_REGION.getCode(), FOUND_REGION.getMessage());
 
         } catch (BasicException e) {
             return ApiResponse.error(e.getCode(), e.getMessage());

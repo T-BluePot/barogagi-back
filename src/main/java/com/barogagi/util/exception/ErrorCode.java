@@ -134,7 +134,8 @@ public enum ErrorCode {
     NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "T201", "카테고리 정보를 찾을 수 없습니다.", false),
 
     // Region
-    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "R201", "지역 정보를 찾을 수 없습니다.", false);
+    FOUND_REGION(HttpStatus.OK, "RG200", "지역 정보 조회에 성공했습니다.", false),
+    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "RG101", "지역 정보를 찾을 수 없습니다.", false);
 
 
     private final HttpStatus status;

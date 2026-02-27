@@ -84,12 +84,16 @@ public class RegionController {
                     "행정구역 단계(시/도, 시/군/구, 동/면/리)를 조합하여 결과를 반환하며, 중복되는 상위 주소(예: '서울특별시 강남구')는 한 번만 표시됩니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "A100",
-                            description = "잘못된 접근입니다."
+                            responseCode = "RE200",
+                            description = "지역 정보 조회에 성공했습니다."
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "200",
-                            description = "주소 목록 검색 성공"
+                            responseCode = "RG101",
+                            description = "지역 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A401",
+                            description = "접근 권한이 존재하지 않습니다."
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
                             responseCode = "C500",
