@@ -15,7 +15,7 @@ public interface RegionMapper {
     RegionDetailVO selectRegionByRegionNum(int regionNum);
 
     // 키워드로 지역 목록 검색 - level 1부터 가장 정확도 높은 순으로 10개 리턴
-    List<RegionDetailVO> selectRegionByRegionNm(String regionQuery);
+    List<RegionDetailVO> selectRegionByRegionNm(List<String> tokens);
 
     // 지역 번호로 지역명 조회 (단순 String 반환)
 //    String selectRegionNameByRegionNum(int regionNum);

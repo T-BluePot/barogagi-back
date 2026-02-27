@@ -35,33 +35,25 @@
         ]]>
     </select>
 
-    <select id="selectRegionByRegionNm" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
-        <![CDATA[
+    <select id="selectRegionByRegionNm" parameterType="list" resultType="com.barogagi.region.query.vo.RegionDetailVO">
         SELECT
-            REGION_NUM    AS regionNum
-             , REGION_LEVEL_1 AS regionLevel1
-             , REGION_LEVEL_2 AS regionLevel2
-             , REGION_LEVEL_3 AS regionLevel3
-             , REGION_LEVEL_4 AS regionLevel4
+        REGION_NUM      AS regionNum,
+        REGION_LEVEL_1  AS regionLevel1,
+        REGION_LEVEL_2  AS regionLevel2,
+        REGION_LEVEL_3  AS regionLevel3,
+        REGION_LEVEL_4  AS regionLevel4
         FROM REGION
-        WHERE (
-                  REGION_LEVEL_1 LIKE CONCAT('%', #{regionQuery}, '%')
-                      OR REGION_LEVEL_2 LIKE CONCAT('%', #{regionQuery}, '%')
-                      OR REGION_LEVEL_3 LIKE CONCAT('%', #{regionQuery}, '%')
-                      OR REGION_LEVEL_4 LIKE CONCAT('%', #{regionQuery}, '%')
-                  )
-        ORDER BY
-            CASE
-                WHEN REGION_LEVEL_1 LIKE CONCAT('%', #{regionQuery}, '%') THEN 1
-                WHEN REGION_LEVEL_2 LIKE CONCAT('%', #{regionQuery}, '%') THEN 2
-                WHEN REGION_LEVEL_3 LIKE CONCAT('%', #{regionQuery}, '%') THEN 3
-                WHEN REGION_LEVEL_4 LIKE CONCAT('%', #{regionQuery}, '%') THEN 4
-                ELSE 5
-                END
-            LIMIT 10;
-        ]]>
+        WHERE 1=1
+        <foreach collection="list" item="token">
+            AND CONCAT(
+            IFNULL(REGION_LEVEL_1, ''), ' ',
+            IFNULL(REGION_LEVEL_2, ''), ' ',
+            IFNULL(REGION_LEVEL_3, ''), ' ',
+            IFNULL(REGION_LEVEL_4, '')
+            ) LIKE CONCAT('%', #{token}, '%')
+        </foreach>
+        LIMIT 10
     </select>
-
     <select id="selectRegionByLevel4" parameterType="string" resultType="com.barogagi.region.query.vo.RegionDetailVO">
         SELECT
                REGION_NUM as regionNum
