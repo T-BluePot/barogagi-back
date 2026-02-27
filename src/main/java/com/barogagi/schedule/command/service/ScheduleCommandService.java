@@ -165,7 +165,8 @@ public class ScheduleCommandService {
             }
 
             // ---------- 6) ScheduleRegistResDTO 묶어서 리턴 ----------
-            List<TagRegistResDTO> tagResList = scheduleRegistReqDTO.getScheduleTagRegistReqDTOList()
+            List<TagRegistResDTO> tagResList = Optional.ofNullable(scheduleRegistReqDTO.getScheduleTagRegistReqDTOList())
+                    .orElseGet(List::of)
                     .stream()
                     .map(tag -> TagRegistResDTO.builder()
                             .tagNum(tag.getTagNum())
