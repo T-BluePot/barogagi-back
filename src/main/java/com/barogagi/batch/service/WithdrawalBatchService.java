@@ -4,7 +4,6 @@ import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.sendMessage.alimTalk.service.AlimTalkSendService;
-import com.barogagi.sendMessage.sms.service.SmsSendService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -56,7 +55,7 @@ public class WithdrawalBatchService {
         int successed = 0;
         int failed = 0;
         for(UserMembershipInfo userInfo : withdrawlList) {
-            boolean sendResult = alimTalkSendService.sendWithdrawalAlimTalk(userInfo.getTel());
+            boolean sendResult = alimTalkSendService.sendWithdrawalAlimTalk(userInfo);
             if(sendResult) {
                 successed++;
             } else {

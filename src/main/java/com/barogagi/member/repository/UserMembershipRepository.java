@@ -41,7 +41,9 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
     @Query("""
         UPDATE UserMembershipInfo u
            SET u.status = :updateStatus,
-               u.delDate = NULL
+               u.delDate = NULL,
+               u.reasonNo = 0,
+               u.withdrawReason = NULL
          WHERE u.membershipNo = :membershipNo
            AND u.status = :beforeStatus
     """)
@@ -53,13 +55,17 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
     @Query("""
         UPDATE UserMembershipInfo u
            SET u.status = :status,
-               u.delDate = :delDate
+               u.delDate = :delDate,
+               u.reasonNo = :reasonNo,
+               u.withdrawReason = :withdrawReason
          WHERE u.membershipNo = :membershipNo
     """)
     int updateWithdrawalPending(
             @Param("membershipNo") String membershipNo,
             @Param("status") MembershipStatus status,
-            @Param("delDate") LocalDateTime delDate
+            @Param("delDate") LocalDateTime delDate,
+            @Param("reasonNo") int reasonNo,
+            @Param("withdrawReason") String withdrawReason
     );
 
     @Query(value = """
@@ -73,9 +79,9 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
 
     @Query( value = """
                 SELECT u
-                FROM userMembershipInfo u
+                FROM UserMembershipInfo u
                 WHERE u.status = :status
-                AND u.DEL_DATE <= :date
+                AND u.delDate <= :date
             """)
     List<UserMembershipInfo> findWithdrawalScheduledAfter(@Param("status") MembershipStatus status,
                                                     @Param("date") LocalDateTime dateTime);
@@ -83,9 +89,9 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
     @Modifying
     @Query(value = """
                 INSERT INTO DELETED_MEMBERSHIP_INFO
-                    (MEMBERSHIP_NO, USER_ID, JOINED_AT, WITHDRAWN_AT)
+                    (MEMBERSHIP_NO, USER_ID, JOINED_AT, WITHDRAWN_AT, REASON_NO, WITHDRAW_REASON)
                 SELECT
-                    MEMBERSHIP_NO, USER_ID, REG_DATE, DEL_DATE
+                    MEMBERSHIP_NO, USER_ID, REG_DATE, DEL_DATE, REASON_NO, WITHDRAW_REASON
                 FROM USER_MEMBERSHIP_INFO
                 WHERE STATUS = 'WITHDRAWAL_PENDING'
                   AND DEL_DATE <= :now

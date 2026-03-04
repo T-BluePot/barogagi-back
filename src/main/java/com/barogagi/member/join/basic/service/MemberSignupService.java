@@ -10,7 +10,6 @@ import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.terms.exception.TermsException;
-import com.barogagi.terms.repository.TermsRepository;
 import com.barogagi.terms.service.TermsService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
@@ -43,7 +42,6 @@ public class MemberSignupService {
     private final TermsService termsService;
 
     private final UserMembershipRepository userMembershipRepository;
-    private final TermsRepository termsRepository;
     private final DeletedMembershipRepository deletedMembershipRepository;
 
     private static final SecureRandom random = new SecureRandom();
@@ -70,8 +68,7 @@ public class MemberSignupService {
         }
 
         // 3. 아이디, 비밀번호 적합성 검사
-        if(!(validator.isValidId(joinRequestDTO.getUserId())
-                && validator.isValidPassword(joinRequestDTO.getPassword()))) {
+        if(!(validator.isValidId(joinRequestDTO.getUserId()) && validator.isValidPassword(joinRequestDTO.getPassword()))) {
             throw new JoinException(ErrorCode.INVALID_SIGN_UP);
         }
 
@@ -123,20 +120,25 @@ public class MemberSignupService {
             throw new JoinException(ErrorCode.FAIL_DUPLICATE_PHONE_NUMBER);
         }
 
-        // 10. 이메일 값이 넘어오면 암호화
+        // 9. 이메일 값이 넘어오면 암호화
         if(!inputValidate.isEmpty(joinRequestDTO.getEmail())){
             joinRequestDTO.setEmail(encryptUtil.encrypt(joinRequestDTO.getEmail()));
         }
 
+        // 10. 암호화 - 비밀번호
+        String encodedPassword = passwordConfig.passwordEncoder().encode(joinRequestDTO.getPassword());
+        joinRequestDTO.setPassword(encodedPassword);
+
+        // 11. 일반 회원가입 값 세팅
         joinRequestDTO.setJoinType("BASIC");
 
-        // 11. 회원 정보 저장
+        // 12. 회원 정보 저장
         String membershipNo = this.signUp(joinRequestDTO);
         if(membershipNo.isEmpty()){
             throw new JoinException(ErrorCode.FAIL_SIGN_UP);
         }
 
-        // 12. 약관 동의 내용 저장
+        // 13. 약관 동의 내용 저장
         String resCode = termsService.insertTermsAgree(joinRequestDTO.getTermsDTO(), membershipNo);
 
         if(!resCode.equals("200")) {

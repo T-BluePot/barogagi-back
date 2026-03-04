@@ -75,6 +75,12 @@ public class UserMembershipInfo {
     @Column(name = "DEL_DATE")
     private LocalDateTime delDate;
 
+    @Column(name = "REASON_NO")
+    private int reasonNo;
+
+    @Column(name = "WITHDRAW_REASON")
+    private String withdrawReason;
+
     /*
         비밀번호 변경
      */

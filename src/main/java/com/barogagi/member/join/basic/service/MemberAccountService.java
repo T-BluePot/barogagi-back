@@ -1,9 +1,13 @@
 package com.barogagi.member.join.basic.service;
 
+import com.barogagi.member.join.basic.dto.WithdrawRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.login.dto.RefreshTokenRequestDTO;
 import com.barogagi.member.login.service.AccountService;
 import com.barogagi.member.login.service.AuthService;
+import com.barogagi.member.repository.WithdrawReasonCodeRepository;
+import com.barogagi.member.withdraw.domain.WithdrawReasonCode;
+import com.barogagi.member.withdraw.exception.WithdrawException;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.exception.ErrorCode;
@@ -20,7 +24,9 @@ public class MemberAccountService {
     private final AuthService authService;
     private final AccountService accountService;
 
-    public ApiResponse withdrawMember(String refreshToken) {
+    private final WithdrawReasonCodeRepository withdrawReasonCodeRepository;
+
+    public ApiResponse withdrawMember(String refreshToken, WithdrawRequestDTO withdrawRequestDTO) {
 
         // 1. refresh token이 공백 또는 null인지 확인
         if(inputValidate.isEmpty(refreshToken)) {
@@ -39,7 +45,18 @@ public class MemberAccountService {
             );
         }
 
-        int deleteResult = accountService.deleteMyAccount(resultMap.get("membershipNo"));
+        // 3. 탈퇴 코드 조회
+        WithdrawReasonCode findWithdrawReasonCode = withdrawReasonCodeRepository.findWithdrawReasonCodeInfo(withdrawRequestDTO.getReasonNo());
+
+        if(null == findWithdrawReasonCode) {
+            throw new WithdrawException(ErrorCode.FAIL_FIND_WITHDRAW_CODE);
+        }
+
+        if(findWithdrawReasonCode.getEssentialYn().equals("Y") && withdrawRequestDTO.getWithdrawReason().isEmpty()) {
+            throw new WithdrawException(ErrorCode.FAIL_REQUIRED_WITHDRAW_REASON);
+        }
+
+        int deleteResult = accountService.deleteMyAccount(resultMap.get("membershipNo"), withdrawRequestDTO.getReasonNo(), withdrawRequestDTO.getWithdrawReason());
         if(deleteResult != 1) {
             throw new JoinException(ErrorCode.FAIL_DELETE_ACCOUNT);
         }

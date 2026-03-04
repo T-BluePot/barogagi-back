@@ -17,7 +17,7 @@ public class AccountService {
     private final UserMembershipRepository userMembershipRepository;
 
     @Transactional
-    public int deleteMyAccount(String membershipNo) {
+    public int deleteMyAccount(String membershipNo, int reasonNo, String withdrawReason) {
 
         int result = 0;
 
@@ -28,7 +28,9 @@ public class AccountService {
         int updateDelInfo = userMembershipRepository.updateWithdrawalPending(
                 membershipNo,
                 MembershipStatus.WITHDRAWAL_PENDING,
-                LocalDateTime.now().plusDays(7)
+                LocalDateTime.now().plusDays(7),
+                reasonNo,
+                withdrawReason
         );
 
         if(deleteRefreshToken > 0 && updateDelInfo > 0) {
