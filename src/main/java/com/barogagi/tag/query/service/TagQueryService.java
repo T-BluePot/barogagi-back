@@ -44,6 +44,11 @@ public class TagQueryService {
         return tagMapper.selectTagByPlanNum(planNum);
     }
 
+    // 태그 번호로 태그명 조회
+    public TagDetailVO findTagByTagNum(int planNum) {
+        return tagMapper.selectTagByTagNum(planNum);
+    }
+
     // 태그 번호 리스트로 태그명 리스트 조회
     public List<String> findTagNmByTagNum(List<Integer> tagNums) {
         return tagNums.stream()
