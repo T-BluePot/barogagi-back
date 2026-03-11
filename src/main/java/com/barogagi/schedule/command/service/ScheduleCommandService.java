@@ -579,8 +579,11 @@ public class ScheduleCommandService {
 
             PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
 
-            Item item = itemRepository.findById(planRes.getItemNum())
-                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+            Item item = null;
+            if (planRes.getItemNum() != 0) {
+                item = itemRepository.findById(planRes.getItemNum())
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+            }
 
             PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                     .membershipNo(membershipNo)
@@ -623,7 +626,7 @@ public class ScheduleCommandService {
             }
 
             // 3-3. Plan_region
-            if (planRes.getRegionNum() != null) {
+            if (planRes.getRegionNum() != null && planRes.getRegionNum() != 0) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
                         .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
@@ -641,7 +644,7 @@ public class ScheduleCommandService {
             }
 
             // 3-4. Place
-            if (planRes.getRegionNum() != null) {
+            if (planRes.getRegionNum() != null && planRes.getRegionNum() != 0) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
                         .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
