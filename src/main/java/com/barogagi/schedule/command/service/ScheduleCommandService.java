@@ -389,25 +389,25 @@ public class ScheduleCommandService {
      * 카카오 장소 검색 (재시도 포함)
      * 1차: "장소명 + 지역명" 으로 검색
      * 2차: "장소명"만으로 재검색
+     * 3차: "장소명 + 지역명"으로 검색하되 좌표/반경 없이 (즉, 전국 검색)
      * 둘 다 실패 시 null 반환
      */
     private KakaoPlaceResDTO searchKakaoWithRetry(String placeName, String regionName, String x, String y) {
-        // 1차: 장소명 + 지역명
+        // 1차: 장소명 + 지역명 (좌표 기반)
         String query1 = placeName + " " + regionName;
         List<KakaoPlaceResDTO> results = kakaoPlaceClient.searchKakaoPlace(query1, x, y, radius, 1);
         logger.info("kakao 1차: query={}, resultSize={}", query1, results != null ? results.size() : "null");
+        if (results != null && !results.isEmpty()) return results.get(0);
 
-        if (results != null && !results.isEmpty()) {
-            return results.get(0);
-        }
-
-        // 2차: 장소명만
+        // 2차: 장소명만 (좌표 기반)
         List<KakaoPlaceResDTO> retry = kakaoPlaceClient.searchKakaoPlace(placeName, x, y, radius, 1);
         logger.info("kakao 2차: query={}, resultSize={}", placeName, retry != null ? retry.size() : "null");
+        if (retry != null && !retry.isEmpty()) return retry.get(0);
 
-        if (retry != null && !retry.isEmpty()) {
-            return retry.get(0);
-        }
+        // 3차: 장소명 + 지역명 (좌표/반경 없이)
+        List<KakaoPlaceResDTO> fallback = kakaoPlaceClient.searchKakaoPlace(query1, null, null, 0, 1);
+        logger.info("kakao 3차(좌표 없음): query={}, resultSize={}", query1, fallback != null ? fallback.size() : "null");
+        if (fallback != null && !fallback.isEmpty()) return fallback.get(0);
 
         return null;
     }
@@ -486,7 +486,14 @@ public class ScheduleCommandService {
             // CASE 2: 텍스트로 직접 입력한 경우
             logger.info("➜ A-2. 사용자가 직접 입력한 플랜 plan={}", plan);
 
-            RegionDetailVO region = regionQueryService.getRegionByRegionNum(plan.getRegionRegistReqDTOList().get(0).getRegionNum());
+            String regionNm = null;
+            int regionNum = 0;
+
+            if (plan.getRegionRegistReqDTOList() != null && !plan.getRegionRegistReqDTOList().isEmpty()) {
+                regionNum = plan.getRegionRegistReqDTOList().get(0).getRegionNum();
+                RegionDetailVO region = regionQueryService.getRegionByRegionNum(regionNum);
+                regionNm = region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2();
+            }
 
             return PlanRegistResDTO.builder()
                     .planSource(PLAN_SOURCE.USER_CUSTOM)
@@ -499,9 +506,9 @@ public class ScheduleCommandService {
                     .categoryNm(categoryMapper.selectCategoryNmBy(plan.getCategoryNum()))
                     .itemNum(plan.getItemNum())
                     .itemNm(itemMapper.selectItemNmBy(plan.getItemNum()))
-                    .regionNum(plan.getRegionRegistReqDTOList().get(0).getRegionNum())
-                    .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                    .planTagRegistResDTOList(List.of()) // 사용자 입력은 태그 없음
+                    .regionNum(regionNum)
+                    .regionNm(regionNm)
+                    .planTagRegistResDTOList(List.of())
                     .build();
         }
 
