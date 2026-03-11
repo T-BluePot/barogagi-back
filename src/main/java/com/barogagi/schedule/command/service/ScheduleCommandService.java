@@ -43,6 +43,7 @@ import com.barogagi.tag.command.repository.TagRepository;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
+import com.barogagi.tag.query.vo.TagDetailVO;
 import com.barogagi.tavily.client.TavilyClient;
 import com.barogagi.tavily.dto.TavilyResultDTO;
 import com.barogagi.util.MembershipUtil;
@@ -168,10 +169,13 @@ public class ScheduleCommandService {
             List<TagRegistResDTO> tagResList = Optional.ofNullable(scheduleRegistReqDTO.getScheduleTagRegistReqDTOList())
                     .orElseGet(List::of)
                     .stream()
-                    .map(tag -> TagRegistResDTO.builder()
-                            .tagNum(tag.getTagNum())
-                            .tagNm(tag.getTagNm())
-                            .build())
+                    .map(tag -> {
+                        TagDetailVO tagDetail = tagQueryService.findTagByTagNum(tag.getTagNum());
+                        return TagRegistResDTO.builder()
+                                .tagNum(tag.getTagNum())
+                                .tagNm(tagDetail != null ? tagDetail.getTagNm() : null)
+                                .build();
+                    })
                     .collect(Collectors.toList());
 
             ScheduleRegistResDTO result = ScheduleRegistResDTO.builder()
@@ -375,10 +379,13 @@ public class ScheduleCommandService {
                         Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
                                 .orElseGet(List::of)
                                 .stream()
-                                .map(tagReq -> TagRegistResDTO.builder()
-                                        .tagNum(tagReq.getTagNum())
-                                        .tagNm(tagReq.getTagNm())
-                                        .build())
+                                .map(tagReq -> {
+                                    TagDetailVO tagDetail = tagQueryService.findTagByTagNum(tagReq.getTagNum());
+                                    return TagRegistResDTO.builder()
+                                            .tagNum(tagReq.getTagNum())
+                                            .tagNm(tagDetail != null ? tagDetail.getTagNm() : null)
+                                            .build();
+                                })
                                 .collect(Collectors.toList())
                 )
                 .build();
