@@ -64,20 +64,19 @@ jobs:
         if: github.ref == 'refs/heads/release'
         run: |
           ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no \
-            $USERNAME@$HOST << 'EOF'
-
+            $USERNAME@$HOST << EOF
+          
             cd $TARGET_DIR
-
-            # 현재 active 확인 (nginx 기준)
+          
             if grep -q "8081" /etc/nginx/sites-available/barogagi.xyz; then
               TARGET="blue"
             else
               TARGET="green"
             fi
-
-            echo "Deploy target: $TARGET"
-
-            docker build -t barogagi-backend:${GITHUB_SHA::7} .
-            docker compose up -d backend-$TARGET
+          
+            echo "Deploy target: \$TARGET"
+          
+            docker build -t barogagi-backend:single .
+            docker compose up -d --force-recreate backend-\$TARGET
             /srv/barogagi/backend/scripts/switch.sh
           EOF
