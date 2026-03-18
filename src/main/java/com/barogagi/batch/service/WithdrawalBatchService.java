@@ -97,16 +97,11 @@ public class WithdrawalBatchService {
                 sendResult = alimTalkSendService.sendWithdrawalAlimTalk(encryptUtil.decrypt(userInfo.getTel()), variables);
 
             } else {  // oAuth 회원가입 : 이메일 발송
-                try {
-                    SendMailDTO sendMailDTO = new SendMailDTO();
-                    sendMailDTO.setFrom(DIRECT_SEND_FROM);
-                    sendMailDTO.setTo(encryptUtil.decrypt(userInfo.getEmail()));
-                    sendMailDTO.setSubject(SUBJECT);
-                    sendResult = emailSendService.sendWithdrawlEmail(sendMailDTO, variables);
-
-                } catch (Exception e) {
-                    sendResult = false;
-                }
+                SendMailDTO sendMailDTO = new SendMailDTO();
+                sendMailDTO.setFrom(DIRECT_SEND_FROM);
+                sendMailDTO.setTo(encryptUtil.decrypt(userInfo.getEmail()));
+                sendMailDTO.setSubject(SUBJECT);
+                sendResult = emailSendService.sendWithdrawlEmail(sendMailDTO, variables);
             }
 
             if(sendResult) {

@@ -1,6 +1,5 @@
 package com.barogagi.sendMessage.email.service;
 
-import com.barogagi.naverblog.AsyncSmtpMailService;
 import com.barogagi.sendMessage.email.dto.SendMailDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,21 +12,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EmailSendService {
 
-    private final DirectSendMailService directSendMailService;
     private final AsyncSmtpMailService asyncSmtpMailService;
 
-    public boolean sendWithdrawlEmail(SendMailDTO sendMailDTO, Map<String, String> variables) throws Exception {
+    public boolean sendWithdrawlEmail(SendMailDTO sendMailDTO, Map<String, String> variables) {
         boolean sendResult = false;
         try {
             sendMailDTO.setBody(buildWithdrawlMessage(variables));
 
             // 실제 메일 발송
-            // directSendMailService.sendDirectMail(sendMailDTO);
             asyncSmtpMailService.sendMailAsync(sendMailDTO);
 
             sendResult = true;
         } catch (Exception e) {
-            sendResult = false;
             log.error("메일 발송 실패: {}", sendMailDTO.getTo(), e);
         }
         return sendResult;

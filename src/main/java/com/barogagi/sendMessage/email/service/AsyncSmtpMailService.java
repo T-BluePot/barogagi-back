@@ -1,4 +1,4 @@
-package com.barogagi.naverblog;
+package com.barogagi.sendMessage.email.service;
 
 import com.barogagi.sendMessage.email.dto.SendMailDTO;
 import lombok.extern.slf4j.Slf4j;
