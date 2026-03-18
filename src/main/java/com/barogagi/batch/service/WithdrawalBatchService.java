@@ -4,9 +4,11 @@ import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.sendMessage.alimTalk.service.AlimTalkSendService;
+import com.barogagi.sendMessage.email.dto.SendMailDTO;
+import com.barogagi.sendMessage.email.service.EmailSendService;
 import com.barogagi.util.EncryptUtil;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,16 +19,33 @@ import java.util.Map;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class WithdrawalBatchService {
 
     private final EncryptUtil encryptUtil;
     private final AlimTalkSendService alimTalkSendService;
+    private final EmailSendService emailSendService;
     private final UserMembershipRepository userMembershipRepository;
 
+    // 알림톡 / 문자
     private final String SERVICE_NAME = "핏플(fitpl)";
     private final String AFTER_HOURS = "24";
     private final String CANCEL_METHOD = "앱 접속 후 로그인";
+
+    // 이메일
+    private final String DIRECT_SEND_FROM;
+    private final String SUBJECT = "[안내] 탈퇴 전환 안내 메일입니다.";
+
+    public WithdrawalBatchService(Environment environment,
+                                  EncryptUtil encryptUtil,
+                                  AlimTalkSendService alimTalkSendService,
+                                  EmailSendService emailSendService,
+                                  UserMembershipRepository userMembershipRepository) {
+        this.DIRECT_SEND_FROM = environment.getProperty("direct-send.from");
+        this.encryptUtil = encryptUtil;
+        this.alimTalkSendService = alimTalkSendService;
+        this.emailSendService = emailSendService;
+        this.userMembershipRepository = userMembershipRepository;
+    }
 
     @Transactional
     public void processWithdrawlBatch() {
@@ -62,23 +81,32 @@ public class WithdrawalBatchService {
         int successed = 0;
         int failed = 0;
         for(UserMembershipInfo userInfo : withdrawlList) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            // 변수 설정
+            Map<String, String> variables = Map.of(
+                    "serviceName", SERVICE_NAME,
+                    "afterHours", AFTER_HOURS,
+                    "withdrawDay", userInfo.getDelDate().format(formatter),
+                    "cancelMethod", CANCEL_METHOD
+            );
+
             boolean sendResult = false;
             if(userInfo.getJoinType().equals("BASIC")) {  // 일반 회원가입 : 알림톡/문자 발송
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-                // 변수 설정
-                Map<String, String> variables = Map.of(
-                        "serviceName", SERVICE_NAME,
-                        "afterHours", AFTER_HOURS,
-                        "withdrawDay", userInfo.getDelDate().format(formatter),
-                        "cancelMethod", CANCEL_METHOD
-                );
-
                 // 알림톡 발송
                 sendResult = alimTalkSendService.sendWithdrawalAlimTalk(encryptUtil.decrypt(userInfo.getTel()), variables);
 
             } else {  // oAuth 회원가입 : 이메일 발송
+                try {
+                    SendMailDTO sendMailDTO = new SendMailDTO();
+                    sendMailDTO.setFrom(DIRECT_SEND_FROM);
+                    sendMailDTO.setTo(encryptUtil.decrypt(userInfo.getEmail()));
+                    sendMailDTO.setSubject(SUBJECT);
+                    sendResult = emailSendService.sendWithdrawlEmail(sendMailDTO, variables);
 
+                } catch (Exception e) {
+                    sendResult = false;
+                }
             }
 
             if(sendResult) {

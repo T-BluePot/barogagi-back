@@ -1,10 +1,8 @@
 package com.barogagi.sendMessage.alimTalk.service;
 
 import com.barogagi.sendMessage.alimTalk.client.SolapiClient;
-import com.barogagi.sendMessage.exception.SendException;
 import com.barogagi.sendMessage.sms.dto.SendSmsVO;
 import com.barogagi.sendMessage.sms.service.SmsSendService;
-import com.barogagi.util.exception.ErrorCode;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +28,10 @@ public class AlimTalkSendService {
 
         // 👉 2. 성공 여부 체크
         if (response == null || !response.contains("groupId")) {
-            throw new SendException(ErrorCode.FAIL_SEND_ALIMTALK);
+            return false;
+        } else {
+            return true;
         }
-
-        return true;
     }
 
     public boolean fallbackSms(String tel, Map<String, String> variables, Throwable t) {

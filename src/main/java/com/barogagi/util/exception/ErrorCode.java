@@ -113,11 +113,6 @@ public enum ErrorCode {
     SUCCESS_CHECK_APPROVAL(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
     FAIL_CHECK_APPROVAL(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
 
-    // AlimTalk / SMS / Email
-    FAIL_SEND_ALIMTALK(HttpStatus.INTERNAL_SERVER_ERROR, "A500", "알림톡 발송 실패하였습니다.", true),
-    FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "S500", "문자 발송 실패하였습니다.", true),
-    FAIL_SEND_EMAIL(HttpStatus.INTERNAL_SERVER_ERROR, "E500", "이메일 발송 실패하였습니다.", true),
-
     // Schedule
     SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
     SUCCESS_SCHEDULE_DELETE(HttpStatus.OK, "S203", "일정 삭제에 성공하였습니다.", false),

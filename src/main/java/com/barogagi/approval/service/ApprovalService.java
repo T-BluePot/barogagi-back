@@ -61,7 +61,7 @@ public class ApprovalService {
         boolean sendMessageResult = smsSendService.sendSms(sendSmsVO);
 
         if(!sendMessageResult) {
-            throw new ApprovalException(ErrorCode.FAIL_SEND_SMS);
+            throw new ApprovalException(ErrorCode.FAIL_SEND_APPROVAL);
         }
 
         // 인증번호 암호화
