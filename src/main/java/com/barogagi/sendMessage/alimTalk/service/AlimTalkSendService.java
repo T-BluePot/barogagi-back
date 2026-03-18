@@ -1,67 +1,62 @@
 package com.barogagi.sendMessage.alimTalk.service;
 
-import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.sendMessage.alimTalk.PurpleBookClient;
-import com.barogagi.sendMessage.alimTalk.dto.PurpleBookResponse;
-import com.barogagi.util.EncryptUtil;
+import com.barogagi.sendMessage.alimTalk.client.SolapiClient;
+import com.barogagi.sendMessage.exception.SendException;
+import com.barogagi.sendMessage.sms.dto.SendSmsVO;
+import com.barogagi.sendMessage.sms.service.SmsSendService;
+import com.barogagi.util.exception.ErrorCode;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AlimTalkSendService {
 
-    private final EncryptUtil encryptUtil;
+    private final SolapiClient solapiClient;
+    private final SmsSendService smsSendService;
 
-    private final PurpleBookClient purpleBookClient;
+    @Retry(name = "alimTalkRetry")
+    @CircuitBreaker(name = "alimTalkCircuit", fallbackMethod = "fallbackSms")
+    public boolean sendWithdrawalAlimTalk(String tel, Map<String, String> variables) {
 
-    private final String SERVICE_NAME = "핏플(fitpl)";
+        // 👉 1. SolapiClient 호출
+        String response = solapiClient.sendAlimTalk(tel, variables);
 
-    private final String WITHDRAWAL_TIME = "24";
-    private final String cancelMethod = "앱 접속 후 로그인";
-
-    public AlimTalkSendService(Environment environment,
-                               PurpleBookClient purpleBookClient,
-                               EncryptUtil encryptUtil) {
-        this.purpleBookClient = purpleBookClient;
-        this.encryptUtil = encryptUtil;
-    }
-
-    public boolean sendWithdrawalAlimTalk(UserMembershipInfo userInfo) {
-
-//        Map<String, String> variables = Map.of("serviceName", SERVICE_NAME,
-//                                                "afterHours", WITHDRAWAL_TIME,
-//                                                "cancelMethod", cancelMethod);
-//        PurpleBookResponse response = purpleBookClient.withdrawal24hAlimTalk(phone, variables);
-//        if (response.isSuccess()) {
-//            return true;
-//        }
-
-        String joinType = userInfo.getJoinType();
-
-        if(joinType.equals("BASIC")) {  // 일반 회원가입
-            String decTel = encryptUtil.decrypt(userInfo.getTel());
-            log.info("@@ decTel={}", decTel);
-
-            // 알림톡 실패 → SMS fallback
-            return purpleBookClient.sendSms(decTel,buildSmsMessage());
-
-        } else {  // 구글, 네이버, 카카오
-            String decEmail = encryptUtil.decrypt(userInfo.getEmail());
-            log.info("@@ decEmail={}", decEmail);
-            return true;
+        // 👉 2. 성공 여부 체크
+        if (response == null || !response.contains("groupId")) {
+            throw new SendException(ErrorCode.FAIL_SEND_ALIMTALK);
         }
+
+        return true;
     }
 
-    private String buildSmsMessage() {
-        return "[" + SERVICE_NAME + "]" + " 탈퇴 사전안내" + "\n" +
-                "회원 탈퇴가 " + WITHDRAWAL_TIME +"시간 후 확정됩니다.\n" +
-                "탈퇴 확정 시 서비스 이용이 제한되며, 계정 정보는 관련 법령에 따라 처리되어 이후 복구가 불가능합니다.\n" +
-                "탈퇴를 원하지 않으실 경우 확정 전까지 " + cancelMethod +"을 통해 탈퇴 취소가 가능합니다.";
+    public boolean fallbackSms(String tel, Map<String, String> variables, Throwable t) {
+        log.error("알림톡 실패 → SMS fallback", t);
+        String message = buildSmsMessage(variables);
+
+        SendSmsVO sendSmsVO = new SendSmsVO();
+        sendSmsVO.setRecipientTel(tel);
+        sendSmsVO.setMessageContent(message);
+        return smsSendService.sendSms(sendSmsVO);
+    }
+
+    public String buildSmsMessage(Map<String, String> variables) {
+        return String.format("안녕하세요, %s 입니다.\n" +
+                "\n" +
+                "고객님의 탈퇴 신청이 접수되어 %s시간 후 계정이 탈퇴 상태로 전환될 예정입니다.\n" +
+                "\n" +
+                "■ 탈퇴 전환 예정일 : %s\n" +
+                "\n" +
+                "탈퇴 전환 이후에는 서비스 이용이 제한되며, 계정 정보는 관련 법령에 따라 처리됩니다.\n" +
+                "\n" +
+                "탈퇴를 원하지 않으실 경우, 전환 전까지 %s을 통해 탈퇴를 취소하실 수 있습니다.",
+                variables.get("serviceName"), variables.get("afterHours"),
+                variables.get("withdrawDay"), variables.get("cancelMethod"));
     }
 }

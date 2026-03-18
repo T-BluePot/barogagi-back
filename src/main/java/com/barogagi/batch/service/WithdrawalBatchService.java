@@ -4,22 +4,29 @@ import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.sendMessage.alimTalk.service.AlimTalkSendService;
+import com.barogagi.util.EncryptUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class WithdrawalBatchService {
 
+    private final EncryptUtil encryptUtil;
     private final AlimTalkSendService alimTalkSendService;
-
     private final UserMembershipRepository userMembershipRepository;
+
+    private final String SERVICE_NAME = "핏플(fitpl)";
+    private final String AFTER_HOURS = "24";
+    private final String CANCEL_METHOD = "앱 접속 후 로그인";
 
     @Transactional
     public void processWithdrawlBatch() {
@@ -55,7 +62,25 @@ public class WithdrawalBatchService {
         int successed = 0;
         int failed = 0;
         for(UserMembershipInfo userInfo : withdrawlList) {
-            boolean sendResult = alimTalkSendService.sendWithdrawalAlimTalk(userInfo);
+            boolean sendResult = false;
+            if(userInfo.getJoinType().equals("BASIC")) {  // 일반 회원가입 : 알림톡/문자 발송
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                // 변수 설정
+                Map<String, String> variables = Map.of(
+                        "serviceName", SERVICE_NAME,
+                        "afterHours", AFTER_HOURS,
+                        "withdrawDay", userInfo.getDelDate().format(formatter),
+                        "cancelMethod", CANCEL_METHOD
+                );
+
+                // 알림톡 발송
+                sendResult = alimTalkSendService.sendWithdrawalAlimTalk(encryptUtil.decrypt(userInfo.getTel()), variables);
+
+            } else {  // oAuth 회원가입 : 이메일 발송
+
+            }
+
             if(sendResult) {
                 successed++;
             } else {

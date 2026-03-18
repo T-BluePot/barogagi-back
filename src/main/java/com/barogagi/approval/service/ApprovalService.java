@@ -71,10 +71,10 @@ public class ApprovalService {
         boolean insertResult = approvalTxService.insertApprovalRecord(approvalVO);
 
         if(!insertResult) {
-            throw new ApprovalException(ErrorCode.ERROR_SEND_SMS);
+            throw new ApprovalException(ErrorCode.ERROR_SEND_APPROVAL);
         }
 
-        return ApiResponse.result(ErrorCode.SUCCESS_SEND_SMS);
+        return ApiResponse.result(ErrorCode.SUCCESS_SEND_APPROVAL);
     }
 
     public ApiResponse approvalTelCheck(String apiSecretKey, ApprovalCompleteVO approvalCompleteVO) {
@@ -99,9 +99,9 @@ public class ApprovalService {
         );
 
         if(!updateResult){
-            throw new ApprovalException(ErrorCode.FAIL_CHECK_SMS);
+            throw new ApprovalException(ErrorCode.FAIL_CHECK_APPROVAL);
         }
 
-        return ApiResponse.result(ErrorCode.SUCCESS_CHECK_SMS);
+        return ApiResponse.result(ErrorCode.SUCCESS_CHECK_APPROVAL);
     }
 }
