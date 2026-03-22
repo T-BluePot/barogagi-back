@@ -34,6 +34,7 @@
             LEFT JOIN SCHEDULE_TAG b ON a.SCHEDULE_NUM = b.SCHEDULE_NUM
             LEFT JOIN TAG c ON b.TAG_NUM = c.TAG_NUM
             WHERE a.MEMBERSHIP_NO = #{membershipNo}
+            AND a.DEL_YN != 'Y'
         ]]>
     </select>
 

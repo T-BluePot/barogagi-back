@@ -715,8 +715,13 @@ public class ScheduleCommandService {
                 }
             }
 
-            // 6. 기존 Plan은 soft delete 처리
+            // 6. 기존 Plan 정보를 Map으로 보관 후 soft delete
             List<Plan> oldPlans = planRepository.findBySchedule(schedule);
+
+            Map<Integer, Plan> oldPlanMap = oldPlans.stream()
+                    .filter(p -> p.getPlanNum() != null)
+                    .collect(Collectors.toMap(Plan::getPlanNum, p -> p));
+
             for (Plan p : oldPlans) {
                 p.markDeleted();
             }
@@ -726,6 +731,18 @@ public class ScheduleCommandService {
 
                 for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
 
+                    // 기존 Plan에서 값 fallback
+                    Plan oldPlan = planRes.getPlanNum() != null ? oldPlanMap.get(planRes.getPlanNum()) : null;
+
+                    String description = planRes.getPlanDescription() != null
+                            ? planRes.getPlanDescription()
+                            : (oldPlan != null ? oldPlan.getPlanDescription() : "");
+
+                    String address = planRes.getPlanAddress() != null
+                            ? planRes.getPlanAddress()
+                            : (oldPlan != null ? oldPlan.getPlanAddress() : "");
+
+                    logger.info("!! description={}, address={}", description, address);
                     Item item = itemRepository.findById(planRes.getItemNum())
                             .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
@@ -738,8 +755,8 @@ public class ScheduleCommandService {
                             .startTime(planRes.getStartTime())
                             .endTime(planRes.getEndTime())
                             .planLink(planRes.getPlanLink())
-                            .planDescription(planRes.getPlanDescription())
-                            .planAddress(planRes.getPlanAddress())
+                            .planDescription(description)
+                            .planAddress(address)
                             .schedule(schedule)
                             .user(user)
                             .item(item)
@@ -768,9 +785,9 @@ public class ScheduleCommandService {
                         Place place = Place.builder()
                                 .region(region)
                                 .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                                .address(planRes.getPlanAddress())
+                                .address(address)
                                 .planLink(planRes.getPlanLink())
-                                .placeDescription(planRes.getPlanDescription())
+                                .placeDescription(description)
                                 .plan(plan)
                                 .build();
 
