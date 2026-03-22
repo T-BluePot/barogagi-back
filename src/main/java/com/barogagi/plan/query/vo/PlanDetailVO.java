@@ -13,6 +13,8 @@ public class PlanDetailVO {
     private int planNum;            // 계획 번호 (PK)
     private String planNm;          // 계획명
     private String planLink;        // 링크
+    private String planDescription;        // 링크
+    private String planAddress;     // 링크
     private String startTime;       // 시작시간
     private String endTime;         // 종료시간
 
