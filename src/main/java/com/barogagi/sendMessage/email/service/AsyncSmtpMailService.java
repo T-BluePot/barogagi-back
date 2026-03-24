@@ -31,9 +31,9 @@ public class AsyncSmtpMailService {
     public void sendMailAsync(SendMailDTO sendMailDTO) {
         boolean result = sendWithRetry(sendMailDTO.getFrom(), sendMailDTO.getTo(), sendMailDTO.getSubject(), sendMailDTO.getBody(), MAX_RETRY);
         if(result) {
-            log.info("Mail sent successfully to {}", sendMailDTO.getTo());
+            log.info("Mail sent success");
         } else {
-            log.error("Mail failed after retries to {}", sendMailDTO.getTo());
+            log.error("Mail sent fail");
         }
     }
 
@@ -56,7 +56,7 @@ public class AsyncSmtpMailService {
             message.setFrom(new InternetAddress(from));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
-            message.setText(body);
+            message.setContent(body, "text/html; charset=UTF-8");
 
             Transport.send(message);
             return true;

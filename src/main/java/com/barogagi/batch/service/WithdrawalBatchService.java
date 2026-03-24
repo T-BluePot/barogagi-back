@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,12 +85,11 @@ public class WithdrawalBatchService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             // 변수 설정
-            Map<String, String> variables = Map.of(
-                    "serviceName", SERVICE_NAME,
-                    "afterHours", AFTER_HOURS,
-                    "withdrawDay", userInfo.getDelDate().format(formatter),
-                    "cancelMethod", CANCEL_METHOD
-            );
+            Map<String, String> variables = new HashMap<>();
+            variables.put("serviceName", SERVICE_NAME);
+            variables.put("afterHours", AFTER_HOURS);
+            variables.put("withdrawDay", userInfo.getDelDate().format(formatter));
+            variables.put("cancelMethod", CANCEL_METHOD);
 
             boolean sendResult = false;
             if(userInfo.getJoinType().equals("BASIC")) {  // 일반 회원가입 : 알림톡/문자 발송
@@ -97,6 +97,14 @@ public class WithdrawalBatchService {
                 sendResult = alimTalkSendService.sendWithdrawalAlimTalk(encryptUtil.decrypt(userInfo.getTel()), variables);
 
             } else {  // oAuth 회원가입 : 이메일 발송
+                variables.put("supportEmail", "support@fitpl.com");
+                variables.put("companyKorName", "핏플");
+                variables.put("bizNumber", "000-00-00000");
+                variables.put("ceoName", "홍길동");
+                variables.put("address", "서울특별시 OO구 OO로 00");
+                variables.put("tel", "0000-0000");
+                variables.put("companyEngName", "Fitpl");
+
                 SendMailDTO sendMailDTO = new SendMailDTO();
                 sendMailDTO.setFrom(DIRECT_SEND_FROM);
                 sendMailDTO.setTo(encryptUtil.decrypt(userInfo.getEmail()));
