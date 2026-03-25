@@ -43,6 +43,7 @@ import com.barogagi.tag.command.repository.TagRepository;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import com.barogagi.tag.query.service.TagQueryService;
+import com.barogagi.tag.query.vo.TagDetailVO;
 import com.barogagi.tavily.client.TavilyClient;
 import com.barogagi.tavily.dto.TavilyResultDTO;
 import com.barogagi.util.MembershipUtil;
@@ -168,10 +169,13 @@ public class ScheduleCommandService {
             List<TagRegistResDTO> tagResList = Optional.ofNullable(scheduleRegistReqDTO.getScheduleTagRegistReqDTOList())
                     .orElseGet(List::of)
                     .stream()
-                    .map(tag -> TagRegistResDTO.builder()
-                            .tagNum(tag.getTagNum())
-                            .tagNm(tag.getTagNm())
-                            .build())
+                    .map(tag -> {
+                        TagDetailVO tagDetail = tagQueryService.findTagByTagNum(tag.getTagNum());
+                        return TagRegistResDTO.builder()
+                                .tagNum(tag.getTagNum())
+                                .tagNm(tagDetail != null ? tagDetail.getTagNm() : null)
+                                .build();
+                    })
                     .collect(Collectors.toList());
 
             ScheduleRegistResDTO result = ScheduleRegistResDTO.builder()
@@ -375,10 +379,13 @@ public class ScheduleCommandService {
                         Optional.ofNullable(plan.getPlanTagRegistReqDTOList())
                                 .orElseGet(List::of)
                                 .stream()
-                                .map(tagReq -> TagRegistResDTO.builder()
-                                        .tagNum(tagReq.getTagNum())
-                                        .tagNm(tagReq.getTagNm())
-                                        .build())
+                                .map(tagReq -> {
+                                    TagDetailVO tagDetail = tagQueryService.findTagByTagNum(tagReq.getTagNum());
+                                    return TagRegistResDTO.builder()
+                                            .tagNum(tagReq.getTagNum())
+                                            .tagNm(tagDetail != null ? tagDetail.getTagNm() : null)
+                                            .build();
+                                })
                                 .collect(Collectors.toList())
                 )
                 .build();
@@ -389,25 +396,25 @@ public class ScheduleCommandService {
      * 카카오 장소 검색 (재시도 포함)
      * 1차: "장소명 + 지역명" 으로 검색
      * 2차: "장소명"만으로 재검색
+     * 3차: "장소명 + 지역명"으로 검색하되 좌표/반경 없이 (즉, 전국 검색)
      * 둘 다 실패 시 null 반환
      */
     private KakaoPlaceResDTO searchKakaoWithRetry(String placeName, String regionName, String x, String y) {
-        // 1차: 장소명 + 지역명
+        // 1차: 장소명 + 지역명 (좌표 기반)
         String query1 = placeName + " " + regionName;
         List<KakaoPlaceResDTO> results = kakaoPlaceClient.searchKakaoPlace(query1, x, y, radius, 1);
         logger.info("kakao 1차: query={}, resultSize={}", query1, results != null ? results.size() : "null");
+        if (results != null && !results.isEmpty()) return results.get(0);
 
-        if (results != null && !results.isEmpty()) {
-            return results.get(0);
-        }
-
-        // 2차: 장소명만
+        // 2차: 장소명만 (좌표 기반)
         List<KakaoPlaceResDTO> retry = kakaoPlaceClient.searchKakaoPlace(placeName, x, y, radius, 1);
         logger.info("kakao 2차: query={}, resultSize={}", placeName, retry != null ? retry.size() : "null");
+        if (retry != null && !retry.isEmpty()) return retry.get(0);
 
-        if (retry != null && !retry.isEmpty()) {
-            return retry.get(0);
-        }
+        // 3차: 장소명 + 지역명 (좌표/반경 없이)
+        List<KakaoPlaceResDTO> fallback = kakaoPlaceClient.searchKakaoPlace(query1, null, null, 0, 1);
+        logger.info("kakao 3차(좌표 없음): query={}, resultSize={}", query1, fallback != null ? fallback.size() : "null");
+        if (fallback != null && !fallback.isEmpty()) return fallback.get(0);
 
         return null;
     }
@@ -486,7 +493,14 @@ public class ScheduleCommandService {
             // CASE 2: 텍스트로 직접 입력한 경우
             logger.info("➜ A-2. 사용자가 직접 입력한 플랜 plan={}", plan);
 
-            RegionDetailVO region = regionQueryService.getRegionByRegionNum(plan.getRegionRegistReqDTOList().get(0).getRegionNum());
+            String regionNm = null;
+            int regionNum = 0;
+
+            if (plan.getRegionRegistReqDTOList() != null && !plan.getRegionRegistReqDTOList().isEmpty()) {
+                regionNum = plan.getRegionRegistReqDTOList().get(0).getRegionNum();
+                RegionDetailVO region = regionQueryService.getRegionByRegionNum(regionNum);
+                regionNm = region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2();
+            }
 
             return PlanRegistResDTO.builder()
                     .planSource(PLAN_SOURCE.USER_CUSTOM)
@@ -499,9 +513,9 @@ public class ScheduleCommandService {
                     .categoryNm(categoryMapper.selectCategoryNmBy(plan.getCategoryNum()))
                     .itemNum(plan.getItemNum())
                     .itemNm(itemMapper.selectItemNmBy(plan.getItemNum()))
-                    .regionNum(plan.getRegionRegistReqDTOList().get(0).getRegionNum())
-                    .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                    .planTagRegistResDTOList(List.of()) // 사용자 입력은 태그 없음
+                    .regionNum(regionNum)
+                    .regionNm(regionNm)
+                    .planTagRegistResDTOList(List.of())
                     .build();
         }
 
@@ -565,8 +579,11 @@ public class ScheduleCommandService {
 
             PlanRegistResDTO planRes = scheduleRegistResDTO.getPlanRegistResDTOList().get(i);
 
-            Item item = itemRepository.findById(planRes.getItemNum())
-                    .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+            Item item = null;
+            if (planRes.getItemNum() != 0) {
+                item = itemRepository.findById(planRes.getItemNum())
+                        .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+            }
 
             PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                     .membershipNo(membershipNo)
@@ -609,7 +626,7 @@ public class ScheduleCommandService {
             }
 
             // 3-3. Plan_region
-            if (planRes.getRegionNum() != null) {
+            if (planRes.getRegionNum() != null && planRes.getRegionNum() != 0) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
                         .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
@@ -627,7 +644,7 @@ public class ScheduleCommandService {
             }
 
             // 3-4. Place
-            if (planRes.getRegionNum() != null) {
+            if (planRes.getRegionNum() != null && planRes.getRegionNum() != 0) {
                 Region region = regionRepository.findById(planRes.getRegionNum())
                         .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_REGION));
 
@@ -698,8 +715,13 @@ public class ScheduleCommandService {
                 }
             }
 
-            // 6. 기존 Plan은 soft delete 처리
+            // 6. 기존 Plan 정보를 Map으로 보관 후 soft delete
             List<Plan> oldPlans = planRepository.findBySchedule(schedule);
+
+            Map<Integer, Plan> oldPlanMap = oldPlans.stream()
+                    .filter(p -> p.getPlanNum() != null)
+                    .collect(Collectors.toMap(Plan::getPlanNum, p -> p));
+
             for (Plan p : oldPlans) {
                 p.markDeleted();
             }
@@ -709,6 +731,18 @@ public class ScheduleCommandService {
 
                 for (PlanRegistResDTO planRes : dto.getPlanRegistResDTOList()) {
 
+                    // 기존 Plan에서 값 fallback
+                    Plan oldPlan = planRes.getPlanNum() != null ? oldPlanMap.get(planRes.getPlanNum()) : null;
+
+                    String description = planRes.getPlanDescription() != null
+                            ? planRes.getPlanDescription()
+                            : (oldPlan != null ? oldPlan.getPlanDescription() : "");
+
+                    String address = planRes.getPlanAddress() != null
+                            ? planRes.getPlanAddress()
+                            : (oldPlan != null ? oldPlan.getPlanAddress() : "");
+
+                    logger.info("!! description={}, address={}", description, address);
                     Item item = itemRepository.findById(planRes.getItemNum())
                             .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
@@ -721,8 +755,8 @@ public class ScheduleCommandService {
                             .startTime(planRes.getStartTime())
                             .endTime(planRes.getEndTime())
                             .planLink(planRes.getPlanLink())
-                            .planDescription(planRes.getPlanDescription())
-                            .planAddress(planRes.getPlanAddress())
+                            .planDescription(description)
+                            .planAddress(address)
                             .schedule(schedule)
                             .user(user)
                             .item(item)
@@ -751,9 +785,9 @@ public class ScheduleCommandService {
                         Place place = Place.builder()
                                 .region(region)
                                 .regionNm(region.getRegionLevel3() != null ? region.getRegionLevel3() : region.getRegionLevel2())
-                                .address(planRes.getPlanAddress())
+                                .address(address)
                                 .planLink(planRes.getPlanLink())
-                                .placeDescription(planRes.getPlanDescription())
+                                .placeDescription(description)
                                 .plan(plan)
                                 .build();
 

@@ -6,6 +6,7 @@ import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.join.basic.service.MemberSignupService;
 import com.barogagi.member.join.oauth.dto.OAuth2UserDTO;
+import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.service.UserMembershipService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.exception.ErrorCode;
@@ -15,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +33,10 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
     private final EncryptUtil encryptUtil;
     private final MemberSignupService memberSignupService;
     private final UserMembershipService userMembershipService;
+
+    private final DeletedMembershipRepository deletedMembershipRepository;
+
+    private static final int REJOIN_BLOCK_DAYS = 90;
 
     private static final Logger logger = LoggerFactory.getLogger(NaverOAuth2UserService.class);
 
@@ -62,6 +69,13 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
         String tel = str(resp.get("mobile"));
 
         try {
+            // 일정 기간 동안 동일한 아이디로 회원가입 금지
+            LocalDateTime limitDate = LocalDateTime.now().minusDays(REJOIN_BLOCK_DAYS);
+            boolean blocked = deletedMembershipRepository.existsRecentlyWithdrawnUser(id.trim(), limitDate);
+            if(blocked) {
+                throw new OAuth2AuthenticationException(ErrorCode.FAIL_OAUTH2_LOGIN.getMessage());
+            }
+
             // 네이버로 회원가입한 정보가 있는지 체크
             OAuth2UserDTO oAuth2UserDTO = new OAuth2UserDTO();
             oAuth2UserDTO.setSub(id);
@@ -108,6 +122,7 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
 
         } catch (Exception e) {
             logger.error("NAVER OAuth 회원가입 중 오류 발생: {}", e.getMessage());
+            throw new OAuth2AuthenticationException(ErrorCode.FAIL_OAUTH2_LOGIN.getMessage());
         }
 
         // Naver는 OIDC가 아니라 OAuth2이므로 DefaultOAuth2User로 반환

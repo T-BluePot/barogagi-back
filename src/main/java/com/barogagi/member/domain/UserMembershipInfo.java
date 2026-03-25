@@ -60,6 +60,10 @@ public class UserMembershipInfo {
     @Column(name = "JOIN_TYPE", nullable = false)
     private String joinType;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false)
+    private MembershipStatus status;
+
     @CreatedDate
     @Column(name = "REG_DATE", updatable = false)
     private LocalDateTime regDate;
@@ -67,6 +71,15 @@ public class UserMembershipInfo {
     @LastModifiedDate
     @Column(name = "UPD_DATE")
     private LocalDateTime updDate;
+
+    @Column(name = "DEL_DATE")
+    private LocalDateTime delDate;
+
+    @Column(name = "REASON_NO")
+    private int reasonNo;
+
+    @Column(name = "WITHDRAW_REASON")
+    private String withdrawReason;
 
     /*
         비밀번호 변경

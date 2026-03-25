@@ -26,7 +26,6 @@ public enum ErrorCode {
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "S002", "일정 정보를 찾을 수 없습니다.", false),
     SCHEDULE_ALREADY_DELETED(HttpStatus.NOT_FOUND, "S003", "이미 삭제된 일정입니다.", false),
 
-
     // Region
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R101", "지역 정보를 찾을 수 없습니다.", false),
     REGION_GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "R102", "지역의 Geocode를 찾을 수 없습니다.", false),
@@ -51,10 +50,14 @@ public enum ErrorCode {
     FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", false),
     FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
     FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "올바른 생년월일 형식이 아닙니다.", false),
+    FAIL_OAUTH2_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "S402", "소셜 로그인 실패하였습니다.", false),
 
     // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),
     FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다.", false),
+    FAIL_FIND_WITHDRAW_CODE(HttpStatus.NOT_FOUND, "D401", "탈퇴 사유 조회 실패하였습니다.", false),
+    SUCCESS_FIND_WITHDRAW_CODE(HttpStatus.OK, "D200", "탈퇴 사유 조회 성공하였습니다.", false),
+    FAIL_REQUIRED_WITHDRAW_REASON(HttpStatus.BAD_REQUEST, "D402", "탈퇴 사유를 입력해주세요.", false),
 
     // FindUser
     FOUND_ACCOUNT(HttpStatus.OK, "F200", "해당 전화번호로 가입된 아이디가 존재합니다.", false),
@@ -104,11 +107,11 @@ public enum ErrorCode {
     FOUND_POPULAR_REGION(HttpStatus.OK, "M200", "인기 지역 조회 완료하였습니다.", false),
 
     // Approval
-    SUCCESS_SEND_SMS(HttpStatus.OK, "A200", "인증번호 발송에 성공하었습니다.", false),
-    FAIL_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", false),
-    ERROR_SEND_SMS(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
-    SUCCESS_CHECK_SMS(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
-    FAIL_CHECK_SMS(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
+    SUCCESS_SEND_APPROVAL(HttpStatus.OK, "A200", "인증번호 발송에 성공하었습니다.", false),
+    FAIL_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", false),
+    ERROR_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
+    SUCCESS_CHECK_APPROVAL(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
+    FAIL_CHECK_APPROVAL(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
 
     // Schedule
     SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),

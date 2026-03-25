@@ -37,6 +37,9 @@
             SELECT
 			        a.PLAN_NUM AS planNum
 		          , a.PLAN_NM AS planNm
+                  , a.PLAN_LINK AS planLink
+                  , a.PLAN_ADDRESS AS planAddress
+                  , a.PLAN_DESCRIPTION AS planDescription
 		          , a.START_TIME AS startTime
 		          , a.END_TIME AS endTime
 		          , b.ITEM_NUM AS itemNum

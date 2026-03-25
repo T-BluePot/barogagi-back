@@ -1,4 +1,4 @@
-package com.barogagi.sendSms.dto;
+package com.barogagi.sendMessage.sms.dto;
 
 import lombok.Getter;
 import lombok.Setter;
