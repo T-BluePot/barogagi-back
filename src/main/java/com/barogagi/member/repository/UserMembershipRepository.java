@@ -83,7 +83,7 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
                 WHERE u.status = :status
                 AND u.delDate <= :date
             """)
-    List<UserMembershipInfo> findWithdrawalScheduledAfter(@Param("status") MembershipStatus status,
+    List<UserMembershipInfo> findWithdrawalScheduledBefore(@Param("status") MembershipStatus status,
                                                     @Param("date") LocalDateTime dateTime);
 
     @Modifying

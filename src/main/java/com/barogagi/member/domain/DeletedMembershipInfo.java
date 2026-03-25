@@ -31,4 +31,12 @@ public class DeletedMembershipInfo {
     @Schema(description = "탈퇴일")
     @Column(name = "WITHDRAWN_AT", nullable = false)
     private LocalDateTime withdrawnAt;
+
+    @Schema(description = "탈퇴 사유 번호")
+    @Column(name = "REASON_NO", nullable = false)
+    private int reasonNo;
+
+    @Schema(description = "탈퇴 사유")
+    @Column(name = "WITHDRAW_REASON")
+    private String withdrawReason;
 }

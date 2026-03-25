@@ -52,7 +52,8 @@ public class MemberAccountService {
             throw new WithdrawException(ErrorCode.FAIL_FIND_WITHDRAW_CODE);
         }
 
-        if(findWithdrawReasonCode.getEssentialYn().equals("Y") && withdrawRequestDTO.getWithdrawReason().isEmpty()) {
+        String withdrawReason = withdrawRequestDTO.getWithdrawReason();
+        if(findWithdrawReasonCode.getEssentialYn().equals("Y") && (withdrawReason == null || withdrawReason.isEmpty())) {
             throw new WithdrawException(ErrorCode.FAIL_REQUIRED_WITHDRAW_REASON);
         }
 

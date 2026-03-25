@@ -18,18 +18,11 @@ public class EmailSendService {
     private final SpringTemplateEngine templateEngine;
 
     public boolean sendWithdrawlEmail(SendMailDTO sendMailDTO, Map<String, String> variables) {
-        boolean sendResult = false;
-        try {
-            sendMailDTO.setBody(buildWithdrawlHtml(variables));
 
-            // 실제 메일 발송
-            asyncSmtpMailService.sendMailAsync(sendMailDTO);
+        sendMailDTO.setBody(buildWithdrawlHtml(variables));
 
-            sendResult = true;
-        } catch (Exception e) {
-            log.error("메일 발송 실패: {}", sendMailDTO.getTo(), e);
-        }
-        return sendResult;
+        // 실제 메일 발송
+        return asyncSmtpMailService.sendMailAsync(sendMailDTO);
     }
 
     public String buildWithdrawlHtml(Map<String, String> variables) {

@@ -1,14 +1,14 @@
 package com.barogagi.sendMessage.email.service;
 
 import com.barogagi.sendMessage.email.dto.SendMailDTO;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 @Slf4j
@@ -28,13 +28,8 @@ public class AsyncSmtpMailService {
     }
 
     @Async
-    public void sendMailAsync(SendMailDTO sendMailDTO) {
-        boolean result = sendWithRetry(sendMailDTO.getFrom(), sendMailDTO.getTo(), sendMailDTO.getSubject(), sendMailDTO.getBody(), MAX_RETRY);
-        if(result) {
-            log.info("Mail sent success");
-        } else {
-            log.error("Mail sent fail");
-        }
+    public boolean sendMailAsync(SendMailDTO sendMailDTO) {
+        return sendWithRetry(sendMailDTO.getFrom(), sendMailDTO.getTo(), sendMailDTO.getSubject(), sendMailDTO.getBody(), MAX_RETRY);
     }
 
     private boolean sendWithRetry(String from, String to, String subject, String body, int retriesLeft) {

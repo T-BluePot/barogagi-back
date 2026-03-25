@@ -76,7 +76,7 @@ public class WithdrawalBatchService {
         }
 
         // 2. 문자/알림톡 발송 대상자 조회
-        List<UserMembershipInfo> withdrawlList = userMembershipRepository.findWithdrawalScheduledAfter(MembershipStatus.WITHDRAWAL_PENDING, dateTime);
+        List<UserMembershipInfo> withdrawlList = userMembershipRepository.findWithdrawalScheduledBefore(MembershipStatus.WITHDRAWAL_PENDING, dateTime);
 
         int total = 0;
         int successed = 0;

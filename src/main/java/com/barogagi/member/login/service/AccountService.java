@@ -22,7 +22,7 @@ public class AccountService {
         int result = 0;
 
         // 1) 모든 리프레시 토큰 제거
-        int deleteRefreshToken = refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
+        refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
 
         // 2) 회원 정보에서 STATUS = WITHDRAWAL_PENDING, DEL_DATE = 탈퇴일 저장
         int updateDelInfo = userMembershipRepository.updateWithdrawalPending(
@@ -33,7 +33,7 @@ public class AccountService {
                 withdrawReason
         );
 
-        if(deleteRefreshToken > 0 && updateDelInfo > 0) {
+        if(updateDelInfo > 0) {
             result = 1;
         }
 

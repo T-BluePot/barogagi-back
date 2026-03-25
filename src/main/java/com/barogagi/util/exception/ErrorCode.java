@@ -57,7 +57,7 @@ public enum ErrorCode {
     FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다.", false),
     FAIL_FIND_WITHDRAW_CODE(HttpStatus.NOT_FOUND, "D401", "탈퇴 사유 조회 실패하였습니다.", false),
     SUCCESS_FIND_WITHDRAW_CODE(HttpStatus.OK, "D200", "탈퇴 사유 조회 성공하였습니다.", false),
-    FAIL_REQUIRED_WITHDRAW_REASON(HttpStatus.INTERNAL_SERVER_ERROR, "D402", "탈퇴 사유를 입력해주세요.", false),
+    FAIL_REQUIRED_WITHDRAW_REASON(HttpStatus.BAD_REQUEST, "D402", "탈퇴 사유를 입력해주세요.", false),
 
     // FindUser
     FOUND_ACCOUNT(HttpStatus.OK, "F200", "해당 전화번호로 가입된 아이디가 존재합니다.", false),
