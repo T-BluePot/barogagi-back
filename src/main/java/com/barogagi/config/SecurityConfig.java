@@ -23,11 +23,14 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
         logger.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
@@ -44,7 +47,8 @@ public class SecurityConfig {
             "/api/v1/terms",  // 약관 조회 관련
             "/api/v1/home/tags/popular",  // 인기 태그 조회
             "/api/v1/home/regions/popular",  // 인기 지역 조회
-            "/api/v1/verification-codes/**"  // 인증 번호 발송
+            "/api/v1/verification-codes/**",  // 인증 번호 발송
+            "/api/v1/withdrawal-reasons"  // 탈퇴 사유 조회
     };
 
     @Bean
@@ -72,13 +76,14 @@ public class SecurityConfig {
                                 .userService(delegatingOAuth2UserService) // Naver, Kakao
                         )
                         .successHandler(oAuth2LoginSuccessHandler)  // 로그인 성공 핸들러 (토큰 발급 등)
+                        .failureHandler(oAuth2LoginFailureHandler)  // 로그인 실패 핸들러
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
 
-                    String resultCode = ErrorCode.NOT_EXIST_ACCESS_AUTH.getCode();
-                    String message = ErrorCode.NOT_EXIST_ACCESS_AUTH.getMessage();
+                    String resultCode = ErrorCode.FAIL_OAUTH2_LOGIN.getCode();
+                    String message = ErrorCode.FAIL_OAUTH2_LOGIN.getMessage();
 
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json;charset=UTF-8");
