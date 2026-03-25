@@ -1,5 +1,6 @@
 package com.barogagi.member.login.service;
 
+import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.domain.RefreshToken;
@@ -78,12 +79,21 @@ public class AuthService {
         );
     }
 
-    /** 구글/네이버 등 OAuth 가입 직후: userId로 바로 토큰 발급 (비밀번호 검증 없음) */
+    /** 회원가입 직후: userId로 바로 토큰 발급 (비밀번호 검증 없음) */
     public LoginResponse loginAfterSignup(String userId, String deviceId) {
         UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(userId);
 
         if(null == userMembershipInfo) {
             throw new RuntimeException("USER_NOT_FOUND");
+        }
+
+        // 회원 탈퇴 신청했다가 다시 재로그인을 했을 경우
+        if(MembershipStatus.WITHDRAWAL_PENDING == userMembershipInfo.getStatus()) {
+            userMembershipRepository.restoreWithdrawal(
+                    userMembershipInfo.getMembershipNo(),
+                    MembershipStatus.ACTIVE,
+                    MembershipStatus.WITHDRAWAL_PENDING
+            );
         }
 
         String membershipNo = userMembershipInfo.getMembershipNo();
