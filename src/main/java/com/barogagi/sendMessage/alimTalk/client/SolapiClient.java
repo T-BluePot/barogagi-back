@@ -1,5 +1,6 @@
 package com.barogagi.sendMessage.alimTalk.client;
 
+import com.barogagi.batch.dto.SendDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,18 +32,15 @@ public class SolapiClient {
     @Value("${solapi.pf-id}")
     private String pfId;
 
-    @Value("${solapi.template-id}")
-    private String templateId;
-
-    public String sendAlimTalk(String to, Map<String, String> variables) {
+    public String sendAlimTalk(SendDTO sendDTO) {
 
         Map<String, Object> kakaoOptions = new HashMap<>();
         kakaoOptions.put("pfId", pfId);
-        kakaoOptions.put("templateId", templateId);
-        kakaoOptions.put("variables", variables);
+        kakaoOptions.put("templateId", sendDTO.getTemplateId());
+        kakaoOptions.put("variables", sendDTO.getVariables());
 
         Map<String, Object> message = Map.of(
-                "to", to,
+                "to", sendDTO.getTel(),
                 "from", from,
                 "kakaoOptions", kakaoOptions
         );

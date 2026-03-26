@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -28,8 +29,10 @@ public class AsyncSmtpMailService {
     }
 
     @Async
-    public boolean sendMailAsync(SendMailDTO sendMailDTO) {
-        return sendWithRetry(sendMailDTO.getFrom(), sendMailDTO.getTo(), sendMailDTO.getSubject(), sendMailDTO.getBody(), MAX_RETRY);
+    public CompletableFuture<Boolean> sendMailAsync(SendMailDTO sendMailDTO) {
+        boolean result = sendWithRetry(sendMailDTO.getFrom(), sendMailDTO.getTo(),
+                sendMailDTO.getSubject(), sendMailDTO.getBody(), MAX_RETRY);
+        return CompletableFuture.completedFuture(result);
     }
 
     private boolean sendWithRetry(String from, String to, String subject, String body, int retriesLeft) {
@@ -57,6 +60,7 @@ public class AsyncSmtpMailService {
             return true;
 
         } catch (MessagingException e) {
+            log.error("메일 발송 실패: {}, retries left: {}", to, retriesLeft - 1, e);
             if(retriesLeft > 0) {
                 log.info("Retrying mail to {}, retries left: {}", to, (retriesLeft - 1));
                 return sendWithRetry(from, to, subject, body, retriesLeft - 1);
