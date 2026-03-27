@@ -67,7 +67,7 @@ public class MessageSendService {
         Map<String, String> variables = new HashMap<>();
         variables.put("serviceName", SERVICE_NAME);
         variables.put("afterHours", AFTER_HOURS);
-        variables.put("withdrawDay", userMembershipInfo.getDelDate().format(formatter));
+        variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate()));
         variables.put("cancelMethod", CANCEL_METHOD);
 
         SendDTO sendDTO = new SendDTO();

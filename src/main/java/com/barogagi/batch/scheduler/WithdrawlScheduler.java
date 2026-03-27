@@ -21,7 +21,7 @@ public class WithdrawlScheduler {
     }
 
     // 탈퇴 처리
-    @Scheduled(fixedDelay = 60_000) // 1분
+    @Scheduled(cron = "0 0 9 * * *") // 09:00
     @SchedulerLock(
             name = "withdrawalBatch",
             lockAtMostFor = "10m",
@@ -34,11 +34,11 @@ public class WithdrawlScheduler {
     }
 
     // 탈퇴 처리 전 사전 고지
-    @Scheduled(fixedDelay = 60_000) // 1분
+    @Scheduled(cron = "0 0 * * * *")  // 정각
     @SchedulerLock(
-            name = "beforeWithdrawlBatch",
-            lockAtMostFor = "10m",
-            lockAtLeastFor = "1m"
+            name = "withdrawalBatch",
+            lockAtMostFor = "1h",
+            lockAtLeastFor = "55m"
     )
     public void beforeWithdrawalBatch() {
         if(Boolean.parseBoolean(IS_PRE_WITHDRAWAL_NOTICE_FLAG)) {

@@ -38,7 +38,7 @@ public class OutboxService {
             FROM USER_MEMBERSHIP_INFO u
             WHERE u.status = 'WITHDRAWAL_PENDING'
             AND u.del_date <= :targetDate
-        """).setParameter("targetDate", LocalDateTime.now().plusHours(24)).executeUpdate();
+        """).setParameter("targetDate", LocalDateTime.now().plusDays(1)).executeUpdate();
     }
 
     public List<MessageOutbox> findTargets() {

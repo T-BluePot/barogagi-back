@@ -1,6 +1,5 @@
 package com.barogagi.batch.service;
 
-import com.barogagi.batch.dto.SendDTO;
 import com.barogagi.batch.entity.MessageOutbox;
 import com.barogagi.batch.enums.Status;
 import com.barogagi.batch.repository.MessageOutboxArchiveRepository;
@@ -8,18 +7,12 @@ import com.barogagi.batch.vo.SendResult;
 import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.repository.UserMembershipRepository;
-import com.barogagi.sendMessage.alimTalk.service.AlimTalkSendService;
-import com.barogagi.sendMessage.email.dto.SendMailDTO;
-import com.barogagi.sendMessage.email.service.EmailSendService;
-import com.barogagi.util.EncryptUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
