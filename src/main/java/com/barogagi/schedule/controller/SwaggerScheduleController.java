@@ -465,8 +465,6 @@ public interface SwaggerScheduleController {
                                             "        \"categoryNm\": \"카페\",\n" +
                                             "        \"planNm\": \"제비꽃다방\",\n" +
                                             "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
-                                            "        \"planDescription\": \"분위기 좋은 한옥 카페 '더숲 초소책방'은 서울 종로구에 위치해 있으며, 숲속의 아늑함을 느낄 수 있는 넓은 야외 공간과 아름다운 서울 풍경을 감상할 수 있는 2층 테라스가 특징입니다.\",\n" +
-                                            "        \"planAddress\": \"서울 종로구 창의문로 146\",\n" +
                                             "        \"regionNm\": \"종로구\",\n" +
                                             "        \"regionNum\": 1,\n" +
                                             "        \"planTagRegistResDTOList\": [\n" +
@@ -483,8 +481,6 @@ public interface SwaggerScheduleController {
                                             "        \"categoryNm\": \"식사\",\n" +
                                             "        \"planNm\": \"식사\",\n" +
                                             "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
-                                            "        \"planDescription\": \"분위기 좋은 카페로 뷰가 좋은 곳입니다.\",\n" +
-                                            "        \"planAddress\": \"서울 중구 무교로 17\",\n" +
                                             "        \"regionNm\": \"종로구\",\n" +
                                             "        \"regionNum\": 1,\n" +
                                             "        \"planTagRegistResDTOList\": [\n" +
@@ -500,8 +496,6 @@ public interface SwaggerScheduleController {
                                             "        \"categoryNm\": \"놀거리\",\n" +
                                             "        \"planNm\": \"구룡관 혜화본점\",\n" +
                                             "        \"planLink\": \"http://place.map.kakao.com/40669117\",\n" +
-                                            "        \"planDescription\": \"혜화에서 분위기 좋고 저렴한 중식 술집으로는 구룡관 혜화본점이 추천됩니다.\",\n" +
-                                            "        \"planAddress\": \"서울 종로구 창경궁로 258-5\",\n" +
                                             "        \"regionNm\": \"종로구\",\n" +
                                             "        \"regionNum\": 1,\n" +
                                             "        \"planTagRegistResDTOList\": [\n" +

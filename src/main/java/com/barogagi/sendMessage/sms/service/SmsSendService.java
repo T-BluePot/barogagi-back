@@ -1,6 +1,6 @@
-package com.barogagi.sendSms.service;
+package com.barogagi.sendMessage.sms.service;
 
-import com.barogagi.sendSms.dto.SendSmsVO;
+import com.barogagi.sendMessage.sms.dto.SendSmsVO;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
 import net.nurigo.sdk.message.model.Message;
@@ -11,19 +11,19 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 @Service
-public class SendSmsService {
+public class SmsSendService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SendSmsService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SmsSendService.class);
 
     private final String SEND_TEL;
     private final String API_KEY;
     private final String API_SECRET_KEY;
     private final DefaultMessageService messageService;
 
-    public SendSmsService(Environment environment) {
-        this.SEND_TEL = environment.getRequiredProperty("send.sms.tel");
-        this.API_KEY = environment.getRequiredProperty("send.sms.api-key");
-        this.API_SECRET_KEY = environment.getRequiredProperty("send.sms.api-secret-key");
+    public SmsSendService(Environment environment) {
+        this.SEND_TEL = environment.getRequiredProperty("purplebook.tel");
+        this.API_KEY = environment.getRequiredProperty("purplebook.api-key");
+        this.API_SECRET_KEY = environment.getRequiredProperty("purplebook.api-secret-key");
         this.messageService = NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
     }
 

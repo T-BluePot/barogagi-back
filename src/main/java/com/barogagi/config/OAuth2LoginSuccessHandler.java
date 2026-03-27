@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -20,24 +18,18 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    Logger logger = LoggerFactory.getLogger(OAuth2LoginSuccessHandler.class);
-
     private final AuthService authService;
     private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res,
                                         Authentication authentication) throws IOException {
-        var token = (OAuth2AuthenticationToken) authentication;
-        var attrs = token.getPrincipal().getAttributes();
 
-        String extId = String.valueOf(attrs.getOrDefault("sub", attrs.get("id")));
-        String userId = extId;
+        OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
+        Map<String, Object> attrs = token.getPrincipal().getAttributes();
 
-        logger.info("extId={}", extId);
-        logger.info("userId={}", userId);
+        String userId = extractUserId(attrs);
 
-        // successHandler 내부 예시
         LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
         res.setContentType("application/json;charset=UTF-8");
@@ -51,7 +43,31 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 "refreshToken", login.tokens().refreshToken(),
                 "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn()
         ));
+    }
 
+    private String extractUserId(Map<String, Object> attrs) {
+        // 1. Google
+        Object sub = attrs.get("sub");
+        if (sub != null && !sub.toString().isBlank()) {
+            return sub.toString();
+        }
+
+        // 2. Kakao
+        Object id = attrs.get("id");
+        if (id != null && !id.toString().isBlank()) {
+            return id.toString();
+        }
+
+        // 3. Naver (response 내부)
+        Object response = attrs.get("response");
+        if (response instanceof Map<?, ?> resMap) {
+            Object naverId = resMap.get("id");
+            if (naverId != null && !naverId.toString().isBlank()) {
+                return naverId.toString();
+            }
+        }
+
+        throw new IllegalArgumentException("OAuth userId를 찾을 수 없습니다.");
     }
 }
 
