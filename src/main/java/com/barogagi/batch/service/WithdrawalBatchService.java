@@ -2,6 +2,8 @@ package com.barogagi.batch.service;
 
 import com.barogagi.batch.dto.SendDTO;
 import com.barogagi.batch.entity.MessageOutbox;
+import com.barogagi.batch.enums.Status;
+import com.barogagi.batch.repository.MessageOutboxArchiveRepository;
 import com.barogagi.batch.vo.SendResult;
 import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
@@ -26,6 +28,7 @@ import java.util.*;
 public class WithdrawalBatchService {
 
     private final UserMembershipRepository userMembershipRepository;
+    private final MessageOutboxArchiveRepository messageOutboxArchiveRepository;
     private final OutboxService outboxService;
     private final MessageSendService messageSendService;
     private final MessageResultService messageResultService;
@@ -40,12 +43,19 @@ public class WithdrawalBatchService {
         }
 
         // 2. DELETED_MEMBERSHIP_INFO에 저장
-        int inserted = userMembershipRepository.insertDeletedMembers(now);
+        int insertedDeletedMembers = userMembershipRepository.insertDeletedMembers(now);
 
         // 3. 원본 테이블 삭제
-        int deleted = userMembershipRepository.deleteWithdrawnMembers(now);
+        int deletedUserMembershipInfo = userMembershipRepository.deleteWithdrawnMembers(now);
 
-        log.info("[ WithdrawalBatchService.processWithdrawlBatch() ] inserted={}, deleted={}", inserted, deleted);
+        // 4. MESSAGE_OUTBOX의 SUCCESS 데이터를 ARCHIVE에 옮기기
+        int insertedMessageOutboxArchive = messageOutboxArchiveRepository.insertMessageOutputArchive(Status.SUCCESS.name(), "WITHDRAWAL");
+
+        // 5. MESSAGE_OUTBOX의 SUCCESS 데이터 삭제
+        int deletedMessageOutbox = outboxService.deletedMessageOutput(Status.SUCCESS.name(), "WITHDRAWAL");
+
+        log.info("[ WithdrawalBatchService.processWithdrawlBatch() ] insertedDeletedMembers={}, deletedUserMembershipInfo={}, insertedMessageOutboxArchive={}, deletedMessageOutbox={}",
+                insertedDeletedMembers, deletedUserMembershipInfo, insertedMessageOutboxArchive, deletedMessageOutbox);
     }
 
     public void processBeforeWithdrawlBatch() {

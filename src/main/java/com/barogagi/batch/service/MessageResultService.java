@@ -27,20 +27,23 @@ public class MessageResultService {
 
         } else {
             // 최대 3회 이상이면 FAIL 처리
-            if (outbox.getTryCnt() >= 3) {
+            if (outbox.getTryCnt() >= 2) {
                 outbox.markFail();
             } else {
                 // 재시도 가능한 상태로 READY로 변경
                 outbox.markRetry();
             }
 
-            // 4. ALIMTALK 실패 시 SMS 발송
-            if (Channel.ALIMTALK.equals(messageOutbox.getChannel())) {
-                createSmsFallback(messageOutbox);
+            // ALIMTALK 실패 시 SMS 발송
+            if (Channel.ALIMTALK.equals(outbox.getChannel())) {
+                outbox.markImpossible();
+                createSmsFallback(outbox);
             }
         }
 
-        // 5. 발송 이력 저장
+        messageOutboxRepository.save(outbox);
+
+        // 발송 이력 저장
         messageSendHistoryRepository.save(
                 new MessageSendHistory(
                         messageOutbox.getMembershipNo(),
@@ -51,8 +54,6 @@ public class MessageResultService {
                         errorMessage
                 )
         );
-
-        messageOutboxRepository.save(outbox);
     }
 
     private void createSmsFallback(MessageOutbox messageOutbox) {

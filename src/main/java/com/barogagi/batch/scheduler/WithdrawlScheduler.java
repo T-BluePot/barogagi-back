@@ -41,6 +41,8 @@ public class WithdrawlScheduler {
             lockAtLeastFor = "1m"
     )
     public void beforeWithdrawalBatch() {
-        withdrawalBatchService.processBeforeWithdrawlBatch();
+        if(Boolean.parseBoolean(IS_PRE_WITHDRAWAL_NOTICE_FLAG)) {
+            withdrawalBatchService.processBeforeWithdrawlBatch();
+        }
     }
 }

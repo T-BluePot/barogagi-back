@@ -53,6 +53,7 @@ public class MessageOutbox {
     private LocalDateTime updatedAt;
 
     public void markSuccess() {
+        this.tryCnt++;
         this.status = Status.SUCCESS;
     }
 
@@ -66,6 +67,11 @@ public class MessageOutbox {
     public void markRetry() {
         this.tryCnt++;
         this.status = Status.READY;
+    }
+
+    // 불가능 처리 (알림톡)
+    public void markImpossible() {
+        this.status = Status.IMPOSSIBLE;
     }
 
     public static MessageOutbox create(String membershipNo, String userId, String type, Channel channel) {

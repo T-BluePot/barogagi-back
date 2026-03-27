@@ -1,6 +1,7 @@
 package com.barogagi.batch.service;
 
 import com.barogagi.batch.entity.MessageOutbox;
+import com.barogagi.batch.enums.Status;
 import com.barogagi.batch.repository.MessageOutboxRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -47,5 +48,9 @@ public class OutboxService {
     @Transactional
     public boolean tryProcessing(Long id) {
         return messageOutboxRepository.updateProcessing(id) > 0;
+    }
+
+    public int deletedMessageOutput(String status, String messageType) {
+        return messageOutboxRepository.deletedMessageOutput(status, messageType);
     }
 }
