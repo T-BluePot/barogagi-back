@@ -5,8 +5,8 @@ import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.approval.vo.ApprovalVO;
 import com.barogagi.response.ApiResponse;
-import com.barogagi.sendSms.dto.SendSmsVO;
-import com.barogagi.sendSms.service.SendSmsService;
+import com.barogagi.sendMessage.sms.dto.SendSmsVO;
+import com.barogagi.sendMessage.sms.service.SmsSendService;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
@@ -22,7 +22,7 @@ public class ApprovalService {
     private final InputValidate inputValidate;
     private final EncryptUtil encryptUtil;
     private final AuthCodeService authCodeService;
-    private final SendSmsService sendSmsService;
+    private final SmsSendService smsSendService;
     private final ApprovalTxService approvalTxService;
 
     public ApiResponse approvalTelSend(String apiSecretKey, ApprovalSendVO approvalSendVO) {
@@ -58,10 +58,10 @@ public class ApprovalService {
         sendSmsVO.setRecipientTel(approvalSendVO.getTel());
         String messageContent = "인증번호는 [" + authCode + "] 입니다.";
         sendSmsVO.setMessageContent(messageContent);
-        boolean sendMessageResult = sendSmsService.sendSms(sendSmsVO);
+        boolean sendMessageResult = smsSendService.sendSms(sendSmsVO);
 
         if(!sendMessageResult) {
-            throw new ApprovalException(ErrorCode.FAIL_SEND_SMS);
+            throw new ApprovalException(ErrorCode.FAIL_SEND_APPROVAL);
         }
 
         // 인증번호 암호화
@@ -71,10 +71,10 @@ public class ApprovalService {
         boolean insertResult = approvalTxService.insertApprovalRecord(approvalVO);
 
         if(!insertResult) {
-            throw new ApprovalException(ErrorCode.ERROR_SEND_SMS);
+            throw new ApprovalException(ErrorCode.ERROR_SEND_APPROVAL);
         }
 
-        return ApiResponse.result(ErrorCode.SUCCESS_SEND_SMS);
+        return ApiResponse.result(ErrorCode.SUCCESS_SEND_APPROVAL);
     }
 
     public ApiResponse approvalTelCheck(String apiSecretKey, ApprovalCompleteVO approvalCompleteVO) {
@@ -99,9 +99,9 @@ public class ApprovalService {
         );
 
         if(!updateResult){
-            throw new ApprovalException(ErrorCode.FAIL_CHECK_SMS);
+            throw new ApprovalException(ErrorCode.FAIL_CHECK_APPROVAL);
         }
 
-        return ApiResponse.result(ErrorCode.SUCCESS_CHECK_SMS);
+        return ApiResponse.result(ErrorCode.SUCCESS_CHECK_APPROVAL);
     }
 }

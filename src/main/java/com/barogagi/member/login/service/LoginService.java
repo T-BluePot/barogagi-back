@@ -1,5 +1,6 @@
 package com.barogagi.member.login.service;
 
+import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.login.exception.LoginException;
@@ -10,6 +11,8 @@ import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Transactional
 public class LoginService {
+
+    Logger logger = LoggerFactory.getLogger(LoginService.class);
 
     private final Validator validator;
     private final InputValidate inputValidate;
@@ -90,10 +95,6 @@ public class LoginService {
 
     public ApiResponse login(String apiSecretKey, LoginDTO loginDTO) {
 
-        String resultCode = "";
-        String message = "";
-        Map<String, Object> dataMap = new HashMap<>();
-
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new LoginException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
@@ -119,19 +120,31 @@ public class LoginService {
         // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
         LoginResponse loginResponse = authService.loginAfterSignup(userInfo.getUserId(), "web-basic");
 
-        resultCode = loginResponse.tokens().resultCode();
-        message = loginResponse.tokens().message();
+        // 토큰 발급 성공
+        if(loginResponse.tokens().resultCode().equals("R200")) {
+            // 회원 탈퇴 신청했다가 다시 재로그인을 했을 경우
+            if(MembershipStatus.WITHDRAWAL_PENDING == userInfo.getStatus()) {
+                userMembershipRepository.restoreWithdrawal(
+                        loginResponse.membershipNo(),
+                        MembershipStatus.ACTIVE,
+                        MembershipStatus.WITHDRAWAL_PENDING
+                );
+            }
 
-        dataMap = Map.of(
-                "accessToken", loginResponse.tokens().accessToken(),
-                "accessTokenExpiresIn", loginResponse.tokens().accessTokenExpiresIn(),
-                "userId", userInfo.getUserId(),
-                "membershipNo", loginResponse.membershipNo(),
-                "refreshToken", loginResponse.tokens().refreshToken(),
-                "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
-        );
+            Map<String, Object> dataMap = Map.of(
+                    "accessToken", loginResponse.tokens().accessToken(),
+                    "accessTokenExpiresIn", loginResponse.tokens().accessTokenExpiresIn(),
+                    "userId", userInfo.getUserId(),
+                    "membershipNo", loginResponse.membershipNo(),
+                    "refreshToken", loginResponse.tokens().refreshToken(),
+                    "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
+            );
 
-        return ApiResponse.resultData(dataMap, resultCode, message);
+            return ApiResponse.resultData(dataMap, ErrorCode.SUCCESS_LOGIN.getCode(), ErrorCode.SUCCESS_LOGIN.getMessage());
+
+        } else {
+            return ApiResponse.result(ErrorCode.FAIL_LOGIN);
+        }
     }
 
     public ApiResponse refreshToken(String refreshToken) {

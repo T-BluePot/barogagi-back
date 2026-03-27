@@ -1,6 +1,7 @@
 package com.barogagi.member.join.basic.controller;
 
 import com.barogagi.member.join.basic.dto.JoinRequestDTO;
+import com.barogagi.member.join.basic.dto.WithdrawRequestDTO;
 import com.barogagi.member.join.basic.service.MemberAccountService;
 import com.barogagi.member.join.basic.service.MemberDuplicationService;
 import com.barogagi.member.join.basic.service.MemberSignupService;
@@ -102,7 +103,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @DeleteMapping("/me")
-    public ApiResponse withdrawMember(@RequestHeader("REFRESH-TOKEN") String refreshToken) {
-        return memberAccountService.withdrawMember(refreshToken);
+    public ApiResponse withdrawMember(@RequestHeader("REFRESH-TOKEN") String refreshToken, @RequestBody WithdrawRequestDTO withdrawRequestDTO) {
+        return memberAccountService.withdrawMember(refreshToken, withdrawRequestDTO);
     }
 }
