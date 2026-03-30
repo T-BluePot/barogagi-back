@@ -62,7 +62,7 @@ public class SmsSendService {
 
         return result;
     }
-
+  
     public boolean sendWithdrawalSMS(SendDTO sendDTO) {
         String message = buildWithdrawalSMSMessage(sendDTO.getVariables());
 

@@ -47,15 +47,13 @@ public class WithdrawlScheduler {
             withdrawalBatchService.processBeforeWithdrawlBatch();
         }
     }
-
-    // PROCESSING -> READY로 변경
-//    @Scheduled(cron = "0 */30 10-18 * * *")
-//    @SchedulerLock(
-//            name = "changeStatusBatch",
-//            lockAtMostFor = "25m",
-//            lockAtLeastFor = "25m"
-//    )
-    @Scheduled(fixedDelay = 60_000)
+  
+    @Scheduled(cron = "0 */30 10-18 * * *")
+    @SchedulerLock(
+            name = "changeStatusBatch",
+            lockAtMostFor = "25m",
+            lockAtLeastFor = "25m"
+    )
     public void changeStatusBatch() {
         if(Boolean.parseBoolean(IS_CHANGE_STATUS_FLAG)) {
             withdrawalBatchService.changeStatusBatch();
