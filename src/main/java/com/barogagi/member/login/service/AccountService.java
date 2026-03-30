@@ -28,7 +28,7 @@ public class AccountService {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         cal.add(Calendar.DATE, 7);
-
+      
         // 2) 회원 정보에서 STATUS = WITHDRAWAL_PENDING, DEL_DATE = 탈퇴일 저장
         int updateDelInfo = userMembershipRepository.updateWithdrawalPending(
                 membershipNo,
