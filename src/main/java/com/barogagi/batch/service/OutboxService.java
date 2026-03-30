@@ -53,4 +53,9 @@ public class OutboxService {
     public int deletedMessageOutput(String status, String messageType) {
         return messageOutboxRepository.deletedMessageOutput(status, messageType);
     }
+
+    @Transactional
+    public int changeStatus(Status afterStatus, Status beforeStatus) {
+        return messageOutboxRepository.changeStatus(afterStatus, beforeStatus);
+    }
 }

@@ -13,10 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -51,8 +50,6 @@ public class MessageSendService {
 
     public SendResult send(MessageOutbox messageOutbox, UserMembershipInfo userMembershipInfo) {
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         if (userMembershipInfo == null) {
             return new SendResult(false, "회원 정보 없음");
         }
@@ -67,7 +64,7 @@ public class MessageSendService {
         Map<String, String> variables = new HashMap<>();
         variables.put("serviceName", SERVICE_NAME);
         variables.put("afterHours", AFTER_HOURS);
-        variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate()));
+        variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
         variables.put("cancelMethod", CANCEL_METHOD);
 
         SendDTO sendDTO = new SendDTO();

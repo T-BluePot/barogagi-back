@@ -70,4 +70,8 @@ public class WithdrawalBatchService {
             messageResultService.handleResult(messageOutbox, result.isSuccess(), result.getErrorMessage());
         }
     }
+
+    public void changeStatusBatch() {
+        outboxService.changeStatus(Status.READY, Status.PROCESSING);
+    }
 }

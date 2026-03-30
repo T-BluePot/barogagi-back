@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Date;
 
 @Repository
 public interface UserMembershipRepository extends JpaRepository<UserMembershipInfo, String>, JpaSpecificationExecutor<UserMembershipInfo> {
@@ -59,7 +59,7 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
     int updateWithdrawalPending(
             @Param("membershipNo") String membershipNo,
             @Param("status") MembershipStatus status,
-            @Param("delDate") LocalDateTime delDate,
+            @Param("delDate") Date delDate,
             @Param("reasonNo") int reasonNo,
             @Param("withdrawReason") String withdrawReason
     );
@@ -72,15 +72,6 @@ public interface UserMembershipRepository extends JpaRepository<UserMembershipIn
             """)
     boolean existsWithdrawalTarget(@Param("status") MembershipStatus status,
                                    @Param("now") LocalDateTime now);
-
-    @Query( value = """
-                SELECT u
-                FROM UserMembershipInfo u
-                WHERE u.status = :status
-                AND u.delDate <= :date
-            """)
-    List<UserMembershipInfo> findWithdrawalScheduledBefore(@Param("status") MembershipStatus status,
-                                                    @Param("date") LocalDateTime dateTime);
 
     @Modifying
     @Query(value = """

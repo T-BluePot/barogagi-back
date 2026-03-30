@@ -35,8 +35,16 @@ public interface MessageOutboxRepository extends JpaRepository<MessageOutbox, Lo
     @Query(value = """
             DELETE
             FROM MESSAGE_OUTBOX
-            WHERE STATUS = :status 
+            WHERE STATUS = :status
                 AND MESSAGE_TYPE = :messageType
             """, nativeQuery = true)
     int deletedMessageOutput(@Param("status") String status, @Param("messageType") String messageType);
+
+    @Modifying
+    @Query(value = """
+            UPDATE MessageOutbox messageOutBox
+            SET messageOutBox.status = :afterStatus
+            WHERE messageOutBox.status = :beforeStatus
+            """)
+    int changeStatus(@Param("afterStatus") Status afterStatus, @Param("beforeStatus") Status beforeStatus);
 }
