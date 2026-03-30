@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Entity
 @Table(name = "DELETED_MEMBERSHIP_INFO")
@@ -30,7 +31,7 @@ public class DeletedMembershipInfo {
 
     @Schema(description = "탈퇴일")
     @Column(name = "WITHDRAWN_AT", nullable = false)
-    private LocalDateTime withdrawnAt;
+    private Date withdrawnAt;
 
     @Schema(description = "탈퇴 사유 번호")
     @Column(name = "REASON_NO", nullable = false)

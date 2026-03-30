@@ -1,6 +1,6 @@
 package com.barogagi.sendMessage.email.service;
 
-import com.barogagi.sendMessage.email.dto.SendMailDTO;
+import com.barogagi.batch.dto.SendDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,6 +8,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -17,12 +18,25 @@ public class EmailSendService {
     private final AsyncSmtpMailService asyncSmtpMailService;
     private final SpringTemplateEngine templateEngine;
 
-    public boolean sendWithdrawlEmail(SendMailDTO sendMailDTO, Map<String, String> variables) {
+    public boolean sendWithdrawlEmail(SendDTO sendDTO) {
 
-        sendMailDTO.setBody(buildWithdrawlHtml(variables));
+        try {
+            sendDTO.getSendMailDTO().setBody(buildWithdrawlHtml(sendDTO.getVariables()));
 
-        // 실제 메일 발송
-        return asyncSmtpMailService.sendMailAsync(sendMailDTO);
+            // 실제 메일 발송
+            CompletableFuture<Boolean> futureResult = asyncSmtpMailService.sendMailAsync(sendDTO.getSendMailDTO());
+
+            // 발송 결과를 기다림
+            boolean result = futureResult.get(); // 필요 시 timeout 설정 가능
+            if (!result) {
+                log.error("메일 발송 실패: {}", sendDTO.getSendMailDTO().getTo());
+            }
+            return result;
+
+        } catch (Exception e) {
+            log.error("이메일 발송 실패", e);
+            return false;
+        }
     }
 
     public String buildWithdrawlHtml(Map<String, String> variables) {
