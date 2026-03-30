@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,15 @@ public class AccountService {
         // 1) 모든 리프레시 토큰 제거
         refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
 
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE, 7);
+
         // 2) 회원 정보에서 STATUS = WITHDRAWAL_PENDING, DEL_DATE = 탈퇴일 저장
         int updateDelInfo = userMembershipRepository.updateWithdrawalPending(
                 membershipNo,
                 MembershipStatus.WITHDRAWAL_PENDING,
-                LocalDateTime.now().plusDays(7),
+                cal.getTime(),
                 reasonNo,
                 withdrawReason
         );
