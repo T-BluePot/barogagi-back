@@ -25,7 +25,7 @@ public class WithdrawlScheduler {
     // 탈퇴 처리
     @Scheduled(cron = "0 0 9 * * *") // 09:00
     @SchedulerLock(
-            name = "withdrawalBatch",
+            name = "runWithdrawalBatch",
             lockAtMostFor = "10m",
             lockAtLeastFor = "1m"
     )
@@ -38,7 +38,7 @@ public class WithdrawlScheduler {
     // 탈퇴 처리 전 사전 고지
     @Scheduled(cron = "0 0 10-18 * * *")  // 정각
     @SchedulerLock(
-            name = "withdrawalBatch",
+            name = "beforeWithdrawalBatch",
             lockAtMostFor = "1h",
             lockAtLeastFor = "55m"
     )
