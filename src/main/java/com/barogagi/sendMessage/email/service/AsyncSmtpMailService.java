@@ -9,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
@@ -51,7 +52,7 @@ public class AsyncSmtpMailService {
             });
 
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from));
+            message.setFrom(new InternetAddress(from, "핏플(fitpl)", "UTF-8"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
             message.setContent(body, "text/html; charset=UTF-8");
@@ -66,6 +67,8 @@ public class AsyncSmtpMailService {
                 return sendWithRetry(from, to, subject, body, retriesLeft - 1);
             }
             return false;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
     }
 }
