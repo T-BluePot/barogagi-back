@@ -29,7 +29,6 @@ public class MessageSendService {
 
     // 알림톡 / 문자
     private final String SERVICE_NAME = "핏플(fitpl)";
-    private final String AFTER_HOURS = "24";
     private final String CANCEL_METHOD = "앱 접속 후 로그인";
 
     // 이메일
@@ -63,7 +62,6 @@ public class MessageSendService {
         // 메시지에 들어갈 데이터 (공통)
         Map<String, String> variables = new HashMap<>();
         variables.put("serviceName", SERVICE_NAME);
-        variables.put("afterHours", AFTER_HOURS);
         variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
         variables.put("cancelMethod", CANCEL_METHOD);
 
