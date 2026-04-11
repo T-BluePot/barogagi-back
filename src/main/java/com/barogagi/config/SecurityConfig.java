@@ -4,8 +4,8 @@ import com.barogagi.member.join.oauth.service.CustomOidcUserService;
 import com.barogagi.member.join.oauth.service.DelegatingOAuth2UserService;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,12 +14,20 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
@@ -31,7 +39,7 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
-        logger.info("@@ jwtAuthFilter={}", jwtAuthFilter);
+        log.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
     private static final String[] PERMIT_URL_ARRAY = {
@@ -60,6 +68,7 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 // API 서버 권장: 무상태
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -95,5 +104,21 @@ public class SecurityConfig {
                 }));
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+
+        config.setAllowedOrigins(origins);
+        config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
