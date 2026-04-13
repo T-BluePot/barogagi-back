@@ -541,4 +541,28 @@ public interface SwaggerScheduleController {
             Integer scheduleNum,
             HttpServletRequest request
     );
+
+    @Operation(
+            summary = "링크 OG 이미지 조회 기능",
+            description = "카카오 지도 등 외부 링크에서 OG 이미지를 추출하는 기능입니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A100",
+                            description = "API SECRET KEY 불일치"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "IM200",
+                            description = "링크에서 OG 태그 추출에 성공하였습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "IM101",
+                            description = "이미지를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C500",
+                            description = "서버 오류가 발생했습니다."
+                    )
+            }
+    )
+    ApiResponse getLinkImage(@Parameter(description = "OG 이미지를 추출할 링크", example = "http://place.map.kakao.com/24944966") String link, HttpServletRequest request);
 }
