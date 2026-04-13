@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 public interface SwaggerScheduleController {
 
@@ -173,7 +175,7 @@ public interface SwaggerScheduleController {
                                             "      \"isRandomCategory\": \"Y\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
                                             "        { \"regionNum\": 2 }\n" +
-                                            "      ],\n" +                                            "      \"planTagRegistReqDTOList\": [\n" +
+                                            "      ],\n" + "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"웨이팅 없는\", \"tagNum\": 13 },\n" +
                                             "        { \"tagNm\": \"맛집\", \"tagNum\": 11 }\n" +
                                             "      ]\n" +
@@ -542,27 +544,47 @@ public interface SwaggerScheduleController {
             HttpServletRequest request
     );
 
+//    @Operation(
+//            summary = "링크 OG 이미지 조회 기능",
+//            description = "카카오 지도 등 외부 링크에서 OG 이미지를 추출하는 기능입니다.",
+//            responses = {
+//                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                            responseCode = "A100",
+//                            description = "API SECRET KEY 불일치"
+//                    ),
+//                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                            responseCode = "IM200",
+//                            description = "링크에서 OG 태그 추출에 성공하였습니다."
+//                    ),
+//                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                            responseCode = "IM101",
+//                            description = "이미지를 찾을 수 없습니다."
+//                    ),
+//                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                            responseCode = "C500",
+//                            description = "서버 오류가 발생했습니다."
+//                    )
+//            }
+//    )
+//    ApiResponse getLinkImage(@Parameter(description = "OG 이미지를 추출할 링크", example = "http://place.map.kakao.com/24944966") String link, HttpServletRequest request);
+
     @Operation(
-            summary = "링크 OG 이미지 조회 기능",
-            description = "카카오 지도 등 외부 링크에서 OG 이미지를 추출하는 기능입니다.",
+            summary = "이미지 프록시 기능",
+            description = "외부 이미지 URL을 받아 백엔드에서 대신 요청하여 이미지를 전달합니다. 카카오 CDN 등 직접 접근이 차단된 이미지를 우회하여 제공합니다.",
             responses = {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "A100",
-                            description = "API SECRET KEY 불일치"
+                            responseCode = "200",
+                            description = "이미지 반환 성공"
                     ),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "IM200",
-                            description = "링크에서 OG 태그 추출에 성공하였습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "IM101",
-                            description = "이미지를 찾을 수 없습니다."
-                    ),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-                            responseCode = "C500",
-                            description = "서버 오류가 발생했습니다."
+                            responseCode = "502",
+                            description = "외부 이미지 서버 요청 실패"
                     )
             }
     )
-    ApiResponse getLinkImage(@Parameter(description = "OG 이미지를 추출할 링크", example = "http://place.map.kakao.com/24944966") String link, HttpServletRequest request);
-}
+    ResponseEntity<byte[]> proxyImage(
+            @Parameter(description = "프록시할 이미지 URL",
+                    example = "https://img1.kakaocdn.net/cthumb/local/C800x400.q50/?fname=http%3A%2F%2Ft1.daumcdn.net%2Flocal%2FkakaomapPhoto%2Freview%2F0aad94e93a914d0f3c6eebd9c2b2657d87826416%3Foriginal")
+            @RequestParam String url,
+            HttpServletRequest request
+    );}
