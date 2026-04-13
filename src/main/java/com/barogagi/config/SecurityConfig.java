@@ -56,7 +56,8 @@ public class SecurityConfig {
             "/api/v1/home/tags/popular",  // 인기 태그 조회
             "/api/v1/home/regions/popular",  // 인기 지역 조회
             "/api/v1/verification-codes/**",  // 인증 번호 발송
-            "/api/v1/withdrawal-reasons"  // 탈퇴 사유 조회
+            "/api/v1/withdrawal-reasons",  // 탈퇴 사유 조회
+            "api/v1/schedule/image/proxy"  // 일정 이미지 프록시 (외부 이미지 허용)
     };
 
     @Bean
