@@ -17,12 +17,20 @@ import com.barogagi.util.Validator;
 import com.barogagi.util.exception.BasicException;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -140,6 +148,21 @@ public class ScheduleQueryService {
             logger.info("계획 조회 시작");
             List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
 
+            // 각 계획의 링크에서 OG 이미지 프록시 URL 세팅
+            for (PlanDetailVO plan : planDetailVOList) {
+                if (plan.getPlanLink() != null && !plan.getPlanLink().isBlank()) {
+                    try {
+                        String imageUrl = extractOgImage(plan.getPlanLink());
+                        if (imageUrl != null) {
+                            plan.setImageLink(imageUrl);                        }
+                    } catch (Exception e) {
+                        logger.warn("OG 이미지 추출 실패: {}", plan.getPlanLink());
+                    }
+                }
+            }
+            String testImageUrl = extractOgImage("https://place.map.kakao.com/850873071");
+            logger.info(testImageUrl);
+
             // DTO에 정보 저장
             ScheduleDetailResDTO result = ScheduleDetailResDTO.builder()
                     .scheduleNum(scheduleDetailVO.getScheduleNum())
@@ -157,5 +180,28 @@ public class ScheduleQueryService {
         } catch (Exception e) {
             return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
         }
+    }
+
+    private String extractOgImage(String link) throws IOException {
+        Document doc = Jsoup.connect(link)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept-Language", "ko-KR,ko;q=0.9")
+                .timeout(5000)
+                .followRedirects(true)
+                .get();
+
+        Element ogImage = doc.selectFirst("meta[property=og:image]");
+
+        if (ogImage == null || ogImage.attr("content").isBlank()) {
+            return null;
+        }
+
+        String imageUrl = ogImage.attr("content");
+
+        if (imageUrl.startsWith("//")) {
+            imageUrl = "https:" + imageUrl;
+        }
+
+        return imageUrl;
     }
 }
