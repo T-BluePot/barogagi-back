@@ -84,4 +84,10 @@ public class ScheduleController implements SwaggerScheduleController {
         logger.info("CALL /api/v1/schedule/delete");
         return scheduleCommandService.deleteSchedule(scheduleNum, request);
     }
+
+    @GetMapping("/link-image")
+    public ApiResponse getLinkImage(@RequestParam String link, HttpServletRequest request) {
+        logger.info("CALL api/v1/schedule/link");
+        return scheduleQueryService.getLinkImage(link, request);
+    }
 }

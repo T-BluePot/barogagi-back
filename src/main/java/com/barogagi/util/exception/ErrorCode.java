@@ -141,8 +141,11 @@ public enum ErrorCode {
 
     // Region
     FOUND_REGION(HttpStatus.OK, "RG200", "지역 정보 조회에 성공했습니다.", false),
-    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "RG101", "지역 정보를 찾을 수 없습니다.", false);
+    NOT_FOUND_REGION(HttpStatus.NOT_FOUND, "RG101", "지역 정보를 찾을 수 없습니다.", false),
 
+    // Image
+    FOUND_LINK_IMAGE(HttpStatus.OK, "IM200", "링크에서 OG 태그 추출에 성공하였습니다.", false),
+    NOT_FOUND_LINK_IMAGE(HttpStatus.OK, "IM101", "이미지를 찾을 수 없습니다.", false);
 
     private final HttpStatus status;
     private final String code;
