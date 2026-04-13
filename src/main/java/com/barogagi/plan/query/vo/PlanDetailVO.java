@@ -18,6 +18,8 @@ public class PlanDetailVO {
     private String startTime;       // 시작시간
     private String endTime;         // 종료시간
 
+    private String imageLink;       // 이미지 OG 태그 링크
+
     private int itemNum;            // 아이템 번호
     private String itemNm;          // 아이템명
 
@@ -29,4 +31,8 @@ public class PlanDetailVO {
 
     // 태그 리스트
     private List<TagDetailVO> tagDetailVOList;
+
+    public void setImageLink(String imageLink) {
+        this.imageLink = imageLink;
+    }
 }
