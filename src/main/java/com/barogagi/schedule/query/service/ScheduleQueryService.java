@@ -26,6 +26,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
@@ -145,6 +148,21 @@ public class ScheduleQueryService {
             logger.info("계획 조회 시작");
             List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
 
+            // 각 계획의 링크에서 OG 이미지 프록시 URL 세팅
+            for (PlanDetailVO plan : planDetailVOList) {
+                if (plan.getPlanLink() != null && !plan.getPlanLink().isBlank()) {
+                    try {
+                        String imageUrl = extractOgImage(plan.getPlanLink());
+                        if (imageUrl != null) {
+                            plan.setImageLink(imageUrl);                        }
+                    } catch (Exception e) {
+                        logger.warn("OG 이미지 추출 실패: {}", plan.getPlanLink());
+                    }
+                }
+            }
+            String testImageUrl = extractOgImage("https://place.map.kakao.com/850873071");
+            logger.info(testImageUrl);
+
             // DTO에 정보 저장
             ScheduleDetailResDTO result = ScheduleDetailResDTO.builder()
                     .scheduleNum(scheduleDetailVO.getScheduleNum())
@@ -163,51 +181,27 @@ public class ScheduleQueryService {
             return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
         }
     }
-    public ApiResponse getLinkImage(String link, HttpServletRequest request) {
 
-        try {
-            if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
-                return ApiResponse.error(ErrorCode.NOT_EQUAL_API_SECRET_KEY.getCode(), ErrorCode.NOT_EQUAL_API_SECRET_KEY.getMessage());
-            }
+    private String extractOgImage(String link) throws IOException {
+        Document doc = Jsoup.connect(link)
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                .header("Accept-Language", "ko-KR,ko;q=0.9")
+                .timeout(5000)
+                .followRedirects(true)
+                .get();
 
-            // 1. 링크에서 OG 이미지 URL 추출
-            Document doc = Jsoup.connect(link)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .header("Accept-Language", "ko-KR,ko;q=0.9")
-                    .timeout(5000)
-                    .followRedirects(true)
-                    .get();
+        Element ogImage = doc.selectFirst("meta[property=og:image]");
 
-            Element ogImage = doc.selectFirst("meta[property=og:image]");
-
-            if (ogImage == null || ogImage.attr("content").isBlank()) {
-                return ApiResponse.error(ErrorCode.NOT_FOUND_LINK_IMAGE.getCode(), ErrorCode.NOT_FOUND_LINK_IMAGE.getMessage());
-            }
-
-            String imageUrl = ogImage.attr("content");
-
-            if (imageUrl.startsWith("//")) {
-                imageUrl = "https:" + imageUrl;
-            }
-
-            // 2. 이미지를 직접 가져와서 Base64 변환
-            Connection.Response imageResponse = Jsoup.connect(imageUrl)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .header("Referer", "https://place.map.kakao.com/")
-                    .ignoreContentType(true)
-                    .timeout(5000)
-                    .execute();
-
-            byte[] imageBytes = imageResponse.bodyAsBytes();
-            String contentType = imageResponse.contentType();
-            String base64Image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(imageBytes);
-
-            return ApiResponse.resultData(base64Image, ErrorCode.FOUND_LINK_IMAGE.getCode(), ErrorCode.FOUND_LINK_IMAGE.getMessage());
-
-        } catch (BusinessException e) {
-            return ApiResponse.error(e.getCode(), e.getMessage());
-        } catch (Exception e) {
-            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
+        if (ogImage == null || ogImage.attr("content").isBlank()) {
+            return null;
         }
+
+        String imageUrl = ogImage.attr("content");
+
+        if (imageUrl.startsWith("//")) {
+            imageUrl = "https:" + imageUrl;
+        }
+
+        return imageUrl;
     }
 }
