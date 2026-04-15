@@ -37,6 +37,7 @@ import com.barogagi.schedule.command.repository.ScheduleRepository;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import com.barogagi.schedule.exception.ScheduleException;
+import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.tag.command.entity.*;
 import com.barogagi.tag.command.repository.ScheduleTagRepository;
 import com.barogagi.tag.command.repository.TagRepository;
@@ -75,6 +76,7 @@ public class ScheduleCommandService {
 
     private final TagQueryService tagQueryService;
     private final RegionGeoCodeService regionGeoCodeService;
+    private final ScheduleQueryService scheduleQueryService;
 
     private final ScheduleRepository scheduleRepository;
     private final ScheduleTagRepository scheduleTagRepository;
@@ -98,7 +100,7 @@ public class ScheduleCommandService {
                                   KakaoPlaceClient kakaoPlaceClient, TavilyClient tavilyClient,
                                   AIClient aiClient, TagQueryService tagQueryService, RegionGeoCodeService regionGeoCodeService,
                                   ScheduleRepository scheduleRepository, ScheduleTagRepository scheduleTagRepository,
-                                  TagRepository tagRepository, ItemRepository itemRepository,
+                                  TagRepository tagRepository, ItemRepository itemRepository, ScheduleQueryService scheduleQueryService,
                                   PlanRepository planRepository, PlanTagRepository planTagRepository,
                                   RegionRepository regionRepository, PlanRegionRepository planRegionRepository,
                                   PlaceRepository placeRepository, RegionQueryService regionQueryService,
@@ -109,6 +111,7 @@ public class ScheduleCommandService {
         this.tavilyClient = tavilyClient;
         this.aiClient = aiClient;
         this.tagQueryService = tagQueryService;
+        this.scheduleQueryService = scheduleQueryService;
         this.regionGeoCodeService = regionGeoCodeService;
         this.scheduleRepository = scheduleRepository;
         this.scheduleTagRepository = scheduleTagRepository;
@@ -361,12 +364,23 @@ public class ScheduleCommandService {
         // ---------- 5) 응답 DTO 생성 ----------
         String regionNm = resolveRegionNm(aiChosen.getRegionNum());
 
+        // OG 이미지 추출
+        String imageUrl = null;
+        if (aiChosen.getPlaceUrl() != null && !aiChosen.getPlaceUrl().isBlank()) {
+            try {
+                imageUrl = scheduleQueryService.extractOgImage(aiChosen.getPlaceUrl());
+            } catch (Exception e) {
+                logger.warn("일정 생성 OG 이미지 추출 실패: {}", aiChosen.getPlaceUrl());
+            }
+        }
+
         return PlanRegistResDTO.builder()
                 .planSource(PLAN_SOURCE.AI)
                 .startTime(plan.getStartTime())
                 .endTime(plan.getEndTime())
                 .planNm(aiChosen.getPlaceName())
                 .planLink(aiChosen.getPlaceUrl())
+                .imageUrl(imageUrl)
                 .planDescription(aiRes.getAiDescription())
                 .planAddress(Optional.ofNullable(aiChosen.getRoadAddressName()).orElse(aiChosen.getAddressName()))
                 .regionNm(regionNm)
@@ -470,6 +484,16 @@ public class ScheduleCommandService {
             RegionDetailVO regionDetailVO = regionQueryService.getRegionNumByAddress(userAddedPlaceDTO.getAddressName());
             String regionNm = resolveRegionName(regionDetailVO);
 
+            // OG 이미지 추출
+            String imageUrl = null;
+            if (userAddedPlaceDTO.getPlaceUrl() != null && !userAddedPlaceDTO.getPlaceUrl().isBlank()) {
+                try {
+                    imageUrl = scheduleQueryService.extractOgImage(userAddedPlaceDTO.getPlaceUrl());
+                } catch (Exception e) {
+                    logger.warn("사용자 플랜 OG 이미지 추출 실패: {}", userAddedPlaceDTO.getPlaceUrl());
+                }
+            }
+
             logger.info("사용자가 선택한 장소 userAddedPlaceDTO addressName={}, resolved regionNum={}", userAddedPlaceDTO.getAddressName(), regionDetailVO.getRegionNum());
 
             return PlanRegistResDTO.builder()
@@ -478,6 +502,7 @@ public class ScheduleCommandService {
                     .endTime(plan.getEndTime())
                     .planNm(userAddedPlaceDTO.getPlaceName())
                     .planLink(userAddedPlaceDTO.getPlaceUrl())
+                    .imageUrl(imageUrl)
                     .planDescription(null) // 사용자가 추가한 일정은 설명 없음
                     .planAddress(userAddedPlaceDTO.getAddressName())
                     .regionNum(regionDetailVO.getRegionNum()) //todo. check
