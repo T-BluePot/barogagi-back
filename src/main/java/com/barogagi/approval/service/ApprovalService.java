@@ -56,7 +56,7 @@ public class ApprovalService {
         // 인증번호 메시지 발송
         SendSmsVO sendSmsVO = new SendSmsVO();
         sendSmsVO.setRecipientTel(approvalSendVO.getTel());
-        String messageContent = "인증번호는 [" + authCode + "] 입니다.";
+        String messageContent = "[핏플(fitpl)]\r\n인증번호는 [" + authCode + "] 입니다.";
         sendSmsVO.setMessageContent(messageContent);
         boolean sendMessageResult = smsSendService.sendSms(sendSmsVO);
 
