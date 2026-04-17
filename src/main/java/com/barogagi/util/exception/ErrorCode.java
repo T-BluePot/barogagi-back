@@ -112,6 +112,7 @@ public enum ErrorCode {
     ERROR_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
     SUCCESS_CHECK_APPROVAL(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
     FAIL_CHECK_APPROVAL(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
+    NOT_ACCESS_SEND_APPROVAL(HttpStatus.BAD_REQUEST, "A104", "1분 후 다시 시도해주세요.", false),
 
     // Schedule
     SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
