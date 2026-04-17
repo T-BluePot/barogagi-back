@@ -28,6 +28,7 @@ public class ApprovalController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A102", description = "인증문자 발송 중 오류가 발생하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A103", description = "인증번호 발송에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "API SECRET KEY 불일치"),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A104", description = "1분 후 다시 시도해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping("/send")
