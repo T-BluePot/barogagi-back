@@ -1,5 +1,7 @@
 package com.barogagi.approval.service;
 
+import com.barogagi.approval.domain.ApprovalNumInfo;
+import com.barogagi.approval.dto.ApprovalCheckDTO;
 import com.barogagi.approval.exception.ApprovalException;
 import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
@@ -13,6 +15,9 @@ import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +42,18 @@ public class ApprovalService {
             throw new ApprovalException(ErrorCode.EMPTY_DATA);
         }
 
-        // 3. 처리
+        // 3. 1분 내로 시도했을 경우 잠시 후 발송
+        ApprovalCheckDTO approvalCheckDTO = new ApprovalCheckDTO();
+        approvalCheckDTO.setTel(encryptUtil.hashEncodeString(approvalSendVO.getTel().replaceAll("[^0-9]", "")));
+        approvalCheckDTO.setCompleteYn("N");
+        approvalCheckDTO.setType(approvalSendVO.getType());
+        approvalCheckDTO.setRegDate(LocalDateTime.now().minusMinutes(1));
+        List<ApprovalNumInfo> approvalCheckDTOList = approvalTxService.findApprovalNumInfo(approvalCheckDTO);
+        if(!approvalCheckDTOList.isEmpty()) {
+            throw new ApprovalException(ErrorCode.NOT_ACCESS_SEND_APPROVAL);
+        }
+
+        // 4. 처리
         // 인증번호를 DB에 INSERT 전에, 전에 발송된 기록들은 flag UPDATE 처리
         ApprovalVO approvalVO = new ApprovalVO();
         approvalVO.setCompleteYn("N");
@@ -56,7 +72,7 @@ public class ApprovalService {
         // 인증번호 메시지 발송
         SendSmsVO sendSmsVO = new SendSmsVO();
         sendSmsVO.setRecipientTel(approvalSendVO.getTel());
-        String messageContent = "[핏플(fitpl)]\r\n인증번호는 [" + authCode + "] 입니다.";
+        String messageContent = "[핏플(fitpl)]\r\n인증번호: " + authCode;
         sendSmsVO.setMessageContent(messageContent);
         boolean sendMessageResult = smsSendService.sendSms(sendSmsVO);
 
