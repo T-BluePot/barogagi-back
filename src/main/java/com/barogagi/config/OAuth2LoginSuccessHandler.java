@@ -2,7 +2,6 @@ package com.barogagi.config;
 
 import com.barogagi.member.login.dto.LoginResponse;
 import com.barogagi.member.login.service.AuthService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +11,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Component
@@ -19,7 +20,6 @@ import java.util.Map;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
-    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res,
@@ -32,17 +32,18 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
-        res.setContentType("application/json;charset=UTF-8");
-        objectMapper.writeValue(res.getWriter(), Map.of(
-                "resultCode", login.tokens().resultCode(),
-                "message", login.tokens().message(),
-                "accessToken", login.tokens().accessToken(),
-                "accessTokenExpiresIn", login.tokens().accessTokenExpiresIn(),
-                "userId", userId,
-                "membershipNo", login.membershipNo(),
-                "refreshToken", login.tokens().refreshToken(),
-                "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn()
-        ));
+        // 프론트로 redirect + 데이터 전달
+        String redirectUrl = "http://localhost:3000/oauth/success" +
+                "?resultCode=" + login.tokens().resultCode() +
+                "&message=" + URLEncoder.encode(login.tokens().message(), StandardCharsets.UTF_8) +
+                "&accessToken=" + login.tokens().accessToken() +
+                "&accessTokenExpiresIn=" + login.tokens().accessTokenExpiresIn() +
+                "&userId=" + userId +
+                "&membershipNo=" + login.membershipNo() +
+                "&refreshToken=" + login.tokens().refreshToken() +
+                "&refreshTokenExpiresIn=" + login.tokens().refreshTokenExpiresIn();
+
+        res.sendRedirect(redirectUrl);
     }
 
     private String extractUserId(Map<String, Object> attrs) {
