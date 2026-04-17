@@ -1,14 +1,15 @@
 package com.barogagi.approval.service;
 
 import com.barogagi.approval.domain.ApprovalNumInfo;
+import com.barogagi.approval.dto.ApprovalCheckDTO;
 import com.barogagi.approval.repository.ApprovalNumInfoRepository;
 import com.barogagi.approval.vo.ApprovalVO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -62,5 +63,10 @@ public class ApprovalTxService {
         entity.setCompleteYn("Y");
         entity.setCompleteDate(LocalDateTime.now());
         return true;
+    }
+
+    public List<ApprovalNumInfo> findApprovalNumInfo(ApprovalCheckDTO approvalCheckDTO) {
+        return approvalNumInfoRepository.findApprovalNumInfo(approvalCheckDTO.getTel(),
+                approvalCheckDTO.getCompleteYn(), approvalCheckDTO.getType(), approvalCheckDTO.getRegDate());
     }
 }
