@@ -95,7 +95,8 @@ public class GlobalExceptionHandler {
     }
 
     private String activeProfile() {
-        return String.join(",", environment.getActiveProfiles());
+        String[] profiles = environment.getActiveProfiles();
+        return (profiles.length > 0) ? profiles[0] : "";
     }
 
     private String getStackTrace(Exception e) {

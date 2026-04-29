@@ -5,6 +5,9 @@ import com.barogagi.member.login.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -13,13 +16,20 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
+    private final Environment environment;
+
+    @Value("${cors.allowed-origins}")
+    private String allowedOrigins;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res,
@@ -32,8 +42,24 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
+        // 서버 종류
+        String[] profiles = environment.getActiveProfiles();
+        String serverType = (profiles.length > 0) ? profiles[0] : "";
+
+        // 서버별 주소
+        List<String> addresses = Arrays.asList(allowedOrigins.split(","));
+
+        String url = "";
+        if(serverType.equals("dev")) {  // 테스트 서버
+            url = addresses.get(1);
+        } else if(serverType.equals("prodd")) {  // 실서버
+            url = addresses.get(2);
+        } else {  // 로컬 서버
+            url = addresses.get(0);
+        }
+
         // 프론트로 redirect + 데이터 전달
-        String redirectUrl = "http://localhost:3000/oauth/success" +
+        String redirectUrl = url + "/oauth/success" +
                 "?resultCode=" + login.tokens().resultCode() +
                 "&message=" + URLEncoder.encode(login.tokens().message(), StandardCharsets.UTF_8) +
                 "&accessToken=" + login.tokens().accessToken() +
