@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
             BusinessException e,
             HttpServletRequest request
     ) {
-        if (isProd() && e.getErrorCode().isNotify()) {
+        if ((isDev() || isProd()) && e.getErrorCode().isNotify()) {
             discordNotifier.sendError(DiscordErrorMessage.from(e, request, activeProfile()));
         }
 
@@ -82,18 +82,8 @@ public class GlobalExceptionHandler {
         String key = e.getClass().getName() + request.getRequestURI();
 
         // Discord 알림 전송
-        if (isProd() && errorThrottle.shouldNotify(key)) {
-            discordNotifier.sendError(
-                    DiscordErrorMessage.builder()
-                            .service("BAROGAGI-API")
-                            .environment(activeProfile())
-                            .uri(request.getRequestURI())
-                            .method(request.getMethod())
-                            .exception(e.getClass().getSimpleName())
-                            .message(e.getMessage())
-                            .stackTrace(getStackTrace(e))
-                            .build()
-            );
+        if ((isDev() || isProd()) && errorThrottle.shouldNotify(key)) {
+            discordNotifier.sendError(DiscordErrorMessage.from(e, request, activeProfile(), getStackTrace(e)));
         }
 
         return ResponseEntity
@@ -120,6 +110,10 @@ public class GlobalExceptionHandler {
 
     private boolean isProd() {
         return Arrays.asList(environment.getActiveProfiles()).contains("prod");
+    }
+
+    private boolean isDev() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("dev");
     }
 }
 
