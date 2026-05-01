@@ -59,7 +59,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         // 프론트로 redirect + 데이터 전달
-        String redirectUrl = url + "/oauth/success" +
+        String redirectUrl = url + "/auth/oauth/callback" +
                 "?resultCode=" + login.tokens().resultCode() +
                 "&message=" + URLEncoder.encode(login.tokens().message(), StandardCharsets.UTF_8) +
                 "&accessToken=" + login.tokens().accessToken() +
