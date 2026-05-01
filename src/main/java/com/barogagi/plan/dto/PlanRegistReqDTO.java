@@ -49,7 +49,5 @@ public class PlanRegistReqDTO {
     public String planNm;
 
 
-
-
 }
 
