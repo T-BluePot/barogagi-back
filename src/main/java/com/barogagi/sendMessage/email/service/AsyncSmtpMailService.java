@@ -1,5 +1,6 @@
 package com.barogagi.sendMessage.email.service;
 
+import com.barogagi.properties.MessageSendProperties;
 import com.barogagi.sendMessage.email.dto.SendMailDTO;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
@@ -17,6 +18,8 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class AsyncSmtpMailService {
 
+    private final MessageSendProperties messageSendProperties;
+
     private final String SMTP_HOST = "smtp.gmail.com";
     private final int SMTP_PORT = 587;
     private final String USERNAME; // Gmail 계정
@@ -24,9 +27,11 @@ public class AsyncSmtpMailService {
 
     private final int MAX_RETRY = 3;
 
-    public AsyncSmtpMailService(Environment environment) {
+    public AsyncSmtpMailService(Environment environment,
+                                MessageSendProperties messageSendProperties) {
         USERNAME = environment.getProperty("direct-send.from");
         PASSWORD = environment.getProperty("app.password");
+        this.messageSendProperties = messageSendProperties;
     }
 
     @Async
@@ -52,7 +57,7 @@ public class AsyncSmtpMailService {
             });
 
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(from, "핏플(fitpl)", "UTF-8"));
+            message.setFrom(new InternetAddress(from, messageSendProperties.getName(), "UTF-8"));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
             message.setSubject(subject);
             message.setContent(body, "text/html; charset=UTF-8");

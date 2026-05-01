@@ -6,6 +6,7 @@ import com.barogagi.approval.exception.ApprovalException;
 import com.barogagi.approval.vo.ApprovalCompleteVO;
 import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.approval.vo.ApprovalVO;
+import com.barogagi.properties.MessageSendProperties;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.sendMessage.sms.dto.SendSmsVO;
 import com.barogagi.sendMessage.sms.service.SmsSendService;
@@ -29,6 +30,7 @@ public class ApprovalService {
     private final AuthCodeService authCodeService;
     private final SmsSendService smsSendService;
     private final ApprovalTxService approvalTxService;
+    private final MessageSendProperties messageSendProperties;
 
     public ApiResponse approvalTelSend(String apiSecretKey, ApprovalSendVO approvalSendVO) {
 
@@ -72,7 +74,7 @@ public class ApprovalService {
         // 인증번호 메시지 발송
         SendSmsVO sendSmsVO = new SendSmsVO();
         sendSmsVO.setRecipientTel(approvalSendVO.getTel());
-        String messageContent = "[핏플(fitpl)]\r\n인증번호: " + authCode;
+        String messageContent = messageSendProperties.getName() + "\r\n" + "인증번호: " + authCode;
         sendSmsVO.setMessageContent(messageContent);
         boolean sendMessageResult = smsSendService.sendSms(sendSmsVO);
 

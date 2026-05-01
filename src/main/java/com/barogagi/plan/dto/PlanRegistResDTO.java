@@ -49,6 +49,9 @@ public class PlanRegistResDTO {
     @Schema(description = "장소 링크(이미지 불러오기용)")
     public String planLink;
 
+    @Schema(description = "이미지 url")
+    private String imageUrl;
+
     @Schema(description = "장소 한줄 설명(ai 생성)")
     public String planDescription;
 
