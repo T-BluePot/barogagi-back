@@ -27,7 +27,7 @@ public class DiscordErrorMessage {
             String environment
     ) {
         return DiscordErrorMessage.builder()
-                .service("BAROGAGI-API")
+                .service("FITPL-API")
                 .environment(environment)
                 .uri(request.getRequestURI())
                 .method(request.getMethod())
@@ -47,7 +47,7 @@ public class DiscordErrorMessage {
             String stackTrace
     ) {
         return DiscordErrorMessage.builder()
-                .service("BAROGAGI-API")
+                .service("FITPL-API")
                 .environment(environment)
                 .uri(request.getRequestURI())
                 .method(request.getMethod())
