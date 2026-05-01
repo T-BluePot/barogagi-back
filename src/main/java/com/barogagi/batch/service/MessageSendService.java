@@ -4,6 +4,7 @@ import com.barogagi.batch.dto.SendDTO;
 import com.barogagi.batch.entity.MessageOutbox;
 import com.barogagi.batch.vo.SendResult;
 import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.properties.MessageSendProperties;
 import com.barogagi.sendMessage.alimTalk.service.AlimTalkSendService;
 import com.barogagi.sendMessage.email.dto.SendMailDTO;
 import com.barogagi.sendMessage.email.service.EmailSendService;
@@ -23,12 +24,13 @@ public class MessageSendService {
 
     private final EncryptUtil encryptUtil;
 
+    private final MessageSendProperties messageSendProperties;
+
     private final AlimTalkSendService alimTalkSendService;
     private final SmsSendService smsSendService;
     private final EmailSendService emailSendService;
 
     // 알림톡 / 문자
-    private final String SERVICE_NAME = "핏플(fitpl)";
     private final String CANCEL_METHOD = "앱 접속 후 로그인";
 
     // 이메일
@@ -37,11 +39,13 @@ public class MessageSendService {
 
     public MessageSendService(Environment environment,
                               EncryptUtil encryptUtil,
+                              MessageSendProperties messageSendProperties,
                               AlimTalkSendService alimTalkSendService,
                               SmsSendService smsSendService,
                               EmailSendService emailSendService) {
         this.DIRECT_SEND_FROM = environment.getProperty("direct-send.from");
         this.encryptUtil = encryptUtil;
+        this.messageSendProperties = messageSendProperties;
         this.alimTalkSendService = alimTalkSendService;
         this.smsSendService = smsSendService;
         this.emailSendService = emailSendService;
@@ -61,7 +65,7 @@ public class MessageSendService {
 
         // 메시지에 들어갈 데이터 (공통)
         Map<String, String> variables = new HashMap<>();
-        variables.put("serviceName", SERVICE_NAME);
+        variables.put("serviceName", messageSendProperties.getName());
         variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
         variables.put("cancelMethod", CANCEL_METHOD);
 
@@ -82,13 +86,13 @@ public class MessageSendService {
                     return smsSuccess ? new SendResult(true, null) : new SendResult(false, "SMS 발송 실패");
 
                 case EMAIL:
-                    variables.put("supportEmail", "support@fitpl.com");
-                    variables.put("companyKorName", "핏플");
-                    variables.put("bizNumber", "000-00-00000");
-                    variables.put("ceoName", "홍길동");
-                    variables.put("address", "서울특별시 OO구 OO로 00");
-                    variables.put("tel", "0000-0000");
-                    variables.put("companyEngName", "Fitpl");
+                    variables.put("supportEmail", messageSendProperties.getCompanyEmail());
+                    variables.put("companyKorName", messageSendProperties.getCompanyKorName());
+                    variables.put("bizNumber", messageSendProperties.getBusinessBizNumber());
+                    variables.put("ceoName", messageSendProperties.getCompanyCeoName());
+//                    variables.put("address", "서울특별시 OO구 OO로 00");
+                    variables.put("tel", messageSendProperties.getCompanyTel());
+                    variables.put("companyEngName", messageSendProperties.getCompanyEngName());
                     sendDTO.setVariables(variables);
 
                     SendMailDTO sendMailDTO = new SendMailDTO();
