@@ -51,6 +51,7 @@ public enum ErrorCode {
     FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
     FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "올바른 생년월일 형식이 아닙니다.", false),
     FAIL_OAUTH2_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "S402", "소셜 로그인 실패하였습니다.", false),
+    NO_SIGN_UP_DAYS(HttpStatus.BAD_REQUEST, "S403", "탈퇴 후 일정 기간 동안 재가입이 제한됩니다.", false),
 
     // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),
