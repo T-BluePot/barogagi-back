@@ -44,10 +44,10 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
         String nickname = "";
-        if(login.tokens().resultCode().equals("R200")) {
-            UserMembershipInfo user = userMembershipRepository.findById(login.membershipNo())
-                    .orElseThrow(() -> new OAuthException(ErrorCode.NOT_FOUND_USER_INFO));
-            nickname = user.getNickName() == null ? "" : user.getNickName();
+        if("R200".equals(login.tokens().resultCode())) {
+            UserMembershipInfo user = userMembershipRepository.findById(login.membershipNo()).orElse(null);
+            nickname = (user == null || user.getNickName() == null) ? "" : user.getNickName();
+
         }
 
         // 프론트로 redirect + 데이터 전달

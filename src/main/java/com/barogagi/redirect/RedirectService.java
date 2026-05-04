@@ -52,7 +52,7 @@ public class RedirectService {
         String refreshTokenExpiresIn = String.valueOf(paramMap.get("refreshTokenExpiresIn") == null ? "" : paramMap.get("refreshTokenExpiresIn"));
 
         String nickname = String.valueOf(paramMap.get("nickname"));
-        String nicknameYn = String.valueOf(nickname.isEmpty() ? "N" : "Y");
+        String nicknameYn = nickname.isEmpty() ? "N" : "Y";
 
         return serverUrl() + "/auth/oauth/callback" +
                 "?resultCode=" + resultCode +
@@ -73,16 +73,6 @@ public class RedirectService {
         String message = String.valueOf(paramMap.get("message") == null ? "" : paramMap.get("message"));
 
         return serverUrl() + "/auth/oauth/callback" +
-                "?resultCode=" + resultCode +
-                "&message=" + URLEncoder.encode(message, StandardCharsets.UTF_8);
-    }
-
-    // api 호출 시 SecurityConfig에서 걸리는 경우
-    public String redirectUrl(Map<String, Object> paramMap) {
-        String resultCode = String.valueOf(paramMap.get("resultCode") == null ? "" : paramMap.get("resultCode"));
-        String message = String.valueOf(paramMap.get("message") == null ? "" : paramMap.get("message"));
-
-        return serverUrl() + "/auth/callback" +
                 "?resultCode=" + resultCode +
                 "&message=" + URLEncoder.encode(message, StandardCharsets.UTF_8);
     }
