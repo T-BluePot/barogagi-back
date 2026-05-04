@@ -1,14 +1,10 @@
 package com.barogagi.config;
 
 import com.barogagi.member.domain.UserMembershipInfo;
-import com.barogagi.member.join.basic.exception.JoinException;
-import com.barogagi.member.join.oauth.exception.OAuthException;
 import com.barogagi.member.login.dto.LoginResponse;
-import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.redirect.RedirectService;
-import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +16,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -47,7 +42,6 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         if("R200".equals(login.tokens().resultCode())) {
             UserMembershipInfo user = userMembershipRepository.findById(login.membershipNo()).orElse(null);
             nickname = (user == null || user.getNickName() == null) ? "" : user.getNickName();
-
         }
 
         // 프론트로 redirect + 데이터 전달
