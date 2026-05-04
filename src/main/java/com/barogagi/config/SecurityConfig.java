@@ -2,8 +2,8 @@ package com.barogagi.config;
 
 import com.barogagi.member.join.oauth.service.CustomOidcUserService;
 import com.barogagi.member.join.oauth.service.DelegatingOAuth2UserService;
+import com.barogagi.redirect.RedirectService;
 import com.barogagi.util.exception.ErrorCode;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -32,13 +33,16 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final RedirectService redirectService;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
                           OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler) {
+                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+                          RedirectService redirectService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.redirectService = redirectService;
         log.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
@@ -94,16 +98,12 @@ public class SecurityConfig {
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
 
-                    String resultCode = ErrorCode.FAIL_OAUTH2_LOGIN.getCode();
-                    String message = ErrorCode.FAIL_OAUTH2_LOGIN.getMessage();
-
-                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    res.setContentType("application/json;charset=UTF-8");
-                    String json = String.format(
-                            "{\"resultCode\":\"%s\", \"message\":\"%s\"}",
-                            resultCode, message
+                    // 프론트로 redirect + 데이터 전달
+                    Map<String, Object> redirectUrlMap = Map.of(
+                            "resultCode", ErrorCode.INVALID_REQUEST.getCode(),
+                            "message", ErrorCode.INVALID_REQUEST.getMessage()
                     );
-                    res.getWriter().write(json);
+                    res.sendRedirect(redirectService.redirectUrl(redirectUrlMap));
                 }));
 
         return http.build();
