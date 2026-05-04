@@ -1,24 +1,26 @@
 package com.barogagi.config;
 
+import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.member.join.basic.exception.JoinException;
+import com.barogagi.member.join.oauth.exception.OAuthException;
 import com.barogagi.member.login.dto.LoginResponse;
+import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.service.AuthService;
+import com.barogagi.member.repository.UserMembershipRepository;
+import com.barogagi.redirect.RedirectService;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -26,10 +28,9 @@ import java.util.Map;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
-    private final Environment environment;
+    private final RedirectService redirectService;
 
-    @Value("${cors.allowed-origins}")
-    private String allowedOrigins;
+    private final UserMembershipRepository userMembershipRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest req, HttpServletResponse res,
@@ -42,33 +43,27 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
 
-        // 서버 종류
-        String[] profiles = environment.getActiveProfiles();
-        String serverType = (profiles.length > 0) ? profiles[0] : "";
+        String nickname = "";
+        if("R200".equals(login.tokens().resultCode())) {
+            UserMembershipInfo user = userMembershipRepository.findById(login.membershipNo()).orElse(null);
+            nickname = (user == null || user.getNickName() == null) ? "" : user.getNickName();
 
-        // 서버별 주소
-        List<String> addresses = Arrays.asList(allowedOrigins.split(","));
-
-        String url = "";
-        if(serverType.equals("dev")) {  // 테스트 서버
-            url = addresses.get(1);
-        } else if(serverType.equals("prod")) {  // 실서버
-            url = addresses.get(2);
-        } else {  // 로컬 서버
-            url = addresses.get(0);
         }
 
         // 프론트로 redirect + 데이터 전달
-        String redirectUrl = url + "/auth/oauth/callback" +
-                "?resultCode=" + login.tokens().resultCode() +
-                "&message=" + URLEncoder.encode(login.tokens().message(), StandardCharsets.UTF_8) +
-                "&accessToken=" + login.tokens().accessToken() +
-                "&accessTokenExpiresIn=" + login.tokens().accessTokenExpiresIn() +
-                "&userId=" + userId +
-                "&membershipNo=" + login.membershipNo() +
-                "&refreshToken=" + login.tokens().refreshToken() +
-                "&refreshTokenExpiresIn=" + login.tokens().refreshTokenExpiresIn();
+        Map<String, Object> redirectUrlMap = Map.of(
+                "resultCode", login.tokens().resultCode(),
+                "message", login.tokens().message(),
+                "accessToken", login.tokens().accessToken(),
+                "accessTokenExpiresIn", login.tokens().accessTokenExpiresIn(),
+                "membershipNo", login.membershipNo(),
+                "refreshToken", login.tokens().refreshToken(),
+                "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn(),
+                "nickname", nickname
+        );
 
+        String redirectUrl = redirectService.successOAuthRedirectUrl(redirectUrlMap);
+      
         res.sendRedirect(redirectUrl);
     }
 

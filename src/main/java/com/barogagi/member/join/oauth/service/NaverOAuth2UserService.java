@@ -6,6 +6,7 @@ import com.barogagi.member.join.basic.dto.JoinRequestDTO;
 import com.barogagi.member.join.basic.exception.JoinException;
 import com.barogagi.member.join.basic.service.MemberSignupService;
 import com.barogagi.member.join.oauth.dto.OAuth2UserDTO;
+import com.barogagi.member.join.oauth.exception.OAuthJoinException;
 import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.service.UserMembershipService;
 import com.barogagi.util.EncryptUtil;
@@ -72,8 +73,8 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
             // 일정 기간 동안 동일한 아이디로 회원가입 금지
             LocalDateTime limitDate = LocalDateTime.now().minusDays(REJOIN_BLOCK_DAYS);
             boolean blocked = deletedMembershipRepository.existsRecentlyWithdrawnUser(id.trim(), limitDate);
-            if(blocked) {
-                throw new OAuth2AuthenticationException(ErrorCode.FAIL_OAUTH2_LOGIN.getMessage());
+            if (blocked) {
+                throw new OAuthJoinException(ErrorCode.NO_SIGN_UP_DAYS);
             }
 
             // 네이버로 회원가입한 정보가 있는지 체크
@@ -94,24 +95,24 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                 joinRequestDTO.setJoinType("NAVER");
 
                 // gender(성별) : M(남성), F(여성)
-                if(null != gender) {
-                    if(gender.equals("M")) {  // 남성
+                if (null != gender) {
+                    if (gender.equals("M")) {  // 남성
                         joinRequestDTO.setGender(Gender.M);
-                    } else if(gender.equals("F")) {  // 여성
+                    } else if (gender.equals("F")) {  // 여성
                         joinRequestDTO.setGender(Gender.W);
                     }
                 }
 
-                if(null != birthday && null != birthyear) {
+                if (null != birthday && null != birthyear) {
                     // BIRTH(생년월일) (출생연도 + 생일)
                     String birth = birthyear;
-                    if(birthday.contains("-")) {
+                    if (birthday.contains("-")) {
                         birth = birth + birthday.replace("-", "");
                     }
                     joinRequestDTO.setBirth(birth);
                 }
 
-                if(null != tel) {
+                if (null != tel) {
                     // 휴대 전화번호
                     joinRequestDTO.setTel(encryptUtil.encrypt(tel.replaceAll("[^0-9]", "")));
                 }
@@ -119,6 +120,9 @@ public class NaverOAuth2UserService extends DefaultOAuth2UserService {
                 String membershipNo = memberSignupService.signUp(joinRequestDTO);
                 logger.info("NAVER join membershipNo={}", membershipNo);
             }
+
+        } catch (OAuthJoinException e) {
+            throw e;
 
         } catch (Exception e) {
             logger.error("NAVER OAuth 회원가입 중 오류 발생: {}", e.getMessage());
