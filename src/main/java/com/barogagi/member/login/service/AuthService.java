@@ -5,6 +5,7 @@ import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.*;
 import com.barogagi.member.domain.RefreshToken;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.login.exception.LoginException;
 import com.barogagi.member.repository.RefreshTokenRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.member.service.RefreshTokenService;
@@ -45,14 +46,6 @@ public class AuthService {
             throw new RuntimeException("USER_NOT_FOUND");
         }
 
-        // BASIC 가입만 패스워드 검증 (소셜은 별도 플로우에서 토큰 교환 권장)
-        if (!"BASIC".equalsIgnoreCase(userMembershipInfo.getJoinType())) {
-            throw new RuntimeException("NOT_BASIC_MEMBER");
-        }
-        if (userMembershipInfo.getPassword() == null || !encoder.matches(req.password(), userMembershipInfo.getPassword())) {
-            throw new RuntimeException("BAD_CREDENTIALS");
-        }
-
         String no = userMembershipInfo.getMembershipNo();
         String access = jwt.generateAccessToken(no, userMembershipInfo.getUserId());
         String refresh = jwt.generateRefreshToken(no, req.deviceId());
@@ -84,7 +77,7 @@ public class AuthService {
         UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(userId);
 
         if(null == userMembershipInfo) {
-            throw new RuntimeException("USER_NOT_FOUND");
+            throw new LoginException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
         // 회원 탈퇴 신청했다가 다시 재로그인을 했을 경우
