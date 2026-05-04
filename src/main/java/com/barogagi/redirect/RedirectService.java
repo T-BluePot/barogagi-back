@@ -51,6 +51,9 @@ public class RedirectService {
         String refreshToken = String.valueOf(paramMap.get("refreshToken") == null ? "" : paramMap.get("refreshToken"));
         String refreshTokenExpiresIn = String.valueOf(paramMap.get("refreshTokenExpiresIn") == null ? "" : paramMap.get("refreshTokenExpiresIn"));
 
+        String nickname = String.valueOf(paramMap.get("nickname"));
+        String nicknameYn = String.valueOf(nickname.isEmpty() ? "N" : "Y");
+
         return serverUrl() + "/auth/oauth/callback" +
                 "?resultCode=" + resultCode +
                 "&message=" + URLEncoder.encode(message, StandardCharsets.UTF_8) +
@@ -58,7 +61,9 @@ public class RedirectService {
                 "&accessTokenExpiresIn=" + accessTokenExpiresIn +
                 "&membershipNo=" + membershipNo +
                 "&refreshToken=" + refreshToken +
-                "&refreshTokenExpiresIn=" + refreshTokenExpiresIn;
+                "&refreshTokenExpiresIn=" + refreshTokenExpiresIn +
+                "&nicknameYn=" + nicknameYn +
+                "&nickname=" + URLEncoder.encode(nickname, StandardCharsets.UTF_8);
     }
 
     // OAuth 후 실패 시 프론트로 redirect
