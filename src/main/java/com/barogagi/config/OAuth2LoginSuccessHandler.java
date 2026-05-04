@@ -63,7 +63,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         );
 
         String redirectUrl = redirectService.successOAuthRedirectUrl(redirectUrlMap);
-
+      
         res.sendRedirect(redirectUrl);
     }
 
