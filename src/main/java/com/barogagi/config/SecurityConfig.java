@@ -94,8 +94,8 @@ public class SecurityConfig {
                 // 브라우저 리다이렉트 대신 401 JSON
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((req, res, e) -> {
 
-                    String resultCode = ErrorCode.FAIL_OAUTH2_LOGIN.getCode();
-                    String message = ErrorCode.FAIL_OAUTH2_LOGIN.getMessage();
+                    String resultCode = ErrorCode.INVALID_REQUEST.getCode();
+                    String message = ErrorCode.INVALID_REQUEST.getMessage();
 
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json;charset=UTF-8");
