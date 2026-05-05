@@ -72,7 +72,7 @@ public class KakaoOAuth2UserService implements OAuth2UserService<OAuth2UserReque
             }
 
             // id에 prefix 추가
-            id = "provider=kakao" + id;
+            id = "kakao" + id;
         }
 
         // 2) 우리 DB에 upsert
