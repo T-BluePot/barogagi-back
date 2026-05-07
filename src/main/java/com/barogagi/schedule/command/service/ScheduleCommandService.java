@@ -627,6 +627,7 @@ public class ScheduleCommandService {
                     .user(user)
                     .item(item)
                     .delYn("N")
+                    .planSource(String.valueOf(planRes.getPlanSource()))
                     .build();
 
             planRepository.saveAndFlush(plan);
