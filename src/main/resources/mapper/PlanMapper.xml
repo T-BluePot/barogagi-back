@@ -17,6 +17,7 @@
 
         <result property="categoryNum" column="categoryNum" />
         <result property="categoryNm" column="categoryNm" />
+        <result property="planSource" column="planSource" />
 
         <!-- 지역 리스트 -->
         <collection property="regionVOList" ofType="com.barogagi.region.query.vo.RegionDetailVO"
@@ -46,9 +47,10 @@
 		          , b.ITEM_NM AS itemNm
 		          , c.CATEGORY_NUM AS categoryNum
 		          , c.CATEGORY_NM AS categoryNm
+                  , a.PLAN_SOURCE AS planSource
             FROM 	PLAN a
-            JOIN    ITEM b ON a.ITEM_NUM = b.ITEM_NUM
-            JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
+            LEFT JOIN    ITEM b ON a.ITEM_NUM = b.ITEM_NUM
+            LEFT JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
             WHERE   a.SCHEDULE_NUM = #{scheduleNum}
             AND     a.DEL_YN = 'N';
         ]]>
