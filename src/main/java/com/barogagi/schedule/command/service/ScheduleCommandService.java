@@ -770,8 +770,7 @@ public class ScheduleCommandService {
                             ? planRes.getPlanAddress()
                             : (oldPlan != null ? oldPlan.getPlanAddress() : "");
 
-                    logger.info("!! description={}, address={}", description, address);
-                    Item item = itemRepository.findById(planRes.getItemNum())
+                    logger.info("!! description={}, address={}, planLink={}", description, address, planRes.getPlanLink());                    Item item = itemRepository.findById(planRes.getItemNum())
                             .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
 
                     PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
