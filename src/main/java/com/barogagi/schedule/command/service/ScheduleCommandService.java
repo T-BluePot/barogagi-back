@@ -345,11 +345,12 @@ public class ScheduleCommandService {
         AIReqWrapper aiReqWrapper = AIReqWrapper.builder()
                 .tags(tagNames)
                 .comment(Optional.ofNullable(scheduleRegistReqDTO.getComment()).orElse(""))
+                .category(categoryNm)
                 .placeList(placeList)
                 .build();
 
         AIResDTO aiRes = aiClient.recommandPlace(aiReqWrapper);
-        if (aiRes == null) {
+        if (aiRes == null || aiRes.getRecommandPlaceIndex() == -1) {
             throw new ScheduleException(ErrorCode.AI_RECOMMENDATION_FAILED);
         }
 
