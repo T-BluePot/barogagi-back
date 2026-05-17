@@ -78,9 +78,12 @@ public class AIClient {
                 .content(AiPrompt.RECOMMEND_PLACE_SYSTEM)
                 .build();
 
+        logger.info("AI 추천 요청 생성: comment={}, tags={}, category={}, placeCount={}",
+                wrapper.getComment(), wrapper.getTags(), wrapper.getCategory(), wrapper.getPlaceList().size());
         StringBuilder sb = new StringBuilder();
         sb.append("comment: ").append(wrapper.getComment()).append("\n");
         sb.append("tags: ").append(String.join(", ", wrapper.getTags())).append("\n\n");
+        sb.append("category: ").append(wrapper.getCategory()).append("\n\n");
 
         sb.append("places:\n");
         String placesText = wrapper.getPlaceList().stream()
