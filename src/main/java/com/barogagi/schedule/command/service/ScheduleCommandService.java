@@ -736,6 +736,7 @@ public class ScheduleCommandService {
                             ScheduleTag.builder()
                                     .id(new ScheduleTagId(tag.getTagNum(), schedule.getScheduleNum()))
                                     .schedule(schedule)
+                                    .membershipNo(membershipNo)
                                     .tag(tag)
                                     .build()
                     );
