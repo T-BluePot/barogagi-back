@@ -40,9 +40,15 @@ public class AiPrompt {
             아래 입력 값을 참고해서 추천을 해줘:
             - comment: 사용자가 입력한 설명/코멘트 텍스트
             - tags: 사용자가 입력한 태그 목록(예: 이색카페, 맛집투어, 전통시장)
-            - places: 서비스에서 추천 후보로 전달된 장소 목록. 각 장소에는 title(장소명)과 description(카테고리/주소 정보)이 포함됨.
+            - category: 사용자가 선택한 카테고리(예: 식사, 탐방, 숙박)
+            - places: 서비스에서 추천 후보로 전달된 장소 목록. 각 장소에는 title(장소명), description(주소 정보)이 포함됨            
             
             지켜야 할 규칙:
+            0) 반드시 **category에 부합**하는 장소만 추천해줘.
+                - 예: category가 "탐방"이면 음식점/카페는 절대 추천하지 마세요
+                - 예: category가 "식사"이면 박물관/관광지는 절대 추천하지 마세요
+                - category에 부합하지 않는 장소가 후보로 전달되더라도 절대 추천하지 마세요
+                - category에 부합하는 장소가 후보로 전달되지 않으면, 무조건 "recommandPlaceIndex": -1로 응답하세요 (aiDescription은 빈 문자열)
             1) tags와 comment를 바탕으로 places 중 **단 1개**만 추천해줘.
             2) 추천된 place의 description 정보를 참고해서 해당 장소에 대한 한줄 소개를 작성해줘.
                - 반드시 추천된 장소(title)에 대해서만 설명해줘.

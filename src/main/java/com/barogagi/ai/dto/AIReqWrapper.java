@@ -11,5 +11,6 @@ import java.util.List;
 public class AIReqWrapper {
     private List<String> tags;
     private String comment;
+    private String category;
     private List<AIReqDTO> placeList;
 }
