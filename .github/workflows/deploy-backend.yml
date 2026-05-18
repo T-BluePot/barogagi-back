@@ -43,12 +43,12 @@ jobs:
       - name: SCP jar and Dockerfile
         run: |
           set -e
-          md5sum ./target/*.jar > checksum.md5
+          cd ./target && md5sum *.jar > ../checksum.md5 && cd ..
           scp -i key.pem -o StrictHostKeyChecking=no \
-          ./target/*.jar \
-          ./Dockerfile \
-          checksum.md5 \
-          $USERNAME@$HOST:$TARGET_DIR
+            ./target/*.jar \
+            ./Dockerfile \
+            checksum.md5 \
+            $USERNAME@$HOST:$TARGET_DIR
 
       - name: Verify jar integrity on remote
         run: |
