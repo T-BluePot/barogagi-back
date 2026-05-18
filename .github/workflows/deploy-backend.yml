@@ -43,10 +43,17 @@ jobs:
       - name: SCP jar and Dockerfile
         run: |
           set -e
+          md5sum ./target/*.jar > checksum.md5
           scp -i key.pem -o StrictHostKeyChecking=no \
-            ./target/*.jar \
-            ./Dockerfile \
-            $USERNAME@$HOST:$TARGET_DIR
+          ./target/*.jar \
+          ./Dockerfile \
+          checksum.md5 \
+          $USERNAME@$HOST:$TARGET_DIR
+
+      - name: Verify jar integrity on remote
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=no \
+            $USERNAME@$HOST "cd $TARGET_DIR && md5sum -c checksum.md5"
 
       - name: Deploy to TEST EC2 (main)
         if: github.ref == 'refs/heads/main'
