@@ -174,3 +174,4 @@ dist-ssr
 
 # Firebase admin key
 src/main/resources/firebase/firebase-service-account.json
+**/firebase-service-account.json
