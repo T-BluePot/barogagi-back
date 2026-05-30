@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.barogagi.board.query.mapper.BoardMapper">
+
+    <resultMap id="BoardListMap" type="com.barogagi.board.query.vo.BoardListVO">
+        <id property="boardNum" column="boardNum"/>
+        <result property="boardTitle" column="boardTitle"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="isImportant" column="isImportant"/>
+        <result property="regDate" column="regDate"/>
+    </resultMap>
+
+    <resultMap id="BoardMap" type="com.barogagi.board.query.vo.BoardVO">
+        <id property="boardNum" column="boardNum"/>
+        <result property="boardTitle" column="boardTitle"/>
+        <result property="boardContent" column="boardContent"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="isImportant" column="isImportant"/>
+        <result property="regDate" column="regDate"/>
+    </resultMap>
+
+    <select id="selectBoardList" resultMap="BoardListMap">
+    <![CDATA[
+        SELECT
+            b.BOARD_NUM     AS boardNum,
+            b.BOARD_TITLE   AS boardTitle,
+            b.IMAGE_URL     AS imageUrl,
+            b.IS_IMPORTANT  AS isImportant,
+            b.REG_DATE      AS regDate
+        FROM BOARD b
+        WHERE b.DEL_YN = 'N'
+        ORDER BY b.IS_IMPORTANT DESC, b.REG_DATE DESC
+            LIMIT #{size} OFFSET #{offset}
+        ]]>
+</select>
+
+    <select id="selectBoardDetail" parameterType="int" resultMap="BoardMap">
+        <![CDATA[
+        SELECT
+            b.BOARD_NUM     AS boardNum,
+            b.BOARD_TITLE   AS boardTitle,
+            b.BOARD_CONTENT AS boardContent,
+            b.IMAGE_URL     AS imageUrl,
+            b.IS_IMPORTANT  AS isImportant,
+            b.REG_DATE      AS regDate
+        FROM BOARD b
+        WHERE b.BOARD_NUM = #{boardNum}
+          AND b.DEL_YN = 'N'
+        ]]>
+    </select>
+
+</mapper>
