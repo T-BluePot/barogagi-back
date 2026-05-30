@@ -58,6 +58,9 @@ public class Plan {
     @JoinColumn(name = "ITEM_NUM", nullable = true)
     private Item item;
 
+    @Column(name = "PLAN_MEMO")
+    private String planMemo;            // 메모
+
     // PLACE와 1:1 mapping
     @OneToOne(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private Place place;

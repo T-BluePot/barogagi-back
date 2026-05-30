@@ -18,6 +18,7 @@ public class PlanDetailVO {
     private String planSource;     // 링크
     private String startTime;       // 시작시간
     private String endTime;         // 종료시간
+    private String planMemo;        // 메모
 
     private String imageLink;       // 이미지 OG 태그 링크
 
