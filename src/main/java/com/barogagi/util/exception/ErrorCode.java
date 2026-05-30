@@ -129,6 +129,8 @@ public enum ErrorCode {
 
     // Place
     PLACE_SEARCH_EMPTY(HttpStatus.NOT_FOUND, "P101", "지역 검색 결과를 찾을 수 없습니다.", false),
+    POPULAR_PLACE_EMPTY(HttpStatus.NOT_FOUND, "P102", "인기 장소 검색 결과를 찾을 수 없습니다.", false),
+    FOUND_POPULAR_PLACE(HttpStatus.NOT_FOUND, "P200", "인기 장소 검색에 성공했습니다.", false),
 
     // Tag
     SUCCESS_FOUND_TAG(HttpStatus.OK, "G200", "태그 조회에 성공하였습니다.", false),

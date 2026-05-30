@@ -30,6 +30,12 @@
                     select="com.barogagi.tag.query.mapper.TagMapper.selectTagByPlanNum"/>
     </resultMap>
 
+    <resultMap id="PopularPlaceMap" type="com.barogagi.plan.dto.PopularPlaceResDTO">
+        <result property="planNm"      column="planNm" />
+        <result property="planAddress" column="planAddress" />
+        <result property="planLink"    column="planLink" />
+    </resultMap>
+
 
     <!-- Select Query -->
 
@@ -53,6 +59,23 @@
             LEFT JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
             WHERE   a.SCHEDULE_NUM = #{scheduleNum}
             AND     a.DEL_YN = 'N';
+        ]]>
+    </select>
+
+    <select id="selectPopularPlaces" parameterType="int" resultMap="PopularPlaceMap">
+    <![CDATA[
+        SELECT
+            p.PLAN_NM       AS planNm,
+            p.PLAN_ADDRESS  AS planAddress,
+            p.PLAN_LINK     AS planLink
+        FROM PLAN p
+        WHERE p.PLAN_LINK IS NOT NULL
+          AND p.PLAN_LINK != ''
+          AND p.DEL_YN = 'N'
+          AND p.REG_DATE >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY p.PLAN_LINK, p.PLAN_NM, p.PLAN_ADDRESS
+        ORDER BY COUNT(p.PLAN_LINK) DESC
+            LIMIT #{limit}
         ]]>
     </select>
 </mapper>
