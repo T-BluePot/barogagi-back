@@ -513,6 +513,7 @@ public class ScheduleCommandService {
                     .itemNum(plan.getItemNum())
                     .itemNm(itemMapper.selectItemNmBy(plan.getItemNum()))
                     .planTagRegistResDTOList(List.of()) // 사용자 일정은 태그 없음
+                    .planMemo(plan.getPlanMemo())
                     .build();
         } else {
 
@@ -542,6 +543,7 @@ public class ScheduleCommandService {
                     .regionNum(regionNum)
                     .regionNm(regionNm)
                     .planTagRegistResDTOList(List.of())
+                    .planMemo(plan.getPlanMemo())
                     .build();
         }
 
@@ -629,6 +631,7 @@ public class ScheduleCommandService {
                     .item(item)
                     .delYn("N")
                     .planSource(String.valueOf(planRes.getPlanSource()))
+                    .planMemo(planRes.getPlanMemo())
                     .build();
 
             planRepository.saveAndFlush(plan);
@@ -789,6 +792,7 @@ public class ScheduleCommandService {
                             .user(user)
                             .item(item)
                             .delYn("N")
+                            .planMemo(planRes.getPlanMemo())
                             .build();
 
                     planRepository.save(plan);
