@@ -9,12 +9,13 @@ import com.barogagi.member.login.exception.LoginException;
 import com.barogagi.member.repository.RefreshTokenRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.member.service.RefreshTokenService;
+import com.barogagi.push.entity.PushToken;
+import com.barogagi.push.repository.PushTokenRepository;
 import com.barogagi.util.JwtUtil;
 import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +32,8 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final UserMembershipRepository userMembershipRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PushTokenRepository pushTokenRepository;
     private final JwtUtil jwt;
-    private final PasswordEncoder encoder;
 
     @Value("${jwt.access-exp-seconds}")
     private long accessExp;
@@ -211,13 +212,21 @@ public class AuthService {
             String membershipNo = jwt.getMembershipNo(refreshToken);
             String deviceId = jwt.getDeviceId(refreshToken);
 
-            List<RefreshToken> tokens = refreshTokenRepository
-                    .findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
+            List<RefreshToken> tokens = refreshTokenRepository.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
 
             for (RefreshToken t : tokens) t.setStatus("REVOKED");
+
             if (!tokens.isEmpty()) {
                 refreshTokenRepository.saveAll(tokens);
             }
+
+            // fcm token 비활성화
+            List<PushToken> fcmTokens = pushTokenRepository.findAllByMembershipNoAndActiveYn(membershipNo, "Y");
+
+            for (PushToken token : fcmTokens) {
+                token.setActiveYn("N");
+            }
+
             return true;
 
         } catch (Exception e) {
