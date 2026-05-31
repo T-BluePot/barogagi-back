@@ -34,7 +34,7 @@ public class PushTokenService {
         }
         String membershipNo = String.valueOf(membershipNoInfo.get("membershipNo"));
 
-        Optional<PushToken> optional = repository.findByMembershipNoAndFcmToken(membershipNo, pushTokenRequest.getFcmToken());
+        Optional<PushToken> optional = repository.findByMembershipNo(membershipNo);
 
         PushToken entity;
 
@@ -43,6 +43,7 @@ public class PushTokenService {
             entity.setActiveYn("Y");
             entity.setDeviceType(pushTokenRequest.getDeviceType());
             entity.setAppVersion(pushTokenRequest.getAppVersion());
+            entity.setFcmToken(pushTokenRequest.getFcmToken());
 
         } else {  // 신규 token 저장
             entity = new PushToken();

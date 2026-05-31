@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface PushTokenRepository extends JpaRepository<PushToken, Long> {
 
-    Optional<PushToken> findByMembershipNoAndFcmToken(String membershipNo, String FcmToken);
+    Optional<PushToken> findByMembershipNo(String membershipNo);
     List<PushToken> findByMembershipNoAndActiveYn(String membershipNo, String activeYn);
     List<PushToken> findAllByMembershipNoAndActiveYn(String membershipNo, String activeYn);
 }

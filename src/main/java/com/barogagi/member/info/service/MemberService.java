@@ -6,6 +6,7 @@ import com.barogagi.member.info.dto.UserInfoResponseDTO;
 import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.repository.UserMembershipRepository;
+import com.barogagi.push.service.PushService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
 import com.barogagi.util.InputValidate;
@@ -31,6 +32,7 @@ public class MemberService {
     private final InputValidate inputValidate;
     private final UserMembershipRepository userMembershipRepository;
     private final MemberTxService memberTxService;
+    private final PushService pushService;
     private final Validator validator;
 
     public ApiResponse getUserInfo(HttpServletRequest request) {
@@ -59,6 +61,9 @@ public class MemberService {
 
         // 비밀번호는 보내주지 않는다
         memberInfo.setPassword("");
+
+        // 푸쉬
+        pushService.sendToUser(membershipNo, "회원 정보 조회", "회원 정보 조회가 완료되었습니다.");
 
         return ApiResponse.resultData(
                 memberInfo,
