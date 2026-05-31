@@ -44,4 +44,33 @@ public class PlaceController {
         logger.info("CALL /place/keyword-search");
         return placeQueryService.searchPlace(searchKeyword, request);
     }
+
+    @Operation(
+            summary = "30일 내 인기 장소 조회",
+            description = "최근 30일간 PLAN에 가장 많이 저장된 장소 링크 기준으로 인기 장소를 반환합니다.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "P200",
+                            description = "인기 장소 검색에 성공했습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "P102",
+                            description = "인기 장소 검색 결과를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "COMMON-500",
+                            description = "서버 오류가 발생했습니다."
+                    )
+            }
+    )
+    @GetMapping("/popular")
+    public ApiResponse getPopularPlaces(
+            @Parameter(description = "반환할 인기 장소 개수", example = "5")
+            @RequestParam(defaultValue = "5") Integer limit,
+            HttpServletRequest request) {
+        logger.info("CALL /api/v1/place/popular");
+        logger.info("[input] limit={}", limit);
+
+        return placeQueryService.searchPopularPlaces(limit, request);
+    }
 }

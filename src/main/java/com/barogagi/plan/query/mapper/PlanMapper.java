@@ -1,5 +1,6 @@
 package com.barogagi.plan.query.mapper;
 
+import com.barogagi.plan.dto.PopularPlaceResDTO;
 import com.barogagi.plan.query.vo.PlanDetailVO;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -11,4 +12,6 @@ public interface PlanMapper {
     // 계획 상세 조회
     List<PlanDetailVO> selectPlanDetailByScheduleNum(int scheduleNum);
 
+    // 인기 장소 조회
+    List<PopularPlaceResDTO> selectPopularPlaces(int limit);
 }

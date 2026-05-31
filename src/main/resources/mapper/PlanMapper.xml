@@ -18,6 +18,7 @@
         <result property="categoryNum" column="categoryNum" />
         <result property="categoryNm" column="categoryNm" />
         <result property="planSource" column="planSource" />
+        <result property="planMemo" column="planMemo" />
 
         <!-- 지역 리스트 -->
         <collection property="regionVOList" ofType="com.barogagi.region.query.vo.RegionDetailVO"
@@ -28,6 +29,12 @@
         <collection property="tagDetailVOList" ofType="com.barogagi.tag.query.vo.TagDetailVO"
                     column="planNum" javaType="java.util.List"
                     select="com.barogagi.tag.query.mapper.TagMapper.selectTagByPlanNum"/>
+    </resultMap>
+
+    <resultMap id="PopularPlaceMap" type="com.barogagi.plan.dto.PopularPlaceResDTO">
+        <result property="planNm"      column="planNm" />
+        <result property="planAddress" column="planAddress" />
+        <result property="planLink"    column="planLink" />
     </resultMap>
 
 
@@ -48,11 +55,29 @@
 		          , c.CATEGORY_NUM AS categoryNum
 		          , c.CATEGORY_NM AS categoryNm
                   , a.PLAN_SOURCE AS planSource
+                  , a.PLAN_MEMO AS planMemo
             FROM 	PLAN a
             LEFT JOIN    ITEM b ON a.ITEM_NUM = b.ITEM_NUM
             LEFT JOIN    CATEGORY c ON b.CATEGORY_NUM = c.CATEGORY_NUM
             WHERE   a.SCHEDULE_NUM = #{scheduleNum}
             AND     a.DEL_YN = 'N';
+        ]]>
+    </select>
+
+    <select id="selectPopularPlaces" parameterType="int" resultMap="PopularPlaceMap">
+    <![CDATA[
+        SELECT
+            p.PLAN_NM       AS planNm,
+            p.PLAN_ADDRESS  AS planAddress,
+            p.PLAN_LINK     AS planLink
+        FROM PLAN p
+        WHERE p.PLAN_LINK IS NOT NULL
+          AND p.PLAN_LINK != ''
+          AND p.DEL_YN = 'N'
+          AND p.REG_DATE >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY p.PLAN_LINK, p.PLAN_NM, p.PLAN_ADDRESS
+        ORDER BY COUNT(p.PLAN_LINK) DESC
+            LIMIT #{limit}
         ]]>
     </select>
 </mapper>
