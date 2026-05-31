@@ -5,22 +5,25 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
+
 @Slf4j
 @Configuration
 public class FirebaseConfig {
 
-    @Value("${firebase.config.path}")
-    private String firebaseConfigPath;
-
     @PostConstruct
     public void init() {
         try {
-            InputStream inputStream = new FileInputStream(firebaseConfigPath);
+
+            InputStream inputStream =
+                    getClass().getClassLoader()
+                            .getResourceAsStream("firebase/firebase-service-account.json");
+
+            if (inputStream == null) {
+                throw new RuntimeException("Firebase json 파일을 찾을 수 없습니다.");
+            }
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(inputStream))
@@ -28,11 +31,11 @@ public class FirebaseConfig {
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
+                log.info("Firebase initialized successfully");
             }
 
-            log.info("Firebase Path : {}", firebaseConfigPath);
-
         } catch (Exception e) {
+            log.error("Firebase initialization failed", e);
             throw new RuntimeException("Firebase 초기화 실패", e);
         }
     }
