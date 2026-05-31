@@ -38,6 +38,9 @@ public class PlanRegistReqDTO {
     @Schema(description = "사용자가 랜덤 카테고리를 선택한 경우", example = "Y")
     public String isRandomCategory;
 
+    @Schema(description = "메모")
+    private String planMemo;
+
     // 사용자가 직접 세부일정을 추가한 경우에만 필요한 값
     @Schema(description = "사용자가 수동으로 추가한 일정인지 여부(AI 생성 안함)", example = "Y")
     public String isUserAdded;

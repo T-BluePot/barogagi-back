@@ -6,6 +6,7 @@ import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -63,6 +64,9 @@ public class PlanRegistResDTO {
 
     @Schema(description = "지역 번호")
     public Integer regionNum;
+
+    @Schema(description = "메모")
+    private String planMemo;
 
     @Schema(description = "계획 태그 목록")
     public List<TagRegistResDTO> planTagRegistResDTOList;

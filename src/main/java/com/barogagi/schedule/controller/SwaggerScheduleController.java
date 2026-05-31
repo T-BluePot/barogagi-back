@@ -130,10 +130,10 @@ public interface SwaggerScheduleController {
                                             "    { \"tagNm\": \"즐거운\", \"tagNum\": 6 }\n" +
                                             "  ],\n" +
                                             "  \"scheduleRegionRegistReqDTOList\": [\n" +
-                                            "    { \"regionNum\": 1 },\n" +
-                                            "    { \"regionNum\": 2 },\n" +
-                                            "    { \"regionNum\": 3 },\n" +
-                                            "    { \"regionNum\": 4 }\n" +
+                                            "    { \"regionNum\": 9763 },\n" +
+                                            "    { \"regionNum\": 9764 },\n" +
+                                            "    { \"regionNum\": 9765 },\n" +
+                                            "    { \"regionNum\": 9766 }\n" +
                                             "  ],\n" +
                                             "  \"planRegistReqDTOList\": [\n" +
                                             "    {\n" +
@@ -144,8 +144,8 @@ public interface SwaggerScheduleController {
                                             "      \"isUserAdded\": \"N\",\n" +
                                             "      \"isRandomCategory\": \"N\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
-                                            "        { \"regionNum\": 1 },\n" +
-                                            "        { \"regionNum\": 3 }\n" +
+                                            "        { \"regionNum\": 9763 },\n" +
+                                            "        { \"regionNum\": 9764 }\n" +
                                             "      ],\n" +
                                             "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"맛집\", \"tagNum\": 11 },\n" +
@@ -174,7 +174,7 @@ public interface SwaggerScheduleController {
                                             "      \"isUserAdded\": \"N\",\n" +
                                             "      \"isRandomCategory\": \"Y\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
-                                            "        { \"regionNum\": 2 }\n" +
+                                            "        { \"regionNum\": 9763 }\n" +
                                             "      ],\n" + "      \"planTagRegistReqDTOList\": [\n" +
                                             "        { \"tagNm\": \"웨이팅 없는\", \"tagNum\": 13 },\n" +
                                             "        { \"tagNm\": \"맛집\", \"tagNum\": 11 }\n" +
@@ -201,7 +201,7 @@ public interface SwaggerScheduleController {
                                             "      \"isUserAdded\": \"Y\",\n" +
                                             "      \"planNm\": \"친구집 방문\",\n" +
                                             "      \"regionRegistReqDTOList\": [\n" +
-                                            "        { \"regionNum\": 1 }\n" +
+                                            "        { \"regionNum\": 9763 }\n" +
                                             "      ]\n" +
                                             "    }\n" +
                                             "  ]\n" +
@@ -285,6 +285,7 @@ public interface SwaggerScheduleController {
                                                     "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
                                                     "        \"planDescription\": \"분위기 좋은 한옥 카페 '더숲 초소책방'은 서울 종로구에 위치해 있으며, 숲속의 아늑함을 느낄 수 있는 넓은 야외 공간과 아름다운 서울 풍경을 감상할 수 있는 2층 테라스가 특징입니다.\",\n" +
                                                     "        \"planAddress\": \"서울 종로구 창의문로 146\",\n" +
+                                                    "        \"planMemo\": \"한옥 카페 메모!!\",\n" +
                                                     "        \"regionNm\": \"종로구\",\n" +
                                                     "        \"regionNum\": 1,\n" +
                                                     "        \"planTagRegistResDTOList\": [\n" +
@@ -304,6 +305,7 @@ public interface SwaggerScheduleController {
                                                     "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
                                                     "        \"planDescription\": \"분위기 좋은 카페로 뷰가 좋은 곳입니다.\",\n" +
                                                     "        \"planAddress\": \"서울 중구 무교로 17\",\n" +
+                                                    "        \"planMemo\": \"카페 메모\",\n" +
                                                     "        \"regionNm\": \"종로구\",\n" +
                                                     "        \"regionNum\": 1,\n" +
                                                     "        \"planTagRegistResDTOList\": [\n" +
@@ -352,6 +354,7 @@ public interface SwaggerScheduleController {
                                                     "        \"categoryNum\": 2,\n" +
                                                     "        \"categoryNm\": \"카페\",\n" +
                                                     "        \"planNm\": \"부빙\",\n" +
+                                                    "        \"planMemo\": \"부빙 메모 테스트\",\n" +
                                                     "        \"planLink\": \"http://place.map.kakao.com/20459372\",\n" +
                                                     "        \"planDescription\": \"'부빙'은 계절마다 변하는 감성 빙수를 판매하는 디저트 카페입니다.\",\n" +
                                                     "        \"planAddress\": \"서울 종로구 창의문로 136\",\n" +
@@ -371,6 +374,7 @@ public interface SwaggerScheduleController {
                                                     "        \"categoryNum\": 1,\n" +
                                                     "        \"categoryNm\": \"식사\",\n" +
                                                     "        \"planNm\": \"카카오프렌즈 코엑스점\",\n" +
+                                                    "        \"planMemo\": \"카카오프렌즈 코엑스점 메모 테스트\",\n" +
                                                     "        \"planLink\": \"http://place.map.kakao.com/26338954\",\n" +
                                                     "        \"planDescription\": null,\n" +
                                                     "        \"planAddress\": \"서울 강남구 삼성동 159\",\n" +
@@ -387,6 +391,7 @@ public interface SwaggerScheduleController {
                                                     "        \"categoryNum\": 4,\n" +
                                                     "        \"categoryNm\": \"놀거리\",\n" +
                                                     "        \"planNm\": \"친구집 방문\",\n" +
+                                                    "        \"planMemo\": \"친구집 방문 메모 테스트\",\n" +
                                                     "        \"planLink\": null,\n" +
                                                     "        \"planDescription\": null,\n" +
                                                     "        \"planAddress\": null,\n" +

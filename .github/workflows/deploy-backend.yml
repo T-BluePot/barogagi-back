@@ -36,6 +36,16 @@ jobs:
             echo "USERNAME=${{ secrets.TEST_USERNAME }}" >> $GITHUB_ENV
             echo "${{ secrets.APP_PROPS_MAIN_BASE64 }}" | base64 --decode > ./src/main/resources/application.properties
           fi
+          
+      - name: Create Firebase JSON
+        run: |
+          mkdir -p ./src/main/resources/firebase
+
+          if [[ "${GITHUB_REF##*/}" == "release" ]]; then
+            echo "${{ secrets.FIREBASE_JSON_RELEASE_BASE64 }}" | base64 --decode > ./src/main/resources/firebase/firebase-service-account.json
+          else
+            echo "${{ secrets.FIREBASE_JSON_TEST_BASE64 }}" | base64 --decode > ./src/main/resources/firebase/firebase-service-account.json
+          fi
 
       - name: Build jar file
         run: mvn clean package -DskipTests
