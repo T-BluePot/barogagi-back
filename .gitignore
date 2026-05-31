@@ -171,3 +171,7 @@ dist-ssr
 *.sln
 *.sw?
 *.properties
+
+# Firebase admin key
+src/main/resources/firebase/firebase-service-account.json
+**/firebase-service-account.json
