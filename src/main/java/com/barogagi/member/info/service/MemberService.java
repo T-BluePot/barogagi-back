@@ -6,6 +6,7 @@ import com.barogagi.member.info.dto.UserInfoResponseDTO;
 import com.barogagi.member.info.exception.MemberInfoException;
 import com.barogagi.member.join.basic.dto.Gender;
 import com.barogagi.member.repository.UserMembershipRepository;
+
 import com.barogagi.push.service.PushService;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.EncryptUtil;
