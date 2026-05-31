@@ -8,12 +8,15 @@ import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.repository.WithdrawReasonCodeRepository;
 import com.barogagi.member.withdraw.domain.WithdrawReasonCode;
 import com.barogagi.member.withdraw.exception.WithdrawException;
+import com.barogagi.push.entity.PushToken;
+import com.barogagi.push.repository.PushTokenRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,6 +28,7 @@ public class MemberAccountService {
     private final AccountService accountService;
 
     private final WithdrawReasonCodeRepository withdrawReasonCodeRepository;
+    private final PushTokenRepository pushTokenRepository;
 
     public ApiResponse withdrawMember(String refreshToken, WithdrawRequestDTO withdrawRequestDTO) {
 
@@ -45,7 +49,14 @@ public class MemberAccountService {
             );
         }
 
-        // 3. 탈퇴 코드 조회
+        // 3. fcm token 비활성화
+        List<PushToken> fcmTokens = pushTokenRepository.findAllByMembershipNoAndActiveYn(resultMap.get("membershipNo"), "Y");
+
+        for (PushToken token : fcmTokens) {
+            token.setActiveYn("N");
+        }
+
+        // 4. 탈퇴 코드 조회
         WithdrawReasonCode findWithdrawReasonCode = withdrawReasonCodeRepository.findWithdrawReasonCodeInfo(withdrawRequestDTO.getReasonNo());
 
         if(null == findWithdrawReasonCode) {
