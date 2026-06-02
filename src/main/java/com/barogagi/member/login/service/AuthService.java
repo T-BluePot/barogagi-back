@@ -91,6 +91,9 @@ public class AuthService {
         }
 
         String membershipNo = userMembershipInfo.getMembershipNo();
+
+        refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
+
         String access  = jwt.generateAccessToken(membershipNo, userMembershipInfo.getUserId());
         String refresh = jwt.generateRefreshToken(membershipNo, deviceId != null ? deviceId : "web-oauth");
 

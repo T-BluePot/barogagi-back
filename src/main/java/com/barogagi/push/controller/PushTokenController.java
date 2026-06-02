@@ -20,7 +20,6 @@ public class PushTokenController {
 
     private final PushTokenService pushTokenService;
 
-
     @Operation(summary = "FCM Token 저장 기능", description = "FCM Token 저장 기능입니다.",
             responses =  {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A401", description = "접근 권한이 존재하지 않습니다."),
