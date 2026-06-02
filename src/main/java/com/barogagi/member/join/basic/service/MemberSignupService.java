@@ -9,6 +9,7 @@ import com.barogagi.member.login.dto.UserIdDTO;
 import com.barogagi.member.repository.DeletedMembershipRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.setting.service.SettingService;
 import com.barogagi.terms.exception.TermsException;
 import com.barogagi.terms.service.TermsService;
 import com.barogagi.util.EncryptUtil;
@@ -40,6 +41,7 @@ public class MemberSignupService {
     private final PasswordConfig passwordConfig;
 
     private final TermsService termsService;
+    private final SettingService settingService;
 
     private final UserMembershipRepository userMembershipRepository;
     private final DeletedMembershipRepository deletedMembershipRepository;
@@ -144,6 +146,9 @@ public class MemberSignupService {
         if(!resCode.equals("200")) {
             throw new TermsException(ErrorCode.FAIL_INSERT_TERMS);
         }
+
+        // 14. 설정 값 기본 세팅
+        settingService.basicSetting(membershipNo);
 
         return ApiResponse.result(ErrorCode.SUCCESS_SIGN_UP);
     }
