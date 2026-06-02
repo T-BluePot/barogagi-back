@@ -5,6 +5,7 @@ import com.barogagi.member.login.dto.LoginResponse;
 import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.redirect.RedirectService;
+import com.barogagi.setting.service.SettingService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuthService authService;
     private final RedirectService redirectService;
+    private final SettingService settingService;
 
     private final UserMembershipRepository userMembershipRepository;
 
@@ -55,6 +57,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn(),
                 "nickname", nickname
         );
+
+        // 설정 값 기본 세팅
+        settingService.basicSetting(login.membershipNo());
 
         String redirectUrl = redirectService.successOAuthRedirectUrl(redirectUrlMap);
       

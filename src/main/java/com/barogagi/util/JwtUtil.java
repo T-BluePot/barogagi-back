@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
@@ -55,19 +56,22 @@ public class JwtUtil {
                 .setExpiration(Date.from(now.plusSeconds(accessExpSeconds)))
                 .claim("uid", userId)
                 .claim("typ", "ACCESS")
+                .setId(UUID.randomUUID().toString())
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String generateRefreshToken(String membershipNo, String deviceId) {
         Instant now = Instant.now();
+
         return Jwts.builder()
                 .setIssuer(issuer)
                 .setSubject(membershipNo)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(refreshExpSeconds)))
-                .claim("did", deviceId == null ? "default" : deviceId)
+                .claim("did", deviceId)
                 .claim("typ", "REFRESH")
+                .setId(UUID.randomUUID().toString())
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -19,5 +19,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 
     List<RefreshToken> findByMembershipNoAndStatus(String membershipNo, RefreshToken.Status status);
 
-    int deleteAllByMembershipNo(String membershipNo);
+    void deleteAllByMembershipNo(String membershipNo);
 }
