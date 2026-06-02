@@ -5,6 +5,7 @@ import com.barogagi.discord.DiscordNotifier;
 import com.barogagi.discord.ErrorThrottle;
 import com.barogagi.discord.dto.DiscordErrorMessage;
 import com.barogagi.response.ApiResponse;
+import com.barogagi.sendMessage.service.CommonService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
 
 @Slf4j
 @RestControllerAdvice
@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
 
     private final DiscordNotifier discordNotifier;
     private final Environment environment;
+    private final CommonService commonService;
     private final ErrorThrottle errorThrottle;
 
     /**
@@ -40,7 +41,7 @@ public class GlobalExceptionHandler {
             BusinessException e,
             HttpServletRequest request
     ) {
-        if ((isDev() || isProd()) && e.getErrorCode().isNotify()) {
+        if ((commonService.isDev() || commonService.isProd()) && e.getErrorCode().isNotify()) {
             discordNotifier.sendError(DiscordErrorMessage.from(e, request, activeProfile()));
         }
 
@@ -82,7 +83,7 @@ public class GlobalExceptionHandler {
         String key = e.getClass().getName() + request.getRequestURI();
 
         // Discord 알림 전송
-        if ((isDev() || isProd()) && errorThrottle.shouldNotify(key)) {
+        if ((commonService.isDev() || commonService.isProd()) && errorThrottle.shouldNotify(key)) {
             discordNotifier.sendError(DiscordErrorMessage.from(e, request, activeProfile(), getStackTrace(e)));
         }
 
@@ -107,14 +108,6 @@ public class GlobalExceptionHandler {
         return sw.toString().length() > 1500
                 ? sw.toString().substring(0, 1500)
                 : sw.toString();
-    }
-
-    private boolean isProd() {
-        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
-    }
-
-    private boolean isDev() {
-        return Arrays.asList(environment.getActiveProfiles()).contains("dev");
     }
 }
 
