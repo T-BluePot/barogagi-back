@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.barogagi.setting.mapper.SettingMapper">
+
+    <select id="selectSettings" parameterType="string" resultType="com.barogagi.setting.dto.MemberSettingDTO">
+        <![CDATA[
+            SELECT
+                s.ID                AS  id,
+                s.SETTING_TYPE      AS  settingType,
+                s.SETTING_CONTENT   AS  settingContent,
+                CASE
+                    WHEN ms.VALUE IS NULL THEN 'ON'
+                    ELSE ms.VALUE
+                END AS VALUE,
+                ms.VALUE AS beforeValue,
+                s.SORT              AS  sort
+            FROM SETTING s
+            LEFT OUTER JOIN MEMBER_SETTING ms
+                ON s.ID = ms.ID
+               AND ms.MEMBERSHIP_NO = #{membershipNo}
+            WHERE s.USE_YN = 'Y'
+            ORDER BY s.SORT
+        ]]>
+    </select>
+</mapper>
