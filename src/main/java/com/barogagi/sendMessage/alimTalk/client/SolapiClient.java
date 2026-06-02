@@ -1,6 +1,8 @@
 package com.barogagi.sendMessage.alimTalk.client;
 
 import com.barogagi.batch.dto.SendDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -63,24 +66,34 @@ public class SolapiClient {
     }
 
     private String generateAuthHeader() {
-        String date = String.valueOf(System.currentTimeMillis());
-        String salt = UUID.randomUUID().toString();
+        String date = Instant.now().toString();
+        String salt = UUID.randomUUID()
+                .toString()
+                .replace("-", "");
 
-        String data = date + salt;
-        String signature = hmacSha256(data, apiSecret);
+        String signature = hmacSha256(date + salt, apiSecret);
 
         return String.format(
-                "HMAC-SHA256 ApiKey=%s, Date=%s, Salt=%s, Signature=%s",
-                apiKey, date, salt, signature
+                "HMAC-SHA256 apiKey=%s, date=%s, salt=%s, signature=%s",
+                apiKey,
+                date,
+                salt,
+                signature
         );
     }
 
     private String hmacSha256(String data, String key) {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            SecretKeySpec secretKey =
+                    new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+
             mac.init(secretKey);
-            return Base64.getEncoder().encodeToString(mac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+
+            byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
+
+            return java.util.HexFormat.of().formatHex(hash);
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
