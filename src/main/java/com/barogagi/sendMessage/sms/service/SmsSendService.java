@@ -1,6 +1,7 @@
 package com.barogagi.sendMessage.sms.service;
 
 import com.barogagi.batch.dto.SendDTO;
+import com.barogagi.sendMessage.service.CommonService;
 import com.barogagi.sendMessage.sms.dto.SendSmsVO;
 import net.nurigo.sdk.NurigoApp;
 import net.nurigo.sdk.message.exception.NurigoMessageNotReceivedException;
@@ -22,12 +23,15 @@ public class SmsSendService {
     private final String API_KEY;
     private final String API_SECRET_KEY;
     private final DefaultMessageService messageService;
+    private final CommonService commonService;
 
-    public SmsSendService(Environment environment) {
+    public SmsSendService(Environment environment, CommonService commonService) {
         this.SEND_TEL = environment.getRequiredProperty("purplebook.tel");
         this.API_KEY = environment.getRequiredProperty("purplebook.api-key");
         this.API_SECRET_KEY = environment.getRequiredProperty("purplebook.api-secret-key");
         this.messageService = NurigoApp.INSTANCE.initialize(API_KEY, API_SECRET_KEY, "https://api.solapi.com");
+
+        this.commonService = commonService;
     }
 
     /**
@@ -45,9 +49,9 @@ public class SmsSendService {
         message.setText(sendSmsVO.getMessageContent());
 
         try {
-            // send 메소드로 ArrayList<Message> 객체를 넣어도 동작합니다!
-            messageService.send(message);
-            result = true;
+            if(commonService.isProd()) { // 실서버에서만 문자 발송 가능
+                messageService.send(message);
+            }
 
         } catch (NurigoMessageNotReceivedException exception) {
             // 발송에 실패한 메시지 목록을 확인할 수 있습니다!
