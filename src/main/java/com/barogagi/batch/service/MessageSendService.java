@@ -2,6 +2,7 @@ package com.barogagi.batch.service;
 
 import com.barogagi.batch.dto.SendDTO;
 import com.barogagi.batch.entity.MessageOutbox;
+import com.barogagi.batch.enums.Channel;
 import com.barogagi.batch.vo.SendResult;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.properties.MessageSendProperties;
@@ -15,6 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,11 +65,20 @@ public class MessageSendService {
             tel = encryptUtil.decrypt(userMembershipInfo.getTel());
         }
 
+        String withdrawDay = userMembershipInfo.getDelDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
         // 메시지에 들어갈 데이터 (공통)
         Map<String, String> variables = new HashMap<>();
-        variables.put("serviceName", messageSendProperties.getName());
-        variables.put("withdrawDay", String.valueOf(userMembershipInfo.getDelDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-        variables.put("cancelMethod", CANCEL_METHOD);
+
+        if(messageOutbox.getChannel().equals(Channel.ALIMTALK)) {
+            variables.put("#{serviceName}", messageSendProperties.getName());
+            variables.put("#{withdrawDay}", withdrawDay);
+            variables.put("#{cancelMethod}", CANCEL_METHOD);
+        } else {
+            variables.put("serviceName", messageSendProperties.getName());
+            variables.put("withdrawDay", withdrawDay);
+            variables.put("cancelMethod", CANCEL_METHOD);
+        }
 
         SendDTO sendDTO = new SendDTO();
         sendDTO.setTel(tel);
