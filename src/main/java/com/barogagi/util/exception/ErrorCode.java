@@ -153,7 +153,10 @@ public enum ErrorCode {
 
     // Board
     FOUND_BOARD(HttpStatus.OK, "B200", "공지사항 정보 조회에 성공했습니다.", false),
-    NOT_FOUND_BOARD(HttpStatus.NOT_FOUND, "B101", "공지사항 정보를 찾을 수 없습니다.", false);
+    NOT_FOUND_BOARD(HttpStatus.NOT_FOUND, "B101", "공지사항 정보를 찾을 수 없습니다.", false),
+
+    // Setting
+    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false);
 
     private final HttpStatus status;
     private final String code;
