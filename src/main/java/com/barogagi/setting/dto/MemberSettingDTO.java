@@ -24,4 +24,6 @@ public class MemberSettingDTO {
     private Value value;
 
     private String beforeValue;
+
+    private String membershipNo;
 }

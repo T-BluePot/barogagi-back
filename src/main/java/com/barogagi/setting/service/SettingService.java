@@ -111,4 +111,8 @@ public class SettingService {
     public List<MemberSettingDTO> selectSettings(String membershipNo) {
         return settingMapper.selectSettings(membershipNo);
     }
+
+    public MemberSettingDTO selectMemberSettingValue(MemberSettingDTO memberSettingDTO) {
+        return settingMapper.selectMemberSettingValue(memberSettingDTO);
+    }
 }
