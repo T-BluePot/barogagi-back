@@ -22,4 +22,17 @@
             ORDER BY s.SORT
         ]]>
     </select>
+
+    <select id="selectMemberSettingValue" parameterType="com.barogagi.setting.dto.MemberSettingDTO" resultType="com.barogagi.setting.dto.MemberSettingDTO">
+        <![CDATA[
+            SELECT  s.SETTING_TYPE     AS settingType,
+                    ms.MEMBERSHIP_NO    AS membershipNo,
+                    ms.VALUE            AS value
+            FROM SETTING s
+            INNER JOIN MEMBER_SETTING ms ON s.ID = ms.ID
+            WHERE s.USE_YN = 'Y'
+            AND s.SETTING_TYPE = #{settingType}
+            AND ms.MEMBERSHIP_NO = #{membershipNo};
+        ]]>
+    </select>
 </mapper>
