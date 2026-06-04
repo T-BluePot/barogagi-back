@@ -1,26 +1,19 @@
 package com.barogagi.batch.scheduler;
 
 import com.barogagi.batch.service.WithdrawalBatchService;
+import com.barogagi.sendMessage.service.CommonService;
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WithdrawlScheduler {
 
     private final WithdrawalBatchService withdrawalBatchService;
-
-    private final String IS_WITHDRAW_MEMBER_FLAG;  // 탈퇴 처리 배치 flag
-    private final String IS_PRE_WITHDRAWAL_NOTICE_FLAG;  // 탈퇴 처리 전 사전 고지 flag
-    private final String IS_CHANGE_STATUS_FLAG;  // 상태 변경 flag
-
-    public WithdrawlScheduler(Environment environment, WithdrawalBatchService withdrawalBatchService) {
-        this.withdrawalBatchService = withdrawalBatchService;
-        this.IS_WITHDRAW_MEMBER_FLAG = environment.getRequiredProperty("withdraw.member");
-        this.IS_PRE_WITHDRAWAL_NOTICE_FLAG = environment.getRequiredProperty("pre.withdrawal.notice");
-        this.IS_CHANGE_STATUS_FLAG = environment.getRequiredProperty("change.status");
-    }
+    private final CommonService commonService;
 
     // 탈퇴 처리
     @Scheduled(cron = "0 0 9 * * *") // 09:00
@@ -30,7 +23,7 @@ public class WithdrawlScheduler {
             lockAtLeastFor = "1m"
     )
     public void runWithdrawalBatch() {
-        if(Boolean.parseBoolean(IS_WITHDRAW_MEMBER_FLAG)) {
+        if(commonService.isProd()) {
             withdrawalBatchService.processWithdrawlBatch();
         }
     }
@@ -43,7 +36,7 @@ public class WithdrawlScheduler {
             lockAtLeastFor = "55m"
     )
     public void beforeWithdrawalBatch() {
-        if(Boolean.parseBoolean(IS_PRE_WITHDRAWAL_NOTICE_FLAG)) {
+        if(commonService.isProd()) {
             withdrawalBatchService.processBeforeWithdrawlBatch();
         }
     }
@@ -55,7 +48,7 @@ public class WithdrawlScheduler {
             lockAtLeastFor = "25m"
     )
     public void changeStatusBatch() {
-        if(Boolean.parseBoolean(IS_CHANGE_STATUS_FLAG)) {
+        if(commonService.isProd()) {
             withdrawalBatchService.changeStatusBatch();
         }
     }
