@@ -33,7 +33,6 @@ public class MemberService {
     private final InputValidate inputValidate;
     private final UserMembershipRepository userMembershipRepository;
     private final MemberTxService memberTxService;
-    private final PushService pushService;
     private final Validator validator;
 
     public ApiResponse getUserInfo(HttpServletRequest request) {
@@ -62,9 +61,6 @@ public class MemberService {
 
         // 비밀번호는 보내주지 않는다
         memberInfo.setPassword("");
-
-        // 푸쉬
-        pushService.sendToUser(membershipNo, "회원 정보 조회", "회원 정보 조회가 완료되었습니다.");
 
         return ApiResponse.resultData(
                 memberInfo,

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.barogagi.batch.mapper.PushBatchMapper">
+    <select id="selectSchedulePushTarget" resultType="com.barogagi.batch.dto.ScheduleDTO">
+        <![CDATA[
+            SELECT s.MEMBERSHIP_NO AS membershipNo
+                 , s.SCHEDULE_NM AS scheduleNm
+                 , p.PLAN_NM AS planNm
+                 , p.START_TIME AS startTime
+            FROM SCHEDULE s
+            JOIN PLAN p ON s.SCHEDULE_NUM = p.SCHEDULE_NUM
+            WHERE DATE_FORMAT(CURDATE() + INTERVAL 1 DAY, '%Y-%m-%d') BETWEEN s.START_DATE AND s.END_DATE
+              AND p.START_TIME = (
+                    SELECT MIN(p2.START_TIME)
+                    FROM PLAN p2
+                    WHERE p2.SCHEDULE_NUM = s.SCHEDULE_NUM
+                      AND p2.DEL_YN = 'N'
+                  )
+              AND HOUR(STR_TO_DATE(p.START_TIME, '%H:%i')) = HOUR(NOW())
+              AND s.DEL_YN = 'N'
+              AND p.DEL_YN = 'N'
+        ]]>
+    </select>
+</mapper>
