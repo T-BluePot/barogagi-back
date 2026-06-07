@@ -32,7 +32,7 @@ public class RedirectService {
         if(serverType.equals("dev")) {  // 테스트 서버
             url = addresses.get(1);
         } else if(serverType.equals("prod")) {  // 실서버
-            url = addresses.get(2);
+            url = "barogagiapp:/";
         } else {  // 로컬 서버
             url = addresses.get(0);
         }
