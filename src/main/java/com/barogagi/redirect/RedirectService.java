@@ -54,7 +54,7 @@ public class RedirectService {
         String nickname = String.valueOf(paramMap.get("nickname"));
         String nicknameYn = nickname.isEmpty() ? "N" : "Y";
 
-        return serverUrl() + "/auth/oauth/callback" +
+        return serverUrl() + "/oauth/callback" +
                 "?resultCode=" + resultCode +
                 "&message=" + URLEncoder.encode(message, StandardCharsets.UTF_8) +
                 "&accessToken=" + accessToken +
