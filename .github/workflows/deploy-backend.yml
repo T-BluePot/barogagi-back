@@ -65,16 +65,26 @@ jobs:
           ssh -i key.pem -o StrictHostKeyChecking=no \
             $USERNAME@$HOST "cd $TARGET_DIR && md5sum -c checksum.md5"
 
-      - name: Deploy to TEST EC2 (main)
+      - name: Deploy to TEST on Vultr (main)
         if: github.ref == 'refs/heads/main'
         run: |
           ssh -o ServerAliveInterval=30 -i key.pem -o StrictHostKeyChecking=no \
             $USERNAME@$HOST << EOF
             cd $TARGET_DIR
-            docker stop backend || true
-            docker rm backend || true
-            docker build -t backend .
-            docker run -d -p 8080:8080 --name backend backend
+            docker build -t barogagi-backend:test .
+            docker stop barogagi-backend-test || true
+            docker rm barogagi-backend-test || true
+            docker run -d \
+              --name barogagi-backend-test \
+              --restart unless-stopped \
+              -e TZ=Asia/Seoul \
+              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SERVER_PORT=8080 \
+              -p 127.0.0.1:8083:8080 \
+              -v /srv/barogagi-test/backend/logs:/app/logs \
+              --network barogagi-test-net \
+              --memory 768m \
+              barogagi-backend:test
           EOF
 
       - name: Deploy to PROD (release - blue/green)
@@ -85,7 +95,7 @@ jobs:
           
             cd $TARGET_DIR
           
-            if grep -q "8081" /etc/nginx/sites-available/barogagi.xyz; then
+            if grep -q "8081" /etc/nginx/sites-available/fitpl.xyz; then
               TARGET="blue"
             else
               TARGET="green"
