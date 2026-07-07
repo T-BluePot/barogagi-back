@@ -455,63 +455,133 @@ public interface SwaggerScheduleController {
                     required = true,
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "일정 수정 요청 예시",
-                                    value = "{\n" +
-                                            "    \"scheduleNum\": 1,\n" +
-                                            "    \"scheduleNm\": \"서울 데이트 코스2\",\n" +
-                                            "    \"startDate\": \"2025-07-01\",\n" +
-                                            "    \"endDate\": \"2025-07-01\",\n" +
-                                            "    \"planRegistResDTOList\": [\n" +
-                                            "      {\n" +
-                                            "        \"startTime\": \"08:30\",\n" +
-                                            "        \"endTime\": \"09:00\",\n" +
-                                            "        \"itemNum\": 10,\n" +
-                                            "        \"itemNm\": \"프랜차이즈카페\",\n" +
-                                            "        \"categoryNum\": 2,\n" +
-                                            "        \"categoryNm\": \"카페\",\n" +
-                                            "        \"planNm\": \"제비꽃다방\",\n" +
-                                            "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
-                                            "        \"regionNm\": \"종로구\",\n" +
-                                            "        \"regionNum\": 1,\n" +
-                                            "        \"planTagRegistResDTOList\": [\n" +
-                                            "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
-                                            "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
-                                            "        ]\n" +
-                                            "      },\n" +
-                                            "      {\n" +
-                                            "        \"startTime\": \"14:00\",\n" +
-                                            "        \"endTime\": \"15:00\",\n" +
-                                            "        \"itemNum\": 2,\n" +
-                                            "        \"itemNm\": \"한식\",\n" +
-                                            "        \"categoryNum\": 1,\n" +
-                                            "        \"categoryNm\": \"식사\",\n" +
-                                            "        \"planNm\": \"식사\",\n" +
-                                            "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
-                                            "        \"regionNm\": \"종로구\",\n" +
-                                            "        \"regionNum\": 1,\n" +
-                                            "        \"planTagRegistResDTOList\": [\n" +
-                                            "          { \"tagNum\": 17, \"tagNm\": \"조용한\" }\n" +
-                                            "        ]\n" +
-                                            "      },\n" +
-                                            "      {\n" +
-                                            "        \"startTime\": \"15:30\",\n" +
-                                            "        \"endTime\": \"19:00\",\n" +
-                                            "        \"itemNum\": 15,\n" +
-                                            "        \"itemNm\": \"놀이공원\",\n" +
-                                            "        \"categoryNum\": 4,\n" +
-                                            "        \"categoryNm\": \"놀거리\",\n" +
-                                            "        \"planNm\": \"구룡관 혜화본점\",\n" +
-                                            "        \"planLink\": \"http://place.map.kakao.com/40669117\",\n" +
-                                            "        \"regionNm\": \"종로구\",\n" +
-                                            "        \"regionNum\": 1,\n" +
-                                            "        \"planTagRegistResDTOList\": [\n" +
-                                            "          { \"tagNum\": 4, \"tagNm\": \"테마파크\" }\n" +
-                                            "        ]\n" +
-                                            "      }\n" +
-                                            "    ]\n" +
-                                            "}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "일정 수정 요청 예시",
+                                            value = "{\n" +
+                                                    "    \"scheduleNum\": 1,\n" +
+                                                    "    \"scheduleNm\": \"서울 데이트 코스2\",\n" +
+                                                    "    \"startDate\": \"2025-07-01\",\n" +
+                                                    "    \"endDate\": \"2025-07-01\",\n" +
+                                                    "    \"planRegistResDTOList\": [\n" +
+                                                    "      {\n" +
+                                                    "        \"startTime\": \"08:30\",\n" +
+                                                    "        \"endTime\": \"09:00\",\n" +
+                                                    "        \"itemNum\": 10,\n" +
+                                                    "        \"itemNm\": \"프랜차이즈카페\",\n" +
+                                                    "        \"categoryNum\": 2,\n" +
+                                                    "        \"categoryNm\": \"카페\",\n" +
+                                                    "        \"planNm\": \"제비꽃다방\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1,\n" +
+                                                    "        \"planTagRegistResDTOList\": [\n" +
+                                                    "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
+                                                    "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
+                                                    "        ]\n" +
+                                                    "      },\n" +
+                                                    "      {\n" +
+                                                    "        \"startTime\": \"14:00\",\n" +
+                                                    "        \"endTime\": \"15:00\",\n" +
+                                                    "        \"itemNum\": 2,\n" +
+                                                    "        \"itemNm\": \"한식\",\n" +
+                                                    "        \"categoryNum\": 1,\n" +
+                                                    "        \"categoryNm\": \"식사\",\n" +
+                                                    "        \"planNm\": \"식사\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1,\n" +
+                                                    "        \"planTagRegistResDTOList\": [\n" +
+                                                    "          { \"tagNum\": 17, \"tagNm\": \"조용한\" }\n" +
+                                                    "        ]\n" +
+                                                    "      },\n" +
+                                                    "      {\n" +
+                                                    "        \"startTime\": \"15:30\",\n" +
+                                                    "        \"endTime\": \"19:00\",\n" +
+                                                    "        \"itemNum\": 15,\n" +
+                                                    "        \"itemNm\": \"놀이공원\",\n" +
+                                                    "        \"categoryNum\": 4,\n" +
+                                                    "        \"categoryNm\": \"놀거리\",\n" +
+                                                    "        \"planNm\": \"구룡관 혜화본점\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/40669117\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1,\n" +
+                                                    "        \"planTagRegistResDTOList\": [\n" +
+                                                    "          { \"tagNum\": 4, \"tagNm\": \"테마파크\" }\n" +
+                                                    "        ]\n" +
+                                                    "      }\n" +
+                                                    "    ]\n" +
+                                                    "}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "일정 수정 요청 예시 (사용자 추가 계획 포함)",
+                                            value = "{\n" +
+                                                    "    \"scheduleNum\": 6,\n" +
+                                                    "    \"scheduleNm\": \"서울 데이트 코스2 (수정)\",\n" +
+                                                    "    \"startDate\": \"2025-07-01\",\n" +
+                                                    "    \"endDate\": \"2025-07-01\",\n" +
+                                                    "    \"scheduleTagRegistResDTOList\": [\n" +
+                                                    "      { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" }\n" +
+                                                    "    ],\n" +
+                                                    "    \"planRegistResDTOList\": [\n" +
+                                                    "      {\n" +
+                                                    "        \"startTime\": \"09:00\",\n" +
+                                                    "        \"endTime\": \"09:30\",\n" +
+                                                    "        \"itemNum\": 10,\n" +
+                                                    "        \"itemNm\": \"프랜차이즈카페\",\n" +
+                                                    "        \"categoryNum\": 2,\n" +
+                                                    "        \"categoryNm\": \"카페\",\n" +
+                                                    "        \"planNm\": \"제비꽃다방 (수정)\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/24944966\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1,\n" +
+                                                    "        \"planTagRegistResDTOList\": [\n" +
+                                                    "          { \"tagNum\": 14, \"tagNm\": \"디저트맛집\" },\n" +
+                                                    "          { \"tagNum\": 15, \"tagNm\": \"인스타핫플\" }\n" +
+                                                    "        ]\n" +
+                                                    "      },\n" +
+                                                    "      {\n" +
+                                                    "        \"startTime\": \"14:00\",\n" +
+                                                    "        \"endTime\": \"15:00\",\n" +
+                                                    "        \"itemNum\": 2,\n" +
+                                                    "        \"itemNm\": \"한식\",\n" +
+                                                    "        \"categoryNum\": 1,\n" +
+                                                    "        \"categoryNm\": \"식사\",\n" +
+                                                    "        \"planNm\": \"점심 식사\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/1581311090\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1,\n" +
+                                                    "        \"planTagRegistResDTOList\": [\n" +
+                                                    "          { \"tagNum\": 17, \"tagNm\": \"조용한\" }\n" +
+                                                    "        ]\n" +
+                                                    "      },\n" +
+                                                    "      {\n" +
+                                                    "        \"planSource\": \"USER_PLACE\",\n" +
+                                                    "        \"isUserAdded\": \"Y\",\n" +
+                                                    "        \"startTime\": \"19:30\",\n" +
+                                                    "        \"endTime\": \"21:00\",\n" +
+                                                    "        \"planNm\": \"올래곱창\",\n" +
+                                                    "        \"planLink\": \"http://place.map.kakao.com/12345678\",\n" +
+                                                    "        \"planAddress\": \"경기 의정부시 의정부동 ...\",\n" +
+                                                    "        \"planMemo\": \"카카오 장소 선택\",\n" +
+                                                    "        \"regionNm\": \"종로구\",\n" +
+                                                    "        \"regionNum\": 1\n" +
+                                                    "      },\n" +
+                                                    "      {\n" +
+                                                    "        \"planSource\": \"USER_CUSTOM\",\n" +
+                                                    "        \"isUserAdded\": \"Y\",\n" +
+                                                    "        \"startTime\": \"21:30\",\n" +
+                                                    "        \"endTime\": \"22:00\",\n" +
+                                                    "        \"planNm\": \"편의점\",\n" +
+                                                    "        \"planLink\": null,\n" +
+                                                    "        \"planAddress\": null,\n" +
+                                                    "        \"planMemo\": \"텍스트 직접 입력\",\n" +
+                                                    "        \"regionNum\": null\n" +
+                                                    "      }\n" +
+                                                    "    ]\n" +
+                                                    "}"
+                                    )
+                            }
                     )
             )
             ScheduleRegistResDTO scheduleRegistResDTO, HttpServletRequest request
