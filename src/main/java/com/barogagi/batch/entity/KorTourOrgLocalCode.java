@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
         name = "KOR_TOUR_ORG_LOCAL_CODE",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_kto_localcode", columnNames = {
-                        "areaCd", "type", "sigunguCd"
+                        "AREA_CODE", "TYPE", "SIGUNGU_CODE"
                 })
         }
 )

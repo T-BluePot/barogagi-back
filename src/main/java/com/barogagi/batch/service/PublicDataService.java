@@ -8,8 +8,8 @@ import com.barogagi.batch.repository.LocalPopularReplaceRepository;
 import com.barogagi.config.TourApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +24,7 @@ public class PublicDataService {
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final LocalPopularReplaceRepository localPopularReplaceRepository;
 
+    @Transactional
     public void insertLocalPopularArea() {
 
         // 지역코드 조회
