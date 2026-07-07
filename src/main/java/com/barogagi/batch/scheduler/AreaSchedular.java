@@ -34,6 +34,5 @@ public class AreaSchedular {
         if(commonService.isProd()) {
             publicDataService.insertLocalPopularArea();
         }
-        publicDataService.insertLocalPopularArea();
     }
 }

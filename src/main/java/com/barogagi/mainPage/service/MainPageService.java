@@ -1,5 +1,9 @@
 package com.barogagi.mainPage.service;
 
+import com.barogagi.batch.entity.KorTourOrgLocalCode;
+import com.barogagi.batch.entity.LocalPopularReplace;
+import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
+import com.barogagi.batch.repository.LocalPopularReplaceRepository;
 import com.barogagi.mainPage.dto.*;
 import com.barogagi.mainPage.exception.MainPageException;
 import com.barogagi.mainPage.mapper.MainPageMapper;
@@ -9,30 +13,22 @@ import com.barogagi.util.MembershipUtil;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class MainPageService {
 
+    private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
+    private final LocalPopularReplaceRepository localPopularReplaceRepository;
     private final MainPageMapper mainPageMapper;
     private final MembershipUtil membershipUtil;
     private final Validator validator;
 
-    @Autowired
-    public MainPageService(
-                            MainPageMapper mainPageMapper,
-                            MembershipUtil membershipUtil,
-                            Validator validator
-                            )
-    {
-        this.mainPageMapper = mainPageMapper;
-        this.membershipUtil = membershipUtil;
-        this.validator = validator;
-    }
 
     public MainPageResponse selectUserScheduleInfoProcess(HttpServletRequest request) {
 
@@ -120,6 +116,43 @@ public class MainPageService {
                 ErrorCode.FOUND_POPULAR_REGION.getCode(),
                 ErrorCode.FOUND_POPULAR_REGION.getMessage()
         );
+    }
+
+    public ApiResponse selectKorTourOrgLocalCode(String apiSecretKey,
+                                               String type) {
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new MainPageException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        }
+
+        // 2. 지역 코드 조회
+        List<KorTourOrgLocalCode> localCodeList = null;
+        if(type.equals("HOT-PLACE")) {
+            localCodeList = korTourOrgLocalCodeRepository.findLocalCode("areaBasedList1");
+        }
+
+        if(localCodeList == null) {
+            throw new MainPageException(ErrorCode.NOT_FOUND_LOCAL_CODE);
+        }
+
+        return ApiResponse.resultData(localCodeList, "C200", "지역 코드 정보를 조회하였습니다.");
+    }
+
+    public ApiResponse selectHotPlaceList(String apiSecretKey, String areaCd, String sigunguCd) {
+
+        // 1. API SECRET KEY 일치 여부 확인
+        if(!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new MainPageException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        }
+
+        // 2. 지역별 인기 장소 조회
+        List<LocalPopularReplace> findLocalPopularReplace = localPopularReplaceRepository.findLocalPopularReplace(areaCd, sigunguCd);
+
+        if(findLocalPopularReplace.isEmpty()) {
+            throw new MainPageException(ErrorCode.NOT_FOUND_HOT_PLACE);
+        }
+
+        return ApiResponse.resultData(findLocalPopularReplace, "P200", "해당 지역의 인기 장소를 조회하였습니다.");
     }
 
     // 유저 일정 조회

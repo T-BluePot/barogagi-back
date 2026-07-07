@@ -156,7 +156,11 @@ public enum ErrorCode {
     NOT_FOUND_BOARD(HttpStatus.NOT_FOUND, "B101", "공지사항 정보를 찾을 수 없습니다.", false),
 
     // Setting
-    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false);
+    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false),
+
+    // 공공기관 지역코드
+    NOT_FOUND_LOCAL_CODE(HttpStatus.NOT_FOUND, "C400", "지역 코드 정보를 찾을 수 없습니다.", false),
+    NOT_FOUND_HOT_PLACE(HttpStatus.NOT_FOUND, "P400", "해당 지역의 인기 장소가 존재하지 않습니다.", false);
 
     private final HttpStatus status;
     private final String code;
