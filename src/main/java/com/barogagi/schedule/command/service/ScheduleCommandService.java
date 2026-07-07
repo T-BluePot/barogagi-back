@@ -774,8 +774,11 @@ public class ScheduleCommandService {
                             : (oldPlan != null ? oldPlan.getPlanAddress() : "");
 
                     logger.info("!! description={}, address={}, planLink={}", description, address, planRes.getPlanLink());
-                    Item item = itemRepository.findById(planRes.getItemNum())
-                            .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+                    Item item = null;
+                    if (!"Y".equals(planRes.getIsUserAdded())) {
+                        item = itemRepository.findById(planRes.getItemNum())
+                                .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_ITEM));
+                    }
 
                     PlanUserMembershipInfo user = PlanUserMembershipInfo.builder()
                             .membershipNo(membershipNo)
