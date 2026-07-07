@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
         name = "MESSAGE_OUTBOX",
         uniqueConstraints = {
                 @UniqueConstraint(name = "uk_outbox", columnNames = {
-                        "membershipNo", "userId", "messageType", "channel"
+                        "MEMBERSHIP_NO", "USER_ID", "MESSAGE_TYPE", "CHANNEL"
                 })
         }
 )
