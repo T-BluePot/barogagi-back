@@ -68,6 +68,9 @@ public class PlanRegistResDTO {
     @Schema(description = "메모")
     private String planMemo;
 
+    @Schema(description = "사용자가 수동으로 추가한 일정인지 여부(AI 생성 안함)", example = "Y")
+    public String isUserAdded;
+
     @Schema(description = "계획 태그 목록")
     public List<TagRegistResDTO> planTagRegistResDTOList;
 }
