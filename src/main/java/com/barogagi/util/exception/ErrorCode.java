@@ -22,13 +22,13 @@ public enum ErrorCode {
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요.", false),
 
     // Schedule
-    SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "일정 저장에 실패했습니다.", false),
+    SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "일정 저장에 실패했습니다.", true),
     SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "S002", "일정 정보를 찾을 수 없습니다.", false),
     SCHEDULE_ALREADY_DELETED(HttpStatus.NOT_FOUND, "S003", "이미 삭제된 일정입니다.", false),
 
     // Region
-    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R101", "지역 정보를 찾을 수 없습니다.", false),
-    REGION_GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "R102", "지역의 Geocode를 찾을 수 없습니다.", false),
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "R101", "지역 정보를 찾을 수 없습니다.", true),
+    REGION_GEOCODE_NOT_FOUND(HttpStatus.NOT_FOUND, "R102", "지역의 Geocode를 찾을 수 없습니다.", true),
 
     // Nickname
     INVALID_NICKNAME(HttpStatus.BAD_REQUEST, "N102", "적합하지 않는 닉네임입니다.", false),
@@ -120,12 +120,12 @@ public enum ErrorCode {
     SUCCESS_SCHEDULE_DELETE(HttpStatus.OK, "S203", "일정 삭제에 성공하였습니다.", false),
     SUCCESS_SCHEDULE_SAVE(HttpStatus.OK, "S204", "일정 저장에 성공하였습니다.", false),
     FOUND_INFO_SCHEDULE(HttpStatus.OK, "S202", "일정 조회에 성공하였습니다.", false),
-    FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", false),
+    FAIL_SCHEDULE_SAVE(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "일정 저장에 실패하였습니다.", true),
     NOT_FOUND_INFO_SCHEDULE(HttpStatus.NOT_FOUND, "S401", "일정 정보를 찾을 수 없습니다.", false),
     ALREADY_DELETED_SCHEDULE(HttpStatus.NOT_FOUND, "S402", "이미 삭제된 일정입니다.", false),
 
     // Ai
-    AI_RECOMMENDATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "I101", "AI 응답에 실패하였습니다.", false),
+    AI_RECOMMENDATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "I101", "AI 응답에 실패하였습니다.", true),
 
     // Place
     PLACE_SEARCH_EMPTY(HttpStatus.NOT_FOUND, "P101", "지역 검색 결과를 찾을 수 없습니다.", false),
@@ -134,14 +134,14 @@ public enum ErrorCode {
 
     // Tag
     SUCCESS_FOUND_TAG(HttpStatus.OK, "G200", "태그 조회에 성공하였습니다.", false),
-    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G101", "태그 정보를 찾을 수 없습니다.", false),
+    NOT_FOUND_TAG(HttpStatus.NOT_FOUND, "G101", "태그 정보를 찾을 수 없습니다.", true),
     INVALID_TAG_TYPE(HttpStatus.BAD_REQUEST, "G102", "유효하지 않은 태그 타입입니다.", false),
 
     // Item
-    NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다.", false),
+    NOT_FOUND_ITEM(HttpStatus.NOT_FOUND, "I201", "아이템 정보를 찾을 수 없습니다.", true),
 
     // Category
-    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "T201", "카테고리 정보를 찾을 수 없습니다.", false),
+    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND, "T201", "카테고리 정보를 찾을 수 없습니다.", true),
 
     // Region
     FOUND_REGION(HttpStatus.OK, "RG200", "지역 정보 조회에 성공했습니다.", false),
@@ -149,14 +149,18 @@ public enum ErrorCode {
 
     // Image
     FOUND_LINK_IMAGE(HttpStatus.OK, "IM200", "링크에서 OG 태그 추출에 성공하였습니다.", false),
-    NOT_FOUND_LINK_IMAGE(HttpStatus.OK, "IM101", "이미지를 찾을 수 없습니다.", false),
+    NOT_FOUND_LINK_IMAGE(HttpStatus.OK, "IM101", "이미지를 찾을 수 없습니다.", true),
 
     // Board
     FOUND_BOARD(HttpStatus.OK, "B200", "공지사항 정보 조회에 성공했습니다.", false),
     NOT_FOUND_BOARD(HttpStatus.NOT_FOUND, "B101", "공지사항 정보를 찾을 수 없습니다.", false),
 
     // Setting
-    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false);
+    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false),
+
+    // 공공기관 지역코드
+    NOT_FOUND_LOCAL_CODE(HttpStatus.NOT_FOUND, "C400", "지역 코드 정보를 찾을 수 없습니다.", false),
+    NOT_FOUND_HOT_PLACE(HttpStatus.NOT_FOUND, "P400", "해당 지역의 인기 장소가 존재하지 않습니다.", false);
 
     private final HttpStatus status;
     private final String code;

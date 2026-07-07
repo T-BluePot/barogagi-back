@@ -1,7 +1,6 @@
 package com.barogagi.batch.repository;
 
 import com.barogagi.batch.entity.MessageOutboxArchive;
-import com.barogagi.batch.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
