@@ -12,13 +12,13 @@ public enum ErrorCode {
     NOT_EQUAL_API_SECRET_KEY(HttpStatus.UNAUTHORIZED, "A100", "잘못된 접근입니다.", true),
 
     // ACCESS TOKEN
-    NOT_EXIST_ACCESS_AUTH(HttpStatus.UNAUTHORIZED, "A401", "접근 권한이 존재하지 않습니다.", false),
+    NOT_EXIST_ACCESS_AUTH(HttpStatus.UNAUTHORIZED, "A401", "접근 권한이 존재하지 않습니다.", true),
     EXIST_ACCESS_AUTH(HttpStatus.OK, "A200", "회원 번호가 존재합니다.", false),
     EXPIRE_TOKEN(HttpStatus.UNAUTHORIZED, "A300", "Token이 만료되었습니다.", false),
 
     // Common
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON-500", "서버 오류가 발생했습니다.", false),
-    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다.", false),
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON-500", "서버 오류가 발생했습니다.", true),
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다.", true),
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요.", false),
 
     // Schedule
@@ -47,15 +47,15 @@ public enum ErrorCode {
     // SignUp
     INVALID_SIGN_UP(HttpStatus.BAD_REQUEST, "S102", "적합한 아이디, 비밀번호, 닉네임이 아닙니다.", false),
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다.", false),
-    FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", false),
+    FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", true),
     FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
     FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "올바른 생년월일 형식이 아닙니다.", false),
-    FAIL_OAUTH2_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "S402", "소셜 로그인 실패하였습니다.", false),
+    FAIL_OAUTH2_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "S402", "소셜 로그인 실패하였습니다.", true),
     NO_SIGN_UP_DAYS(HttpStatus.BAD_REQUEST, "S403", "탈퇴 후 일정 기간 동안 재가입이 제한됩니다.", false),
 
     // withdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),
-    FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다.", false),
+    FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다.", true),
     FAIL_FIND_WITHDRAW_CODE(HttpStatus.NOT_FOUND, "D401", "탈퇴 사유 조회 실패하였습니다.", false),
     SUCCESS_FIND_WITHDRAW_CODE(HttpStatus.OK, "D200", "탈퇴 사유 조회 성공하였습니다.", false),
     FAIL_REQUIRED_WITHDRAW_REASON(HttpStatus.BAD_REQUEST, "D402", "탈퇴 사유를 입력해주세요.", false),
@@ -66,11 +66,11 @@ public enum ErrorCode {
 
     // UpdatePassword
     SUCCESS_UPDATE_PASSWORD(HttpStatus.OK, "U200", "비밀번호 재설정에 성공하였습니다.", false),
-    FAIL_UPDATE_PASSWORD(HttpStatus.INTERNAL_SERVER_ERROR, "U300", "비밀번호 재설정에 실패하였습니다.", false),
+    FAIL_UPDATE_PASSWORD(HttpStatus.INTERNAL_SERVER_ERROR, "U300", "비밀번호 재설정에 실패하였습니다.", true),
 
     // Login
     NOT_FOUND_USER_INFO(HttpStatus.NOT_FOUND, "L102", "회원 정보가 존재하지 않습니다.", false),
-    FAIL_LOGIN(HttpStatus.UNAUTHORIZED, "L103", "로그인에 실패하였습니다.", false),
+    FAIL_LOGIN(HttpStatus.UNAUTHORIZED, "L103", "로그인에 실패하였습니다.", true),
     SUCCESS_LOGIN(HttpStatus.OK, "L200", "로그인에 성공하였습니다.", false),
 
     // RefreshToken
@@ -82,7 +82,7 @@ public enum ErrorCode {
     NOT_FOUND_AVAILABLE_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "R302", "유효한 token 정보를 찾을 수 없습니다.", false),
 
     // Logout
-    FAIL_LOGOUT(HttpStatus.INTERNAL_SERVER_ERROR, "L300", "로그아웃 실패하였습니다.", false),
+    FAIL_LOGOUT(HttpStatus.INTERNAL_SERVER_ERROR, "L300", "로그아웃 실패하였습니다.", true),
     SUCCESS_LOGOUT(HttpStatus.OK, "L200", "로그아웃 되었습니다.", false),
 
     // Terms
@@ -109,8 +109,8 @@ public enum ErrorCode {
 
     // Approval
     SUCCESS_SEND_APPROVAL(HttpStatus.OK, "A200", "인증번호 발송에 성공하었습니다.", false),
-    FAIL_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", false),
-    ERROR_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", false),
+    FAIL_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A103", "인증번호 발송에 실패하였습니다.", true),
+    ERROR_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", true),
     SUCCESS_CHECK_APPROVAL(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
     FAIL_CHECK_APPROVAL(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
     NOT_ACCESS_SEND_APPROVAL(HttpStatus.BAD_REQUEST, "A104", "1분 후 다시 시도해주세요.", false),
@@ -156,7 +156,7 @@ public enum ErrorCode {
     NOT_FOUND_BOARD(HttpStatus.NOT_FOUND, "B101", "공지사항 정보를 찾을 수 없습니다.", false),
 
     // Setting
-    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", false),
+    NOT_UPDATE_SETTING(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "설정 정보 수정에 실패하였습니다.", true),
 
     // 공공기관 지역코드
     NOT_FOUND_LOCAL_CODE(HttpStatus.NOT_FOUND, "C400", "지역 코드 정보를 찾을 수 없습니다.", false),
