@@ -127,7 +127,7 @@ public class ScheduleController implements SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "잘못된 접근입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S200", description = "일정 공유 링크가 생성되었습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "서버 오류가 발생했습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M201", description = "일정이 존재하지 않습니다.")
 
             })
