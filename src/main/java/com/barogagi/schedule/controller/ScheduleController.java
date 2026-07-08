@@ -7,7 +7,7 @@ import com.barogagi.schedule.dto.*;
 import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
-import com.barogagi.util.exception.BasicException;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 @Tag(name = "일정", description = "일정 관련 API")
 @RestController
@@ -121,5 +120,22 @@ public class ScheduleController implements SwaggerScheduleController {
             logger.error("프록시 요청 실패: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
         }
+    }
+
+    @Operation(summary = "일정 공유 링크 제공 기능", description = "일정 공유 링크 제공 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "잘못된 접근입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S200", description = "일정 공유 링크가 생성되었습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "서버 오류가 발생했습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M201", description = "일정이 존재하지 않습니다.")
+
+            })
+    @PostMapping("/{scheduleNum}/share")
+    public ApiResponse shareScheduleLink(@RequestHeader("API-KEY") String apiSecretKey,
+                                         @PathVariable("scheduleNum") int scheduleNum,
+                                         @RequestParam("environment") com.barogagi.member.join.oauth.enums.Environment environment,
+                                         HttpServletRequest request) {
+        return scheduleQueryService.shareScheduleLink(apiSecretKey, request, scheduleNum, environment);
     }
 }
