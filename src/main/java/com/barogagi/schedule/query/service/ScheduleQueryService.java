@@ -268,7 +268,7 @@ public class ScheduleQueryService {
 
         // 6. 공유 링크 생성
         List<String> addresses = Arrays.asList(allowedOrigins.split(","));
-        String uri = "/share/schedule/" + scheduleShare.getShareToken();
+        String uri = "/api/v1/schedule/share/" + scheduleShare.getShareToken();
 
         String shareLink = "";
         if(environment.equals(Environment.LOCAL)) {  // 로컬 서버
@@ -292,5 +292,65 @@ public class ScheduleQueryService {
         }
 
         return sb.toString();
+    }
+
+    public ApiResponse getShareScheduleDetail(String apiSecretKey, String shareToken) {
+
+        try {
+            // 1. API SECRET KEY 검증
+            if (!validator.apiSecretKeyCheck(apiSecretKey)) {
+                throw new ScheduleException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+            }
+
+            // 2. 토큰 검증
+            ScheduleShare scheduleShare = scheduleShareRepository.findByShareToken(shareToken, LocalDateTime.now());
+            if(scheduleShare == null) {
+                throw new ScheduleException(ErrorCode.NOT_FOUND_SHARE_SCHEDULE);
+            }
+            int scheduleNum = scheduleShare.getScheduleNum();
+            String membershipNo = scheduleShare.getMembershipNo();
+
+            // 일정 정보 조회
+            ScheduleMembershipNoVO scheduleMembershipNoVO = new ScheduleMembershipNoVO(scheduleNum, membershipNo);
+            ScheduleDetailVO scheduleDetailVO = scheduleMapper.selectScheduleDetail(scheduleMembershipNoVO);
+            if (null == scheduleDetailVO) throw new BasicException(ErrorCode.NOT_FOUND_SCHEDULE);
+            else if (scheduleDetailVO.getDelYn().equals("Y"))
+                throw new BasicException(ErrorCode.ALREADY_DELETED_SCHEDULE);
+
+            // 계획 정보 조회 (리스트)
+            List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
+
+            // 각 계획의 링크에서 OG 이미지 프록시 URL 세팅
+            for (PlanDetailVO plan : planDetailVOList) {
+                if (plan.getPlanLink() != null && !plan.getPlanLink().isBlank()) {
+                    try {
+                        String imageUrl = extractOgImage(plan.getPlanLink());
+                        if (imageUrl != null) {
+                            plan.setImageLink(imageUrl);                        }
+                    } catch (Exception e) {
+                        logger.warn("OG 이미지 추출 실패: {}", plan.getPlanLink());
+                    }
+                }
+            }
+            String testImageUrl = extractOgImage("https://place.map.kakao.com/850873071");
+            logger.info(testImageUrl);
+
+            // DTO에 정보 저장
+            ScheduleDetailResDTO result = ScheduleDetailResDTO.builder()
+                    .scheduleNum(scheduleDetailVO.getScheduleNum())
+                    .scheduleNm(scheduleDetailVO.getScheduleNm())
+                    .startDate(scheduleDetailVO.getStartDate())
+                    .endDate(scheduleDetailVO.getEndDate())
+                    .radius(scheduleDetailVO.getRadius())
+                    .planDetailVOList(planDetailVOList)
+                    .build();
+
+            logger.info("result={}", result.toString());
+            return ApiResponse.resultData(result, ErrorCode.FOUND_INFO_SCHEDULE.getCode(), ErrorCode.FOUND_INFO_SCHEDULE.getMessage());
+        } catch (BusinessException e) {
+            return ApiResponse.error(e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            return ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(), ErrorCode.INTERNAL_ERROR.getMessage());
+        }
     }
 }

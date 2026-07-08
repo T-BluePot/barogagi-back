@@ -160,7 +160,8 @@ public enum ErrorCode {
 
     // 공공기관 지역코드
     NOT_FOUND_LOCAL_CODE(HttpStatus.NOT_FOUND, "C400", "지역 코드 정보를 찾을 수 없습니다.", false),
-    NOT_FOUND_HOT_PLACE(HttpStatus.NOT_FOUND, "P400", "해당 지역의 인기 장소가 존재하지 않습니다.", false);
+    NOT_FOUND_HOT_PLACE(HttpStatus.NOT_FOUND, "P400", "해당 지역의 인기 장소가 존재하지 않습니다.", false),
+    NOT_FOUND_SHARE_SCHEDULE(HttpStatus.NOT_FOUND, "SS400", "해당 공유 정보가 만료되었거나 존재하지 않습니다.", false);
 
     private final HttpStatus status;
     private final String code;

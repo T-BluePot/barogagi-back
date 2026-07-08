@@ -138,4 +138,18 @@ public class ScheduleController implements SwaggerScheduleController {
                                          HttpServletRequest request) {
         return scheduleQueryService.shareScheduleLink(apiSecretKey, request, scheduleNum, environment);
     }
+
+    @Operation(summary = "일정 공유 화면 정보 조회 기능", description = "일정 공유 화면 정보 조회 기능입니다.",
+            responses =  {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "A100", description = "잘못된 접근입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "SS400", description = "해당 공유 정보가 만료되었거나 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M201", description = "일정이 존재하지 않습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S402", description = "이미 삭제된 일정입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S202", description = "일정 조회에 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다.")
+            })
+    @GetMapping("/share/{shareToken}")
+    public ApiResponse scheduleShare(@RequestHeader("API-KEY") String apiSecretKey, @PathVariable("shareToken") String shareToken) {
+        return scheduleQueryService.getShareScheduleDetail(apiSecretKey, shareToken);
+    }
 }
