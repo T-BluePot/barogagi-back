@@ -62,7 +62,8 @@ public class SecurityConfig {
             "api/v1/schedule/image/proxy",  // 일정 이미지 프록시 (외부 이미지 허용)
             "/api/v1/oauth-link",
             "/oauth/callback",  // oauth 로그인 성공 시 redirect
-            "/images/**"  // 이미지
+            "/images/**",  // 이미지
+            "/api/v1/schedule/share/**"  // 일정 공유 화면
     };
 
     @Bean

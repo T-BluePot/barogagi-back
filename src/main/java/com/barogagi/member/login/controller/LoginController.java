@@ -5,20 +5,16 @@ import com.barogagi.member.login.service.LoginService;
 import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "일반 로그인 & 토큰 재발급", description = "일반 로그인, 토큰 재발급 관련 API")
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class LoginController {
 
     private final LoginService loginService;
-
-    @Autowired
-    public LoginController(LoginService loginService){
-        this.loginService = loginService;
-    }
 
     @Operation(summary = "로그인 기능", description = "로그인 기능입니다.",
             responses =  {
