@@ -8,27 +8,18 @@ import com.barogagi.member.join.basic.service.MemberSignupService;
 import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "일반 회원가입", description = "일반 회원가입 관련 API")
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 public class JoinController {
 
     private final MemberDuplicationService memberDuplicationService;
     private final MemberSignupService memberSignupService;
     private final MemberAccountService memberAccountService;
-
-    @Autowired
-    public JoinController(MemberDuplicationService memberDuplicationService,
-                          MemberSignupService memberSignupService,
-                          MemberAccountService memberAccountService) {
-
-        this.memberDuplicationService = memberDuplicationService;
-        this.memberSignupService = memberSignupService;
-        this.memberAccountService = memberAccountService;
-    }
 
     @Operation(summary = "아이디 중복 체크 기능", description = "아이디 중복 체크 기능입니다.",
             responses =  {

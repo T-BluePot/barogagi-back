@@ -6,20 +6,16 @@ import com.barogagi.approval.vo.ApprovalSendVO;
 import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "인증", description = "인증 API")
 @RestController
 @RequestMapping("/api/v1/verification-codes")
+@RequiredArgsConstructor
 public class ApprovalController {
 
     private final ApprovalService approvalService;
-
-    @Autowired
-    public ApprovalController(ApprovalService approvalService){
-        this.approvalService = approvalService;
-    }
 
     @Operation(summary = "인증번호 발송 기능", description = "휴대전화번호로 인증번호 발송하는 기능입니다. <br> 회원가입 시 사용할 경우 type 값을 JOIN-MEMBERSHIP 값으로 넣어주세요.",
             responses =  {
