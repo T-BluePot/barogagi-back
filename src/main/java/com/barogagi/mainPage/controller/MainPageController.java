@@ -6,20 +6,16 @@ import com.barogagi.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "메인 화면", description = "메인 화면에 필요한 API")
 @RestController
 @RequestMapping("/api/v1/home")
+@RequiredArgsConstructor
 public class MainPageController {
 
     private final MainPageService mainPageService;
-
-    @Autowired
-    public MainPageController(MainPageService mainPageService) {
-        this.mainPageService = mainPageService;
-    }
 
     @Operation(summary = "유저 일정 정보 기능", description = "메인 화면 - 다가오는 일정 부분에 해당하는 API",
             responses =  {
