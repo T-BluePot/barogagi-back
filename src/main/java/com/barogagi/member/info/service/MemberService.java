@@ -1,6 +1,9 @@
 package com.barogagi.member.info.service;
 
+import com.barogagi.batch.entity.KorTourOrgLocalCode;
+import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
 import com.barogagi.member.domain.UserMembershipInfo;
+import com.barogagi.member.info.dto.InfoResponseDTO;
 import com.barogagi.member.info.dto.MemberRequestDTO;
 import com.barogagi.member.info.dto.UserInfoResponseDTO;
 import com.barogagi.member.info.exception.MemberInfoException;
@@ -32,6 +35,7 @@ public class MemberService {
     private final EncryptUtil encryptUtil;
     private final InputValidate inputValidate;
     private final UserMembershipRepository userMembershipRepository;
+    private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final MemberTxService memberTxService;
     private final Validator validator;
 
@@ -62,8 +66,31 @@ public class MemberService {
         // 비밀번호는 보내주지 않는다
         memberInfo.setPassword("");
 
+        // 결과값 세팅
+        InfoResponseDTO infoResponseDTO = new InfoResponseDTO();
+        infoResponseDTO.setMembershipNo(memberInfo.getMembershipNo());
+        infoResponseDTO.setUserId(memberInfo.getUserId());
+        infoResponseDTO.setPassword(memberInfo.getPassword());
+        infoResponseDTO.setEmail(memberInfo.getEmail());
+        infoResponseDTO.setBirth(memberInfo.getBirth());
+        infoResponseDTO.setTel(memberInfo.getTel());
+        infoResponseDTO.setGender(memberInfo.getGender());
+        infoResponseDTO.setNickName(memberInfo.getNickName());
+        infoResponseDTO.setJoinType(memberInfo.getJoinType());
+        infoResponseDTO.setRegDate(memberInfo.getRegDate());
+        infoResponseDTO.setUpdDate(memberInfo.getUpdDate());
+
+        // 선호 지역 코드 번호가 있는 경우 번호 -> 지역 코드 & 시군구 코드로 변환
+        if(null != memberInfo.getPreferredLocalCodeNo()) {
+            KorTourOrgLocalCode localCode = korTourOrgLocalCodeRepository.findById(memberInfo.getPreferredLocalCodeNo())
+                    .orElseThrow(() -> new MemberInfoException(ErrorCode.NOT_FOUND_LOCAL_CODE));
+
+            infoResponseDTO.setAreaCd(localCode.getAreaCd());
+            infoResponseDTO.setSigunguCd(localCode.getSigunguCd());
+        }
+
         return ApiResponse.resultData(
-                memberInfo,
+                infoResponseDTO,
                 ErrorCode.FOUND_USER_INFO.getCode(),
                 ErrorCode.FOUND_USER_INFO.getMessage()
         );
@@ -129,6 +156,16 @@ public class MemberService {
                 throw new MemberInfoException(ErrorCode.UNAVAILABLE_NICKNAME);
             }
             memberTxService.updateNickName(memberInfo, memberRequestDTO.getNickName());
+        }
+
+        // 선호 지역
+        if(!inputValidate.isEmpty(memberRequestDTO.getAreaCd()) && !inputValidate.isEmpty(memberRequestDTO.getSigunguCd())) {
+            KorTourOrgLocalCode localCode = korTourOrgLocalCodeRepository.findLocalCodeInfo(memberRequestDTO.getAreaCd(), memberRequestDTO.getSigunguCd());
+
+            if(null == localCode) {
+                throw new MemberInfoException(ErrorCode.NOT_FOUND_LOCAL_CODE);
+            }
+            memberTxService.updateLocalCode(memberInfo, localCode.getLocalCodeNo());
         }
 
         return ApiResponse.result(ErrorCode.SUCCESS_UPDATE_USER_INFO);

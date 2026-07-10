@@ -36,6 +36,9 @@ public class UserInfoResponseDTO {
     // 닉네임
     private String nickName = "";
 
+    // 선호 지역 코드 번호
+    private Long preferredLocalCodeNo;
+
     // 회원가입 종류(BASIC : 기본 / GOOGLE : 구글 / KAKAO : 카카오톡 / NAVER : 네이버)
     private String joinType = "";
 

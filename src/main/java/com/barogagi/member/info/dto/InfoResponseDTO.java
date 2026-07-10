@@ -1,14 +1,17 @@
-package com.barogagi.member.join.basic.dto;
+package com.barogagi.member.info.dto;
 
-import com.barogagi.terms.dto.TermsDTO;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import com.barogagi.member.join.basic.dto.Gender;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
-public class JoinRequestDTO {
+public class InfoResponseDTO {
+
+    // 회원번호
+    private String membershipNo = "";
 
     // 아이디
     private String userId = "";
@@ -26,20 +29,21 @@ public class JoinRequestDTO {
     private String tel = "";
 
     // 성별 (M : 남 / W : 여)
-    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     // 닉네임
     private String nickName = "";
 
-    // 회원가입 종류
-    private String joinType = "BASIC";
-
-    // 선호 지역의 지역코드
+    // 선호 지역 코드 번호
     private String areaCd = "";
-
-    // 선호 지역의 시군구코드
     private String sigunguCd = "";
 
-    private TermsDTO termsDTO;
+    // 회원가입 종류(BASIC : 기본 / GOOGLE : 구글 / KAKAO : 카카오톡 / NAVER : 네이버)
+    private String joinType = "";
+
+    // 등록일
+    private LocalDateTime regDate;
+
+    // 수정일
+    private LocalDateTime updDate;
 }

@@ -77,6 +77,7 @@ public class JoinController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T300", description = "약관 저장에 실패하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T401", description = "유효한 약관이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "T400", description = "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C400", description = "지역 코드 정보를 찾을 수 없습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "오류가 발생하였습니다.")
             })
     @PostMapping
