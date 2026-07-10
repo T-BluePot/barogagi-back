@@ -15,4 +15,10 @@ public class MemberRequestDTO {
 
     // 닉네임
     private String nickName = "";
+
+    // 지역 코드
+    private String areaCd = "";
+
+    // 시군구 코드
+    private String sigunguCd = "";
 }

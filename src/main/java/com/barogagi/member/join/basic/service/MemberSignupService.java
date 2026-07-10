@@ -1,5 +1,7 @@
 package com.barogagi.member.join.basic.service;
 
+import com.barogagi.batch.entity.KorTourOrgLocalCode;
+import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
 import com.barogagi.config.PasswordConfig;
 import com.barogagi.member.domain.MembershipStatus;
 import com.barogagi.member.domain.UserMembershipInfo;
@@ -45,6 +47,7 @@ public class MemberSignupService {
 
     private final UserMembershipRepository userMembershipRepository;
     private final DeletedMembershipRepository deletedMembershipRepository;
+    private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -225,6 +228,24 @@ public class MemberSignupService {
 
     // 회원가입 정보 저장 기능
     public String signUp(JoinRequestDTO joinRequestDTO) {
+
+        Long localCodeNo = null;
+
+        // 선호 지역 입력 시 코드 -> 번호로 변환
+        if(!inputValidate.isEmpty(joinRequestDTO.getAreaCd())
+                && !inputValidate.isEmpty(joinRequestDTO.getSigunguCd())) {
+
+            // 12-1 지역코드 번호 조회
+            KorTourOrgLocalCode localCodeInfo = korTourOrgLocalCodeRepository.findLocalCodeInfo(
+                    joinRequestDTO.getAreaCd(), joinRequestDTO.getSigunguCd());
+
+            if(null == localCodeInfo) {
+                throw new JoinException(ErrorCode.NOT_FOUND_LOCAL_CODE);
+            }
+
+            localCodeNo = localCodeInfo.getLocalCodeNo();
+        }
+
         UserMembershipInfo userMembershipInfo = UserMembershipInfo.builder()
                 .membershipNo(this.generateMemberNo())
                 .userId(joinRequestDTO.getUserId())
@@ -236,6 +257,7 @@ public class MemberSignupService {
                 .nickName(joinRequestDTO.getNickName())
                 .joinType(joinRequestDTO.getJoinType())
                 .status(MembershipStatus.ACTIVE)
+                .preferredLocalCodeNo(localCodeNo)
                 .build();
 
         userMembershipRepository.save(userMembershipInfo);

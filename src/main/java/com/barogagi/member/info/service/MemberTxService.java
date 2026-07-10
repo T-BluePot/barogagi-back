@@ -22,4 +22,9 @@ public class MemberTxService {
     public void updateNickName(UserMembershipInfo userMembershipInfo, String nickname) {
         userMembershipInfo.setNickName(nickname);
     }
+
+    @Transactional
+    public void updateLocalCode(UserMembershipInfo userMembershipInfo, Long preferredLocalCodeNo) {
+        userMembershipInfo.setPreferredLocalCodeNo(preferredLocalCodeNo);
+    }
 }
