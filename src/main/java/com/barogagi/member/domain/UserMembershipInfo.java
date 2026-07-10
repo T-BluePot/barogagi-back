@@ -82,6 +82,10 @@ public class UserMembershipInfo {
     @Column(name = "WITHDRAW_REASON")
     private String withdrawReason;
 
+    @Column(name = "PREFERRED_LOCAL_CODE_NO")
+    @Setter
+    private Long preferredLocalCodeNo;
+
     /*
         비밀번호 변경
      */
