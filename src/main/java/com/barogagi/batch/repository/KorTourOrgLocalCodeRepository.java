@@ -17,4 +17,13 @@ public interface KorTourOrgLocalCodeRepository extends JpaRepository<KorTourOrgL
             WHERE code.type = :type
             """)
     List<KorTourOrgLocalCode> findLocalCode(@Param("type") String type);
+
+    @Query("""
+            SELECT code
+            FROM KorTourOrgLocalCode code
+            WHERE code.areaCd = :areaCd
+            AND code.sigunguCd = :sigunguCd
+            """)
+    KorTourOrgLocalCode findLocalCodeInfo(@Param("areaCd") String areaCd,
+                                          @Param("sigunguCd") String sigunguCd);
 }
