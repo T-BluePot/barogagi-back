@@ -43,4 +43,16 @@ public class KorTourOrgLocalCode {
     @Schema(description = "시, 군, 구 명")
     @Column(name = "SIGUNGU_NM")
     private String sigunguNm;
+
+    @Schema(description = "x 격자")
+    @Column(name = "WEATHER_NX")
+    private String weatherNx;
+
+    @Schema(description = "y 격자")
+    @Column(name = "WEATHER_NY")
+    private String weatherNy;
+
+    @Schema(description = "중기예보구역 아이디")
+    @Column(name = "WEATHER_MID_REG_ID")
+    private String weatherMidRegId;
 }
