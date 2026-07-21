@@ -76,8 +76,8 @@ public class MainPageController {
             })
     @GetMapping("/regions/hot-place")
     public ApiResponse selectHotPlaceList(@RequestHeader("API-KEY") String apiSecretKey,
-                                          @RequestParam("areaCd") String areaCd,
-                                          @RequestParam("sigunguCd") String sigunguCd) {
+                                          @RequestParam(name = "areaCd", required = false) String areaCd,
+                                          @RequestParam(name = "sigunguCd", required = false) String sigunguCd) {
         return mainPageService.selectHotPlaceList(apiSecretKey, areaCd, sigunguCd);
     }
 }
