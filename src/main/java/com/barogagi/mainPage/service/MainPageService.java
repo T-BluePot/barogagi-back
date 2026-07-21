@@ -14,11 +14,13 @@ import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MainPageService {
@@ -143,6 +145,11 @@ public class MainPageService {
         // 1. API SECRET KEY 일치 여부 확인
         if(!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new MainPageException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        }
+
+        if(null == areaCd || null == sigunguCd) {
+            areaCd = "11";
+            sigunguCd = "11110";
         }
 
         // 2. 지역별 인기 장소 조회
