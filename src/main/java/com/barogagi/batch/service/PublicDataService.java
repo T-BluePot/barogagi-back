@@ -1,5 +1,7 @@
 package com.barogagi.batch.service;
 
+import com.barogagi.batch.dto.KmaVilageFcstItemDTO;
+import com.barogagi.batch.dto.KmaVilageFcstResponseDTO;
 import com.barogagi.batch.dto.TourApiResponse;
 import com.barogagi.batch.entity.KorTourOrgLocalCode;
 import com.barogagi.batch.entity.LocalPopularReplace;
@@ -8,12 +10,16 @@ import com.barogagi.batch.repository.LocalPopularReplaceRepository;
 import com.barogagi.config.TourApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +29,11 @@ public class PublicDataService {
     private final TourApiClient tourApiClient;
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final LocalPopularReplaceRepository localPopularReplaceRepository;
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${apihub.kma.api-key}")
+    private String kmaApiKey;
 
     @Transactional
     public void insertLocalPopularArea() {
@@ -116,5 +127,26 @@ public class PublicDataService {
                         .toList();
 
         localPopularReplaceRepository.saveAll(entities);
+    }
+
+    @Transactional
+    public List<KmaVilageFcstItemDTO> getVilageFcst(String baseDate, String baseTime, String nx, String ny) {
+
+        String url = UriComponentsBuilder
+                .fromHttpUrl("https://apihub.kma.go.kr/api/typ02/openApi/" + "VilageFcstInfoService_2.0/getVilageFcst")
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1000)
+                .queryParam("dataType", "JSON")
+                .queryParam("base_date", baseDate)
+                .queryParam("base_time", baseTime)
+                .queryParam("nx", nx)
+                .queryParam("ny", ny)
+                .queryParam("authKey", kmaApiKey)
+                .build(false)
+                .toUriString();
+
+        KmaVilageFcstResponseDTO response = restTemplate.getForObject(url,KmaVilageFcstResponseDTO.class);
+
+        return Objects.requireNonNull(response).getResponse().getBody().getItems().getItem();
     }
 }
