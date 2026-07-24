@@ -55,7 +55,7 @@ public class WeatherService {
         List<String> targetFcstDates = List.of(today, tomorrow, dayAfterTomorrow);
 
         // 6. 날씨 격자 조회
-        List<WeatherGridDTO> weatherGridDTOS = korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList2");
+        List<WeatherGridDTO> weatherGridDTOS = korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList1");
 
         // 7. 격자별 날씨 조회
         for (WeatherGridDTO weatherGridDTO : weatherGridDTOS) {
