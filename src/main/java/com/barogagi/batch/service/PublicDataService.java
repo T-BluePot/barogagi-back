@@ -1,8 +1,6 @@
 package com.barogagi.batch.service;
 
-import com.barogagi.batch.dto.KmaVilageFcstItemDTO;
-import com.barogagi.batch.dto.KmaVilageFcstResponseDTO;
-import com.barogagi.batch.dto.TourApiResponse;
+import com.barogagi.batch.dto.*;
 import com.barogagi.batch.entity.KorTourOrgLocalCode;
 import com.barogagi.batch.entity.LocalPopularReplace;
 import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
@@ -11,6 +9,7 @@ import com.barogagi.config.TourApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -39,29 +38,21 @@ public class PublicDataService {
     public void insertLocalPopularArea() {
 
         // 지역코드 조회
-        List<KorTourOrgLocalCode> codeList =
-                korTourOrgLocalCodeRepository.findLocalCode("areaBasedList1");
+        List<KorTourOrgLocalCode> codeList = korTourOrgLocalCodeRepository.findLocalCode("areaBasedList1");
 
         if (codeList.isEmpty()) {
             return;
         }
 
         // 첫 번째 지역으로 저장할 기준년월 확인
-        TourApiResponse firstResponse = findLatestResponse(
-                codeList.get(0).getAreaCd(),
-                codeList.get(0).getSigunguCd());
+        TourApiResponse firstResponse = findLatestResponse(codeList.get(0).getAreaCd(), codeList.get(0).getSigunguCd());
 
         if (firstResponse == null) {
             log.info("저장할 데이터가 없습니다.");
             return;
         }
 
-        String baseYm = firstResponse.getResponse()
-                .getBody()
-                .getItems()
-                .getItem()
-                .get(0)
-                .getBaseYm();
+        String baseYm = firstResponse.getResponse().getBody().getItems().getItem().get(0).getBaseYm();
 
         // 이미 저장된 월이면 배치 종료
         if (localPopularReplaceRepository.existsByBaseYm(baseYm)) {
@@ -78,13 +69,8 @@ public class PublicDataService {
 
         // 나머지 지역 저장
         for (int i = 1; i < codeList.size(); i++) {
-
             KorTourOrgLocalCode localCode = codeList.get(i);
-
-            TourApiResponse response = findLatestResponse(
-                    localCode.getAreaCd(),
-                    localCode.getSigunguCd());
-
+            TourApiResponse response = findLatestResponse(localCode.getAreaCd(), localCode.getSigunguCd());
             if (response == null) {
                 continue;
             }
@@ -96,22 +82,14 @@ public class PublicDataService {
     private TourApiResponse findLatestResponse(String areaCd, String sigunguCd) {
 
         YearMonth yearMonth = YearMonth.now().minusMonths(1);
-
         for (int i = 0; i < 3; i++) {
-
             String baseYm = yearMonth.format(DateTimeFormatter.ofPattern("yyyyMM"));
-
-            TourApiResponse response =
-                    tourApiClient.getCenterPlaces(baseYm, areaCd, sigunguCd);
-
-            if (response != null &&
-                    response.getResponse().getBody().getTotalCount() > 0) {
+            TourApiResponse response = tourApiClient.getCenterPlaces(baseYm, areaCd, sigunguCd);
+            if (response != null && response.getResponse().getBody().getTotalCount() > 0) {
                 return response;
             }
-
             yearMonth = yearMonth.minusMonths(1);
         }
-
         return null;
     }
 
@@ -148,5 +126,58 @@ public class PublicDataService {
         KmaVilageFcstResponseDTO response = restTemplate.getForObject(url,KmaVilageFcstResponseDTO.class);
 
         return Objects.requireNonNull(response).getResponse().getBody().getItems().getItem();
+    }
+
+    public KmaMidTaItemDTO getMidTa(String regId, String tmFc) {
+        String url = String.valueOf(UriComponentsBuilder.fromHttpUrl("https://apihub.kma.go.kr/api/typ02/openApi/MidFcstInfoService/getMidTa")
+                        .queryParam("pageNo", 1)
+                        .queryParam("numOfRows", 10)
+                        .queryParam("dataType", "JSON")
+                        .queryParam("regId", regId)
+                        .queryParam("tmFc", tmFc)
+                        .queryParam("authKey", kmaApiKey)
+                        .build(false)
+        );
+
+        ResponseEntity<KmaMidTaResponseDTO> response =
+                restTemplate.getForEntity(url, KmaMidTaResponseDTO.class
+                );
+
+        return response.getBody()
+                .getResponse()
+                .getBody()
+                .getItems()
+                .getItem()
+                .get(0);
+    }
+
+    public KmaMidLandFcstItemDTO getMidLandFcst(String regId, String tmFc) {
+
+        String url = String.valueOf(
+                UriComponentsBuilder
+                        .fromHttpUrl(
+                                "https://apihub.kma.go.kr/api/typ02/openApi/MidFcstInfoService/getMidLandFcst"
+                        )
+                        .queryParam("pageNo", 1)
+                        .queryParam("numOfRows", 10)
+                        .queryParam("dataType", "JSON")
+                        .queryParam("regId", regId)
+                        .queryParam("tmFc", tmFc)
+                        .queryParam("authKey", kmaApiKey)
+                        .build(false)
+        );
+
+        ResponseEntity<KmaMidLandFcstResponseDTO> response =
+                restTemplate.getForEntity(
+                        url,
+                        KmaMidLandFcstResponseDTO.class
+                );
+
+        return response.getBody()
+                .getResponse()
+                .getBody()
+                .getItems()
+                .getItem()
+                .get(0);
     }
 }

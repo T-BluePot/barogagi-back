@@ -30,12 +30,19 @@ public interface KorTourOrgLocalCodeRepository extends JpaRepository<KorTourOrgL
 
 
     @Query("""
-    SELECT DISTINCT new com.barogagi.batch.dto.WeatherGridDTO(
-        k.weatherNx,
-        k.weatherNy
-    )
-    FROM KorTourOrgLocalCode k
-    WHERE k.type = :type
-""")
+            SELECT DISTINCT new com.barogagi.batch.dto.WeatherGridDTO(
+                k.weatherNx,
+                k.weatherNy
+            )
+            FROM KorTourOrgLocalCode k
+            WHERE k.type = :type
+            """)
     List<WeatherGridDTO> findDistinctWeatherGrid(@Param("type") String type);
+
+    @Query("""
+            SELECT DISTINCT k.weatherMidRegId
+            FROM KorTourOrgLocalCode k
+            WHERE k.type = :type
+            """)
+    List<String> findDistinctWeatherMidRegId(@Param("type") String type);
 }

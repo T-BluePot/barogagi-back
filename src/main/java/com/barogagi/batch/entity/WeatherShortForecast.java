@@ -21,6 +21,8 @@ import lombok.*;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class WeatherShortForecast {
 
     @Id
@@ -83,28 +85,4 @@ public class WeatherShortForecast {
     @Schema(description = "풍향")
     @Column(name = "VEC")
     private String vec;
-
-    @Builder
-    public WeatherShortForecast(
-            String nx, String ny,
-            String baseDate, String baseTime,
-            String fcstDate, String fcstTime,
-            String tmp, String sky, String pty, String pop,
-            String pcp, String reh, String wsd, String vec
-    ) {
-        this.nx = nx;
-        this.ny = ny;
-        this.baseDate = baseDate;
-        this.baseTime = baseTime;
-        this.fcstDate = fcstDate;
-        this.fcstTime = fcstTime;
-        this.tmp = tmp;
-        this.sky = sky;
-        this.pty = pty;
-        this.pop = pop;
-        this.pcp = pcp;
-        this.reh = reh;
-        this.wsd = wsd;
-        this.vec = vec;
-    }
 }

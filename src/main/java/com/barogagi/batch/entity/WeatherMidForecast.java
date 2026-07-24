@@ -2,10 +2,7 @@ package com.barogagi.batch.entity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(
@@ -23,6 +20,8 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class WeatherMidForecast {
 
     @Id
@@ -57,18 +56,4 @@ public class WeatherMidForecast {
     @Schema(description = "최고기온")
     @Column(name = "TMX")
     private Integer tmx;
-
-    @Builder
-    public WeatherMidForecast(
-            String regId, String tmFc, String fcstDate,
-            String wf, Integer rnSt, Integer tmn, Integer tmx
-    ) {
-        this.regId = regId;
-        this.tmFc = tmFc;
-        this.fcstDate = fcstDate;
-        this.wf = wf;
-        this.rnSt = rnSt;
-        this.tmn = tmn;
-        this.tmx = tmx;
-    }
 }
