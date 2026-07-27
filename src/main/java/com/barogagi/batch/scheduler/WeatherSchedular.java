@@ -25,7 +25,6 @@ public class WeatherSchedular {
         if(commonService.isProd()) {
             weatherService.shortWeatherBatch();
         }
-        weatherService.shortWeatherBatch();
     }
 
     // 오늘 기준 10일까지의 예보 조회(중기예보조회)
