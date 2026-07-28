@@ -13,8 +13,7 @@ public interface WeatherShortForecastRepository extends JpaRepository<WeatherSho
      * 예:
      * 20260727 ~ 20260728
      */
-    List<WeatherShortForecast>
-    findByNxAndNyAndFcstDateInOrderByFcstDateAscFcstTimeAsc(String nx, String ny, List<String> fcstDates);
+    List<WeatherShortForecast> findByNxAndNyAndFcstDateInOrderByFcstDateAscFcstTimeAsc(String nx, String ny, List<String> fcstDates);
 
     /**
      * 특정 위치의 저장된 전체 단기예보 조회

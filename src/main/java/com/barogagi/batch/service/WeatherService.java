@@ -6,11 +6,9 @@ import com.barogagi.batch.dto.KmaVilageFcstItemDTO;
 import com.barogagi.batch.dto.WeatherGridDTO;
 import com.barogagi.batch.entity.WeatherMidForecast;
 import com.barogagi.batch.entity.WeatherShortForecast;
-import com.barogagi.batch.exception.WeatherException;
 import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
 import com.barogagi.batch.repository.WeatherMidForecaseRepository;
 import com.barogagi.batch.repository.WeatherShortForecastRepository;
-import com.barogagi.util.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +34,6 @@ public class WeatherService {
 
     private static final DateTimeFormatter SHORT_WEATHER_DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
     private static final DateTimeFormatter SHORT_WEATHER_TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmm");
-    private static final DateTimeFormatter MID_WEATHER_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
     private static final List<Integer> SHORT_WEATHER_BASE_HOURS = List.of(2, 5, 8, 11, 14, 17, 20, 23);
 
     /**단기예보 배치*/
@@ -65,8 +62,7 @@ public class WeatherService {
         );
 
         // 6. 날씨 격자 조회
-        List<WeatherGridDTO> weatherGridDTOS =
-                korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList1");
+        List<WeatherGridDTO> weatherGridDTOS = korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList1");
 
         // 7. 저장할 Entity를 메모리에 모음
         List<WeatherShortForecast> forecasts = new ArrayList<>();
@@ -77,13 +73,7 @@ public class WeatherService {
             String nx = weatherGridDTO.getNx();
             String ny = weatherGridDTO.getNy();
 
-            List<KmaVilageFcstItemDTO> weatherList =
-                    publicDataService.getVilageFcst(
-                            baseDate,
-                            baseTime,
-                            nx,
-                            ny
-                    );
+            List<KmaVilageFcstItemDTO> weatherList = publicDataService.getVilageFcst(baseDate, baseTime, nx, ny);
 
             // 9. 오늘/내일/모레 + 특정 예보 시간 필터링
             List<KmaVilageFcstItemDTO> targetWeatherList =
@@ -95,8 +85,7 @@ public class WeatherService {
             // 10. 날짜별 Entity 생성
             for (String fcstDate : targetFcstDates) {
 
-                List<KmaVilageFcstItemDTO> dateWeatherList =
-                        targetWeatherList.stream()
+                List<KmaVilageFcstItemDTO> dateWeatherList = targetWeatherList.stream()
                                 .filter(item -> item.getFcstDate().equals(fcstDate))
                                 .toList();
 
@@ -104,21 +93,16 @@ public class WeatherService {
                     continue;
                 }
 
-                Map<String, String> categoryMap =
-                        dateWeatherList.stream()
+                Map<String, String> categoryMap = dateWeatherList.stream()
                                 .collect(Collectors.toMap(
                                         KmaVilageFcstItemDTO::getCategory,
                                         KmaVilageFcstItemDTO::getFcstValue
                                 ));
 
-                WeatherShortForecast forecast =
-                        WeatherShortForecast.builder()
-                                .nx(nx)
-                                .ny(ny)
-                                .baseDate(baseDate)
-                                .baseTime(baseTime)
-                                .fcstDate(fcstDate)
-                                .fcstTime(targetFcstTime)
+                WeatherShortForecast forecast = WeatherShortForecast.builder()
+                                .nx(nx).ny(ny)
+                                .baseDate(baseDate).baseTime(baseTime)
+                                .fcstDate(fcstDate).fcstTime(targetFcstTime)
                                 .tmp(categoryMap.get("TMP"))
                                 .sky(categoryMap.get("SKY"))
                                 .pty(categoryMap.get("PTY"))
@@ -160,14 +144,10 @@ public class WeatherService {
         // 2. 가장 최근 발표 시각
         LocalDateTime baseDateTime = getLatestMidBaseDateTime();
 
-        String tmFc = baseDateTime.format(
-                DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-        );
+        String tmFc = baseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
         // 3. 중복 제거된 regId 조회
-        List<String> regIds =
-                korTourOrgLocalCodeRepository
-                        .findDistinctWeatherMidRegId("areaBasedList2");
+        List<String> regIds = korTourOrgLocalCodeRepository.findDistinctWeatherMidRegId("areaBasedList2");
 
         // 4. 저장할 Entity를 메모리에 모음
         List<WeatherMidForecast> forecasts = new ArrayList<>();
@@ -175,160 +155,83 @@ public class WeatherService {
         // 5. 지역별 처리
         for (String regId : regIds) {
 
-            KmaMidTaItemDTO ta =
-                    publicDataService.getMidTa(regId, tmFc);
+            KmaMidTaItemDTO ta = publicDataService.getMidTa(regId, tmFc);
 
-            KmaMidLandFcstItemDTO land =
-                    publicDataService.getMidLandFcst(regId, tmFc);
+            KmaMidLandFcstItemDTO land = publicDataService.getMidLandFcst(regId, tmFc);
 
             // 6. 4일 ~ 10일 Entity 생성
-            addForecasts(
-                    forecasts,
-                    regId,
-                    tmFc,
-                    ta,
-                    land
-            );
+            addForecasts(forecasts, regId, tmFc, ta, land);
         }
 
         // 7. 마지막에 한 번에 저장
         weatherMidForecaseRepository.saveAll(forecasts);
     }
 
-    private void addForecasts(
-            List<WeatherMidForecast> forecasts,
-            String regId,
-            String tmFc,
-            KmaMidTaItemDTO ta,
-            KmaMidLandFcstItemDTO land
-    ) {
-        LocalDate baseDate =
-                LocalDate.parse(
-                        tmFc.substring(0, 8),
-                        DateTimeFormatter.ofPattern("yyyyMMdd")
-                );
+    private void addForecasts(List<WeatherMidForecast> forecasts, String regId, String tmFc, KmaMidTaItemDTO ta, KmaMidLandFcstItemDTO land) {
+        LocalDate baseDate = LocalDate.parse(tmFc.substring(0, 8), DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         // 4일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(4),
-                land.getWf4Am(),
-                land.getWf4Pm(),
-                land.getRnSt4Am(),
-                land.getRnSt4Pm(),
-                ta.getTaMin4(),
-                ta.getTaMax4()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(4),
+                land.getWf4Am(), land.getWf4Pm(),
+                land.getRnSt4Am(), land.getRnSt4Pm(),
+                ta.getTaMin4(), ta.getTaMax4()
         );
 
         // 5일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(5),
-                land.getWf5Am(),
-                land.getWf5Pm(),
-                land.getRnSt5Am(),
-                land.getRnSt5Pm(),
-                ta.getTaMin5(),
-                ta.getTaMax5()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(5),
+                land.getWf5Am(), land.getWf5Pm(),
+                land.getRnSt5Am(), land.getRnSt5Pm(),
+                ta.getTaMin5(), ta.getTaMax5()
         );
 
         // 6일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(6),
-                land.getWf6Am(),
-                land.getWf6Pm(),
-                land.getRnSt6Am(),
-                land.getRnSt6Pm(),
-                ta.getTaMin6(),
-                ta.getTaMax6()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(6),
+                land.getWf6Am(), land.getWf6Pm(),
+                land.getRnSt6Am(), land.getRnSt6Pm(),
+                ta.getTaMin6(), ta.getTaMax6()
         );
 
         // 7일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(7),
-                land.getWf7Am(),
-                land.getWf7Pm(),
-                land.getRnSt7Am(),
-                land.getRnSt7Pm(),
-                ta.getTaMin7(),
-                ta.getTaMax7()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(7),
+                land.getWf7Am(), land.getWf7Pm(),
+                land.getRnSt7Am(), land.getRnSt7Pm(),
+                ta.getTaMin7(), ta.getTaMax7()
         );
 
         // 8일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(8),
-                land.getWf8(),
-                null,
-                land.getRnSt8(),
-                null,
-                ta.getTaMin8(),
-                ta.getTaMax8()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(8),
+                land.getWf8(), null,
+                land.getRnSt8(), null,
+                ta.getTaMin8(), ta.getTaMax8()
         );
 
         // 9일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(9),
-                land.getWf9(),
-                null,
-                land.getRnSt9(),
-                null,
-                ta.getTaMin9(),
-                ta.getTaMax9()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(9),
+                land.getWf9(), null,
+                land.getRnSt9(), null,
+                ta.getTaMin9(), ta.getTaMax9()
         );
 
         // 10일
-        addForecast(
-                forecasts,
-                regId,
-                tmFc,
-                baseDate.plusDays(10),
-                land.getWf10(),
-                null,
-                land.getRnSt10(),
-                null,
-                ta.getTaMin10(),
-                ta.getTaMax10()
+        addForecast(forecasts, regId, tmFc, baseDate.plusDays(10),
+                land.getWf10(), null,
+                land.getRnSt10(), null,
+                ta.getTaMin10(), ta.getTaMax10()
         );
     }
 
-    private void addForecast(
-            List<WeatherMidForecast> forecasts,
-            String regId,
-            String tmFc,
-            LocalDate fcstDate,
-            String wfAm,
-            String wfPm,
-            Integer rnStAm,
-            Integer rnStPm,
-            Integer tmn,
-            Integer tmx
-    ) {
+    private void addForecast(List<WeatherMidForecast> forecasts,
+                             String regId, String tmFc, LocalDate fcstDate,
+                             String wfAm, String wfPm,
+                             Integer rnStAm, Integer rnStPm,
+                             Integer tmn, Integer tmx) {
         String wf = combineWeather(wfAm, wfPm);
         Integer rnSt = combineRainProbability(rnStAm, rnStPm);
 
-        WeatherMidForecast forecast =
-                WeatherMidForecast.builder()
+        WeatherMidForecast forecast = WeatherMidForecast.builder()
                         .regId(regId)
                         .tmFc(tmFc)
-                        .fcstDate(fcstDate.format(
-                                DateTimeFormatter.ofPattern("yyyyMMdd")
-                        ))
+                        .fcstDate(fcstDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
                         .wf(wf)
                         .rnSt(rnSt)
                         .tmn(tmn)
@@ -345,8 +248,7 @@ public class WeatherService {
         LocalDate baseDate = LocalDate.parse(tmFc.substring(0, 8), DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         // 4일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(4),
+        saveForecast(regId, tmFc, baseDate.plusDays(4),
                 land.getWf4Am(), land.getWf4Pm(),
                 land.getRnSt4Am(), land.getRnSt4Pm(),
                 ta.getTaMin4(), ta.getTaMax4()

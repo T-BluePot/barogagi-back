@@ -1,13 +1,16 @@
 package com.barogagi.weather.service;
 
 import com.barogagi.batch.entity.KorTourOrgLocalCode;
+import com.barogagi.batch.entity.WeatherMidForecast;
 import com.barogagi.batch.entity.WeatherShortForecast;
 import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
+import com.barogagi.batch.repository.WeatherMidForecaseRepository;
 import com.barogagi.batch.repository.WeatherShortForecastRepository;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.Validator;
 import com.barogagi.util.exception.ErrorCode;
+import com.barogagi.weather.dto.MidWeatherResponseDTO;
 import com.barogagi.weather.dto.ShortWeatherResponseDTO;
 import com.barogagi.weather.exception.LocalWeatherException;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +33,12 @@ public class LocalWeatherService {
     private final InputValidate inputValidate;
 
     private final WeatherShortForecastRepository weatherShortForecastRepository;
+    private final WeatherMidForecaseRepository weatherMidForecaseRepository;
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
 
-    public ApiResponse getShortWeather(
-            String apiSecretKey, String areaCd, String sigunguCd, String startDate, String endDate) {
+    public ApiResponse getShortWeather(String apiSecretKey, String areaCd, String sigunguCd, String startDate, String endDate) {
 
         // 1. API KEY 검증
         if (!validator.apiSecretKeyCheck(apiSecretKey)) {
@@ -98,6 +101,81 @@ public class LocalWeatherService {
                                 ShortWeatherResponseDTO.Forecast.builder()
                                         .baseDate(forecasts.get(0).getBaseDate())
                                         .baseTime(forecasts.get(0).getBaseTime())
+                                        .build()
+                        )
+
+                        // 날씨 정보
+                        .weather(
+                                forecasts.stream()
+                                        .map(this::convertToWeather)
+                                        .toList()
+                        )
+                        .build();
+
+        return ApiResponse.resultData(response, "LW200", "날씨 조회 성공");
+    }
+
+    public ApiResponse getMidWeather(String apiSecretKey, String areaCd, String sigunguCd, String startDate, String endDate) {
+
+        // 1. API KEY 검증
+        if (!validator.apiSecretKeyCheck(apiSecretKey)) {
+            throw new LocalWeatherException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
+        }
+
+        // 2. 지역 코드 기본값 처리
+        if (inputValidate.isEmpty(areaCd) || inputValidate.isEmpty(sigunguCd)) {
+            areaCd = "11";
+            sigunguCd = "11110";
+        }
+
+        // 3. 조회 날짜 생성
+        List<String> targetDates = getTargetDates(startDate, endDate);
+
+        // 4. 지역 코드 조회
+        KorTourOrgLocalCode localCode = korTourOrgLocalCodeRepository.findLocalCodeInfo(areaCd, sigunguCd);
+
+        if (localCode == null) {
+            throw new LocalWeatherException(ErrorCode.NOT_FOUND_LOCAL_CODE);
+        }
+
+        // 5. 기상청 중기예보 지역코드 조회
+        String weatherMidRegId = localCode.getWeatherMidRegId();
+
+        // 6. 날씨 조회
+        List<WeatherMidForecast> forecasts;
+
+        // startDate=ALL, endDate=ALL
+        // → 해당 지역의 저장된 전체 단기예보 조회
+        if (targetDates == null) {
+            forecasts = weatherMidForecaseRepository.findByRegIdOrderByFcstDateAsc(weatherMidRegId);
+        } else {
+            // 지정한 날짜 범위만 조회
+            forecasts = weatherMidForecaseRepository.findByRegIdAndFcstDateInOrderByFcstDateAsc(weatherMidRegId, targetDates);
+        }
+
+        // 7. 조회 결과가 없는 경우
+        if (forecasts.isEmpty()) {
+            throw new LocalWeatherException(ErrorCode.NOT_FOUND_WEATHER);
+        }
+
+        // 8. 응답 DTO 생성
+        MidWeatherResponseDTO response =
+                MidWeatherResponseDTO.builder()
+
+                        // 지역 정보
+                        .area(
+                                MidWeatherResponseDTO.Area.builder()
+                                        .areaCd(localCode.getAreaCd())
+                                        .sigunguCd(localCode.getSigunguCd())
+                                        .areaName(localCode.getAreaNm())
+                                        .sigunguName(localCode.getSigunguNm())
+                                        .build()
+                        )
+
+                        // 예보 발표 정보
+                        .forecast(
+                                MidWeatherResponseDTO.Forecast.builder()
+                                        .tmFc(forecasts.get(0).getTmFc())
                                         .build()
                         )
 
@@ -191,8 +269,6 @@ public class LocalWeatherService {
         String weatherCode = convertWeatherCode(forecast.getSky(), forecast.getPty());
         String weather = convertWeatherName(weatherCode);
 
-        log.info("wsd={}",forecast.getWsd());
-
         return ShortWeatherResponseDTO.Weather.builder()
                 .date(forecast.getFcstDate())
                 .weather(weather)
@@ -203,6 +279,20 @@ public class LocalWeatherService {
                 .humidity(parseInteger(forecast.getReh()))
                 .windSpeed(parseDouble(forecast.getWsd()))
                 .windDirection(parseInteger(forecast.getVec()))
+                .build();
+    }
+
+    private MidWeatherResponseDTO.Weather convertToWeather(WeatherMidForecast forecast) {
+        String weatherCode = convertWeatherCode(forecast.getWf());
+        String weather = convertWeatherName(weatherCode);
+
+        return MidWeatherResponseDTO.Weather.builder()
+                .date(forecast.getFcstDate())
+                .weather(weather)
+                .weatherCode(weatherCode)
+                .minTemperature(forecast.getTmn())
+                .maxTemperature(forecast.getTmx())
+                .precipitationProbability(forecast.getRnSt())
                 .build();
     }
 
@@ -230,6 +320,43 @@ public class LocalWeatherService {
             case "4" -> "CLOUDY";
             default -> "UNKNOWN";
         };
+    }
+
+    private String convertWeatherCode(String wf) {
+
+        if (wf == null || wf.isBlank()) {
+            return "UNKNOWN";
+        }
+
+        if (wf.contains("소나기")) {
+            return "SHOWER";
+        }
+
+        if (wf.contains("비/눈")) {
+            return "RAIN_SNOW";
+        }
+
+        if (wf.contains("눈")) {
+            return "SNOW";
+        }
+
+        if (wf.contains("비")) {
+            return "RAIN";
+        }
+
+        if (wf.equals("맑음")) {
+            return "SUNNY";
+        }
+
+        if (wf.equals("구름많음")) {
+            return "PARTLY_CLOUDY";
+        }
+
+        if (wf.equals("흐림")) {
+            return "CLOUDY";
+        }
+
+        return "UNKNOWN";
     }
 
     /**
