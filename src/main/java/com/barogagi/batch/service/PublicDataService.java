@@ -107,7 +107,6 @@ public class PublicDataService {
         localPopularReplaceRepository.saveAll(entities);
     }
 
-    @Transactional
     public List<KmaVilageFcstItemDTO> getVilageFcst(String baseDate, String baseTime, String nx, String ny) {
 
         String url = UriComponentsBuilder
@@ -124,6 +123,10 @@ public class PublicDataService {
                 .toUriString();
 
         KmaVilageFcstResponseDTO response = restTemplate.getForObject(url,KmaVilageFcstResponseDTO.class);
+
+        if (response == null) {
+            throw new IllegalStateException("기상청 응답이 없습니다.");
+        }
 
         return Objects.requireNonNull(response).getResponse().getBody().getItems().getItem();
     }

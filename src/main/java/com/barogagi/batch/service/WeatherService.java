@@ -17,9 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -36,12 +36,10 @@ public class WeatherService {
     private static final DateTimeFormatter SHORT_WEATHER_TIME_FORMATTER = DateTimeFormatter.ofPattern("HHmm");
     private static final List<Integer> SHORT_WEATHER_BASE_HOURS = List.of(2, 5, 8, 11, 14, 17, 20, 23);
 
-    /**단기예보 배치*/
-    @Transactional
-    public void shortWeatherBatch() {
+    private final Executor weatherExecutor;
 
-        // 1. 기존 단기예보 전체 삭제
-        weatherShortForecastRepository.deleteAllInBatch();
+    /**단기예보 배치*/
+    public void shortWeatherBatch() {
 
         // 2. 현재 시각
         LocalDateTime now = LocalDateTime.now();
@@ -54,73 +52,88 @@ public class WeatherService {
         // 4. 현재 시각 기준 가장 최근 예보 시간
         String targetFcstTime = getLatestForecastTime(now);
 
-        // 5. 오늘 / 내일 / 모레
-        List<String> targetFcstDates = List.of(
-                now.format(SHORT_WEATHER_DATE_FORMATTER),
-                now.plusDays(1).format(SHORT_WEATHER_DATE_FORMATTER),
-                now.plusDays(2).format(SHORT_WEATHER_DATE_FORMATTER)
+        // 5. 오늘 / 내일 / 모레 (List -> Set으로 변경한 이유 : contains 실행 시 List는 하나씩 비교, Set은 바로 발견)
+        Set<String> targetFcstDates = Set.of(
+                                                now.format(SHORT_WEATHER_DATE_FORMATTER),
+                                                now.plusDays(1).format(SHORT_WEATHER_DATE_FORMATTER),
+                                                now.plusDays(2).format(SHORT_WEATHER_DATE_FORMATTER)
         );
 
         // 6. 날씨 격자 조회
         List<WeatherGridDTO> weatherGridDTOS = korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList1");
 
         // 7. 저장할 Entity를 메모리에 모음
-        List<WeatherShortForecast> forecasts = new ArrayList<>();
+        List<WeatherShortForecast> forecasts = new ArrayList<>(weatherGridDTOS.size() * 3);
+        List<CompletableFuture<List<WeatherShortForecast>>> futures = new ArrayList<>(weatherGridDTOS.size());
 
         // 8. 격자별 날씨 조회
-        for (WeatherGridDTO weatherGridDTO : weatherGridDTOS) {
+        for (WeatherGridDTO weatherGridDTO : weatherGridDTOS) {CompletableFuture<List<WeatherShortForecast>> future = CompletableFuture.supplyAsync(
+                    () -> createForecast(weatherGridDTO, baseDate, baseTime, targetFcstDates, targetFcstTime), weatherExecutor)
+                            .exceptionally(ex -> {
+                        log.error("단기예보 조회 실패 nx={}, ny={}", weatherGridDTO.getNx(), weatherGridDTO.getNy(), ex);
+                        return Collections.emptyList();
+                    });
+            futures.add(future);
+        }
 
-            String nx = weatherGridDTO.getNx();
-            String ny = weatherGridDTO.getNy();
-
-            List<KmaVilageFcstItemDTO> weatherList = publicDataService.getVilageFcst(baseDate, baseTime, nx, ny);
-
-            // 9. 오늘/내일/모레 + 특정 예보 시간 필터링
-            List<KmaVilageFcstItemDTO> targetWeatherList =
-                    weatherList.stream()
-                            .filter(item -> targetFcstDates.contains(item.getFcstDate()))
-                            .filter(item -> item.getFcstTime().equals(targetFcstTime))
-                            .toList();
-
-            // 10. 날짜별 Entity 생성
-            for (String fcstDate : targetFcstDates) {
-
-                List<KmaVilageFcstItemDTO> dateWeatherList = targetWeatherList.stream()
-                                .filter(item -> item.getFcstDate().equals(fcstDate))
-                                .toList();
-
-                if (dateWeatherList.isEmpty()) {
-                    continue;
-                }
-
-                Map<String, String> categoryMap = dateWeatherList.stream()
-                                .collect(Collectors.toMap(
-                                        KmaVilageFcstItemDTO::getCategory,
-                                        KmaVilageFcstItemDTO::getFcstValue
-                                ));
-
-                WeatherShortForecast forecast = WeatherShortForecast.builder()
-                                .nx(nx).ny(ny)
-                                .baseDate(baseDate).baseTime(baseTime)
-                                .fcstDate(fcstDate).fcstTime(targetFcstTime)
-                                .tmp(categoryMap.get("TMP"))
-                                .sky(categoryMap.get("SKY"))
-                                .pty(categoryMap.get("PTY"))
-                                .pop(categoryMap.get("POP"))
-                                .pcp(categoryMap.get("PCP"))
-                                .reh(categoryMap.get("REH"))
-                                .wsd(categoryMap.get("WSD"))
-                                .vec(categoryMap.get("VEC"))
-                                .build();
-
-                forecasts.add(forecast);
+        for (CompletableFuture<List<WeatherShortForecast>> future : futures) {
+            try {
+                forecasts.addAll(future.join());
+            } catch (Exception e) {
+                log.error("날씨 데이터 처리 실패", e);
             }
         }
 
         // 11. 마지막에 한 번에 저장
-        weatherShortForecastRepository.saveAll(forecasts);
+        saveForecasts(forecasts);
     }
 
+    private List<WeatherShortForecast> createForecast(WeatherGridDTO weatherGridDTO, String baseDate, String baseTime, Set<String> targetFcstDates, String targetFcstTime) {
+
+        String nx = weatherGridDTO.getNx();
+        String ny = weatherGridDTO.getNy();
+
+        List<KmaVilageFcstItemDTO> weatherList = publicDataService.getVilageFcst(baseDate, baseTime, nx, ny);
+
+        List<WeatherShortForecast> forecasts = new ArrayList<>(3);
+
+        // 오늘/내일/모레 + 특정 예보 시간 필터링
+        List<KmaVilageFcstItemDTO> targetWeatherList = weatherList.stream()
+                .filter(item -> targetFcstDates.contains(item.getFcstDate()) && targetFcstTime.equals(item.getFcstTime()))
+                .toList();
+
+        Map<String, List<KmaVilageFcstItemDTO>> weatherByDate = targetWeatherList.stream().collect(Collectors.groupingBy(KmaVilageFcstItemDTO::getFcstDate));
+
+        // 날짜별 Entity 생성
+        for (String fcstDate : targetFcstDates) {
+
+            List<KmaVilageFcstItemDTO> dateWeatherList = weatherByDate.get(fcstDate);
+
+            if (dateWeatherList == null || dateWeatherList.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> categoryMap = dateWeatherList.stream().collect(Collectors.toMap(KmaVilageFcstItemDTO::getCategory, KmaVilageFcstItemDTO::getFcstValue));
+
+            WeatherShortForecast forecast = WeatherShortForecast.builder()
+                                            .nx(nx).ny(ny)
+                                            .baseDate(baseDate).baseTime(baseTime)
+                                            .fcstDate(fcstDate).fcstTime(targetFcstTime)
+                                            .tmp(categoryMap.get("TMP"))
+                                            .sky(categoryMap.get("SKY"))
+                                            .pty(categoryMap.get("PTY"))
+                                            .pop(categoryMap.get("POP"))
+                                            .pcp(categoryMap.get("PCP"))
+                                            .reh(categoryMap.get("REH"))
+                                            .wsd(categoryMap.get("WSD"))
+                                            .vec(categoryMap.get("VEC"))
+                                            .build();
+
+            forecasts.add(forecast);
+        }
+
+        return forecasts;
+    }
 
     /**
      * 중기예보 배치
@@ -165,6 +178,15 @@ public class WeatherService {
 
         // 7. 마지막에 한 번에 저장
         weatherMidForecaseRepository.saveAll(forecasts);
+    }
+
+    @Transactional
+    public void saveForecasts(List<WeatherShortForecast> forecasts) {
+
+        // 기존 단기예보 전체 삭제
+        weatherShortForecastRepository.deleteAllInBatch();
+
+        weatherShortForecastRepository.saveAll(forecasts);
     }
 
     private void addForecasts(List<WeatherMidForecast> forecasts, String regId, String tmFc, KmaMidTaItemDTO ta, KmaMidLandFcstItemDTO land) {
