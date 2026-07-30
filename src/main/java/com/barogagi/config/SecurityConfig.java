@@ -63,7 +63,8 @@ public class SecurityConfig {
             "/api/v1/oauth-link",
             "/oauth/callback",  // oauth 로그인 성공 시 redirect
             "/images/**",  // 이미지
-            "/api/v1/schedule/share/**"  // 일정 공유 화면
+            "/api/v1/schedule/share/**",  // 일정 공유 화면
+            "/api/v1/weather/**"
     };
 
     @Bean
