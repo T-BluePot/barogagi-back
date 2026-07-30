@@ -42,33 +42,35 @@ public class WeatherService {
     /**단기예보 배치*/
     public void shortWeatherBatch() {
 
-        // 2. 현재 시각
+        long start = System.currentTimeMillis();
+
+        // 현재 시각
         LocalDateTime now = LocalDateTime.now();
 
-        // 3. 가장 최근 단기예보 발표 시각
+        // 가장 최근 단기예보 발표 시각
         LocalDateTime baseDateTime = getLatestBaseDateTime(now);
         String baseDate = baseDateTime.format(SHORT_WEATHER_DATE_FORMATTER);
         String baseTime = baseDateTime.format(SHORT_WEATHER_TIME_FORMATTER);
 
-        // 4. 현재 시각 기준 가장 최근 예보 시간
+        // 현재 시각 기준 가장 최근 예보 시간
         String targetFcstTime = getLatestForecastTime(now);
 
-        // 5. 오늘 / 내일 / 모레 (List -> Set으로 변경한 이유 : contains 실행 시 List는 하나씩 비교, Set은 바로 발견)
+        // 오늘 / 내일 / 모레 (List -> Set으로 변경한 이유 : contains 실행 시 List는 하나씩 비교, Set은 바로 발견)
         Set<String> targetFcstDates = Set.of(
                                                 now.format(SHORT_WEATHER_DATE_FORMATTER),
                                                 now.plusDays(1).format(SHORT_WEATHER_DATE_FORMATTER),
                                                 now.plusDays(2).format(SHORT_WEATHER_DATE_FORMATTER)
         );
 
-        // 6. 날씨 격자 조회
+        // 날씨 격자 조회
         List<WeatherGridDTO> weatherGridDTOS = korTourOrgLocalCodeRepository.findDistinctWeatherGrid("areaBasedList1");
 
-        // 7. 저장할 Entity를 메모리에 모음
+        // 저장할 Entity를 메모리에 모음
         List<WeatherShortForecast> forecasts = new ArrayList<>(weatherGridDTOS.size() * 3);
         List<CompletableFuture<List<WeatherShortForecast>>> futures = new ArrayList<>(weatherGridDTOS.size());
         AtomicBoolean hasError = new AtomicBoolean(false);
 
-        // 8. 격자별 날씨 조회
+        // 격자별 날씨 조회
         for (WeatherGridDTO weatherGridDTO : weatherGridDTOS) {CompletableFuture<List<WeatherShortForecast>> future = CompletableFuture.supplyAsync(
                     () -> createForecast(weatherGridDTO, baseDate, baseTime, targetFcstDates, targetFcstTime), weatherExecutor)
                             .exceptionally(ex -> {
@@ -88,8 +90,12 @@ public class WeatherService {
             return;
         }
 
-        // 11. 마지막에 한 번에 저장
+        // 마지막에 한 번에 저장
         saveShortForecasts(forecasts);
+
+        long end = System.currentTimeMillis();
+
+        log.info("단기예보 배치 완료 - {}건 저장 ({} ms)", forecasts.size(), end - start);
     }
 
     private List<WeatherShortForecast> createForecast(WeatherGridDTO weatherGridDTO, String baseDate, String baseTime, Set<String> targetFcstDates, String targetFcstTime) {
@@ -368,9 +374,16 @@ public class WeatherService {
      * 현재 시각 기준 가장 최근 단기예보 시간
      */
     private String getLatestForecastTime(LocalDateTime now) {
-        int currentHour = now.getHour();
-        int latestForecastHour = (currentHour / 3) * 3;
-        return String.format("%02d00", latestForecastHour);
+
+        int hour = now.getHour();
+
+        int forecastHour = ((hour / 3) + 1) * 3;
+
+        if (forecastHour == 24) {
+            forecastHour = 0;
+        }
+
+        return String.format("%02d00", forecastHour);
     }
 
 

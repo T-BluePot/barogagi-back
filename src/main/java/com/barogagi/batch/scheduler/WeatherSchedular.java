@@ -15,7 +15,7 @@ public class WeatherSchedular {
     private final WeatherService weatherService;
 
     // 오늘 기준 3일까지의 예보 조회(단기예보조회)
-    @Scheduled(cron = "0 10 2,5,8,11,14,17,20,23 * * *")
+    @Scheduled(cron = "0 30 2,5,8,11,14,17,20,23 * * *")
     @SchedulerLock(
             name = "shortWeatherBatch",
             lockAtMostFor = "1h",
@@ -28,7 +28,7 @@ public class WeatherSchedular {
     }
 
     // 오늘 기준 10일까지의 예보 조회(중기예보조회)
-    @Scheduled(cron = "0 10 6,18 * * *")
+    @Scheduled(cron = "0 30 6,18 * * *")
     @SchedulerLock(
             name = "midWeatherBatch",
             lockAtMostFor = "1h",
