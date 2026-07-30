@@ -85,7 +85,7 @@ public class WeatherService {
         }
 
         // 11. 마지막에 한 번에 저장
-        saveForecasts(forecasts);
+        saveShortForecasts(forecasts);
     }
 
     private List<WeatherShortForecast> createForecast(WeatherGridDTO weatherGridDTO, String baseDate, String baseTime, Set<String> targetFcstDates, String targetFcstTime) {
@@ -148,40 +148,51 @@ public class WeatherService {
      * 중기육상:
      * 4일 ~ 10일
      */
-    @Transactional
     public void midWeatherBatch() {
 
-        // 1. 기존 중기예보 전체 삭제
-        weatherMidForecaseRepository.deleteAllInBatch();
+        long start = System.currentTimeMillis();
 
-        // 2. 가장 최근 발표 시각
+        // 가장 최근 발표 시각
         LocalDateTime baseDateTime = getLatestMidBaseDateTime();
 
         String tmFc = baseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
 
-        // 3. 중복 제거된 regId 조회
-        List<String> regIds = korTourOrgLocalCodeRepository.findDistinctWeatherMidRegId("areaBasedList2");
+        // 중복 제거된 regId 조회
+        List<String> regIds = korTourOrgLocalCodeRepository.findDistinctWeatherMidRegId("areaBasedList1");
 
-        // 4. 저장할 Entity를 메모리에 모음
-        List<WeatherMidForecast> forecasts = new ArrayList<>();
+        // 저장할 Entity를 메모리에 모음
+        List<WeatherMidForecast> forecasts = new ArrayList<>(regIds.size() * 7);
+        List<CompletableFuture<List<WeatherMidForecast>>> futures = new ArrayList<>(regIds.size());
 
-        // 5. 지역별 처리
+        // 지역별 처리
         for (String regId : regIds) {
+            CompletableFuture<List<WeatherMidForecast>> future = CompletableFuture.supplyAsync(() -> {
+                        KmaMidTaItemDTO ta = publicDataService.getMidTa(regId, tmFc);
+                        KmaMidLandFcstItemDTO land = publicDataService.getMidLandFcst(regId, tmFc);
+                        return createForecasts(regId, tmFc, ta, land);
 
-            KmaMidTaItemDTO ta = publicDataService.getMidTa(regId, tmFc);
+                    }, weatherExecutor).exceptionally(ex -> {
+                        log.error("중기예보 조회 실패 regId={}", regId, ex);
+                        return Collections.emptyList();
+                    });
 
-            KmaMidLandFcstItemDTO land = publicDataService.getMidLandFcst(regId, tmFc);
-
-            // 6. 4일 ~ 10일 Entity 생성
-            addForecasts(forecasts, regId, tmFc, ta, land);
+            futures.add(future);
         }
 
-        // 7. 마지막에 한 번에 저장
-        weatherMidForecaseRepository.saveAll(forecasts);
+        for (CompletableFuture<List<WeatherMidForecast>> future : futures) {
+            forecasts.addAll(future.join());
+        }
+
+        // 마지막에 한 번에 저장
+        saveMidForecasts(forecasts);
+
+        long end = System.currentTimeMillis();
+
+        log.info("중기예보 배치 완료 - {}건 저장 ({} ms)", forecasts.size(), end - start);
     }
 
     @Transactional
-    public void saveForecasts(List<WeatherShortForecast> forecasts) {
+    public void saveShortForecasts(List<WeatherShortForecast> forecasts) {
 
         // 기존 단기예보 전체 삭제
         weatherShortForecastRepository.deleteAllInBatch();
@@ -189,7 +200,17 @@ public class WeatherService {
         weatherShortForecastRepository.saveAll(forecasts);
     }
 
-    private void addForecasts(List<WeatherMidForecast> forecasts, String regId, String tmFc, KmaMidTaItemDTO ta, KmaMidLandFcstItemDTO land) {
+    @Transactional
+    private void saveMidForecasts(List<WeatherMidForecast> forecasts) {
+
+        weatherMidForecaseRepository.deleteAllInBatch();
+
+        weatherMidForecaseRepository.saveAll(forecasts);
+    }
+
+    private List<WeatherMidForecast> createForecasts(String regId, String tmFc, KmaMidTaItemDTO ta, KmaMidLandFcstItemDTO land) {
+
+        List<WeatherMidForecast> forecasts = new ArrayList<>(7);
         LocalDate baseDate = LocalDate.parse(tmFc.substring(0, 8), DateTimeFormatter.ofPattern("yyyyMMdd"));
 
         // 4일
@@ -240,6 +261,8 @@ public class WeatherService {
                 land.getRnSt10(), null,
                 ta.getTaMin10(), ta.getTaMax10()
         );
+
+        return forecasts;
     }
 
     private void addForecast(List<WeatherMidForecast> forecasts,
@@ -262,91 +285,6 @@ public class WeatherService {
 
         forecasts.add(forecast);
     }
-
-    /**
-     * 중기예보 4일 ~ 10일 저장
-     */
-    private void saveForecast(String regId, String tmFc, KmaMidTaItemDTO ta, KmaMidLandFcstItemDTO land) {
-        LocalDate baseDate = LocalDate.parse(tmFc.substring(0, 8), DateTimeFormatter.ofPattern("yyyyMMdd"));
-
-        // 4일
-        saveForecast(regId, tmFc, baseDate.plusDays(4),
-                land.getWf4Am(), land.getWf4Pm(),
-                land.getRnSt4Am(), land.getRnSt4Pm(),
-                ta.getTaMin4(), ta.getTaMax4()
-        );
-
-        // 5일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(5),
-                land.getWf5Am(), land.getWf5Pm(),
-                land.getRnSt5Am(), land.getRnSt5Pm(),
-                ta.getTaMin5(), ta.getTaMax5()
-        );
-
-        // 6일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(6),
-                land.getWf6Am(), land.getWf6Pm(),
-                land.getRnSt6Am(), land.getRnSt6Pm(),
-                ta.getTaMin6(), ta.getTaMax6()
-        );
-
-        // 7일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(7),
-                land.getWf7Am(), land.getWf7Pm(),
-                land.getRnSt7Am(), land.getRnSt7Pm(),
-                ta.getTaMin7(), ta.getTaMax7()
-        );
-
-        // 8일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(8),
-                land.getWf8(), null,
-                land.getRnSt8(), null,
-                ta.getTaMin8(), ta.getTaMax8()
-        );
-
-        // 9일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(9),
-                land.getWf9(), null,
-                land.getRnSt9(), null,
-                ta.getTaMin9(), ta.getTaMax9()
-        );
-
-        // 10일
-        saveForecast(
-                regId, tmFc, baseDate.plusDays(10),
-                land.getWf10(), null,
-                land.getRnSt10(), null,
-                ta.getTaMin10(), ta.getTaMax10()
-        );
-    }
-
-
-    /**
-     * 오전 / 오후 데이터를 하나의 날씨 문자열로 합쳐 저장
-     */
-    private void saveForecast(String regId, String tmFc, LocalDate fcstDate, String wfAm, String wfPm, Integer rnStAm, Integer rnStPm, Integer tmn, Integer tmx) {
-
-        String wf = combineWeather(wfAm, wfPm);
-        Integer rnSt = combineRainProbability(rnStAm, rnStPm);
-
-        WeatherMidForecast forecast = WeatherMidForecast.builder()
-                                        .regId(regId)
-                                        .tmFc(tmFc)
-                                        .fcstDate(fcstDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")))
-                                        .wf(wf)
-                                        .rnSt(rnSt)
-                                        .tmn(tmn)
-                                        .tmx(tmx)
-                                        .build();
-
-        weatherMidForecaseRepository.save(forecast);
-    }
-
 
     /**
      * 오전 / 오후 날씨 조합
