@@ -14,29 +14,29 @@ public class WeatherSchedular {
     private final CommonService commonService;
     private final WeatherService weatherService;
 
-    // 오늘 기준 3일까지의 예보 조회(단기예보조회)
-    @Scheduled(cron = "0 30 2,5,8,11,14,17,20,23 * * *")
-    @SchedulerLock(
-            name = "shortWeatherBatch",
-            lockAtMostFor = "1h",
-            lockAtLeastFor = "55m"
-    )
-    public void shortWeatherBatch() {
-        if(commonService.isProd()) {
-            weatherService.shortWeatherBatch();
-        }
-    }
-
-    // 오늘 기준 10일까지의 예보 조회(중기예보조회)
-    @Scheduled(cron = "0 30 6,18 * * *")
-    @SchedulerLock(
-            name = "midWeatherBatch",
-            lockAtMostFor = "1h",
-            lockAtLeastFor = "55m"
-    )
-    public void midWeatherBatch() {
-        if(commonService.isProd()) {
-            weatherService.midWeatherBatch();
-        }
-    }
+//    // 오늘 기준 3일까지의 예보 조회(단기예보조회)
+//    @Scheduled(cron = "0 30 2,5,8,11,14,17,20,23 * * *")
+//    @SchedulerLock(
+//            name = "shortWeatherBatch",
+//            lockAtMostFor = "1h",
+//            lockAtLeastFor = "55m"
+//    )
+//    public void shortWeatherBatch() {
+//        if(commonService.isProd()) {
+//            weatherService.shortWeatherBatch();
+//        }
+//    }
+//
+//    // 오늘 기준 10일까지의 예보 조회(중기예보조회)
+//    @Scheduled(cron = "0 30 6,18 * * *")
+//    @SchedulerLock(
+//            name = "midWeatherBatch",
+//            lockAtMostFor = "1h",
+//            lockAtLeastFor = "55m"
+//    )
+//    public void midWeatherBatch() {
+//        if(commonService.isProd()) {
+//            weatherService.midWeatherBatch();
+//        }
+//    }
 }
