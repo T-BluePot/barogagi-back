@@ -38,7 +38,8 @@ public class LocalWeatherService {
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
-    private static final long MAX_SEARCH_DAYS = 10;
+    private static final long SHORT_MAX_SEARCH_DAYS = 2;
+    private static final long MID_MAX_SEARCH_DAYS = 5;
 
     public ApiResponse getShortWeather(String apiSecretKey, String areaCd, String sigunguCd, String startDate, String endDate) {
 
@@ -54,7 +55,7 @@ public class LocalWeatherService {
         }
 
         // 3. 조회 날짜 생성
-        List<String> targetDates = getTargetDates(startDate, endDate);
+        List<String> targetDates = getShortTargetDates(startDate, endDate);
 
         // 4. 지역 코드 조회
         KorTourOrgLocalCode localCode = korTourOrgLocalCodeRepository.findLocalCodeInfo(areaCd, sigunguCd);
@@ -131,7 +132,7 @@ public class LocalWeatherService {
         }
 
         // 3. 조회 날짜 생성
-        List<String> targetDates = getTargetDates(startDate, endDate);
+        List<String> targetDates = getMidTargetDates(startDate, endDate);
 
         // 4. 지역 코드 조회
         KorTourOrgLocalCode localCode = korTourOrgLocalCodeRepository.findLocalCodeInfo(areaCd, sigunguCd);
@@ -208,7 +209,7 @@ public class LocalWeatherService {
      * endDate   = 20260727
      * → 20260727 하루 조회
      */
-    private List<String> getTargetDates(String startDate, String endDate) {
+    private List<String> getShortTargetDates(String startDate, String endDate) {
 
         boolean startDateIsAll = "ALL".equalsIgnoreCase(startDate);
         boolean endDateIsAll = "ALL".equalsIgnoreCase(endDate);
@@ -240,7 +241,55 @@ public class LocalWeatherService {
         // 6. 시작일 ~ 종료일까지 날짜 생성
         long days = ChronoUnit.DAYS.between(start, end);
 
-        if (days > MAX_SEARCH_DAYS) {
+        if (days > SHORT_MAX_SEARCH_DAYS) {
+            throw new LocalWeatherException(ErrorCode.DATE_RANGE_EXCEEDED);
+        }
+
+        List<String> targetDates = new ArrayList<>();
+
+        LocalDate currentDate = start;
+
+        while (!currentDate.isAfter(end)) {
+            targetDates.add(currentDate.format(DATE_FORMATTER));
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return targetDates;
+    }
+
+    private List<String> getMidTargetDates(String startDate, String endDate) {
+
+        boolean startDateIsAll = "ALL".equalsIgnoreCase(startDate);
+        boolean endDateIsAll = "ALL".equalsIgnoreCase(endDate);
+
+        // 1. 둘 다 ALL이면 전체 조회
+        if (startDateIsAll && endDateIsAll) {
+            return null;
+        }
+
+        // 2. 한쪽만 ALL이면 잘못된 요청
+        if (startDateIsAll || endDateIsAll) {
+            throw new LocalWeatherException(ErrorCode.FAIL_INVALID_FORMAT);
+        }
+
+        // 3. 날짜가 비어 있으면 잘못된 요청
+        if (inputValidate.isEmpty(startDate) || inputValidate.isEmpty(endDate)) {
+            throw new LocalWeatherException(ErrorCode.FAIL_INVALID_FORMAT);
+        }
+
+        // 4. 날짜 검증
+        LocalDate start = parseDate(startDate);
+        LocalDate end = parseDate(endDate);
+
+        // 5. 종료일이 시작일보다 빠른 경우
+        if (end.isBefore(start)) {
+            throw new LocalWeatherException(ErrorCode.FAIL_INVALID_FORMAT);
+        }
+
+        // 6. 시작일 ~ 종료일까지 날짜 생성
+        long days = ChronoUnit.DAYS.between(start, end);
+
+        if (days > MID_MAX_SEARCH_DAYS) {
             throw new LocalWeatherException(ErrorCode.DATE_RANGE_EXCEEDED);
         }
 
