@@ -9,10 +9,9 @@ import com.barogagi.config.TourApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.YearMonth;
@@ -29,7 +28,7 @@ public class PublicDataService {
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final LocalPopularReplaceRepository localPopularReplaceRepository;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestClient restClient;
 
     @Value("${apihub.kma.api-key}")
     private String kmaApiKey;
@@ -122,7 +121,7 @@ public class PublicDataService {
                 .build(false)
                 .toUriString();
 
-        KmaVilageFcstResponseDTO response = restTemplate.getForObject(url,KmaVilageFcstResponseDTO.class);
+        KmaVilageFcstResponseDTO response = restClient.get().uri(url).retrieve().body(KmaVilageFcstResponseDTO.class);
 
         if (response == null) {
             throw new IllegalStateException("기상청 응답이 없습니다.");
@@ -142,16 +141,13 @@ public class PublicDataService {
                         .build(false)
         );
 
-        ResponseEntity<KmaMidTaResponseDTO> response =
-                restTemplate.getForEntity(url, KmaMidTaResponseDTO.class
-                );
+        KmaMidTaResponseDTO response = restClient.get().uri(url).retrieve().body(KmaMidTaResponseDTO.class);
 
-        return response.getBody()
-                .getResponse()
-                .getBody()
-                .getItems()
-                .getItem()
-                .get(0);
+        if (response == null) {
+            throw new IllegalStateException("기상청 중기기온 응답이 없습니다.");
+        }
+
+        return response.getResponse().getBody().getItems().getItem().get(0);
     }
 
     public KmaMidLandFcstItemDTO getMidLandFcst(String regId, String tmFc) {
@@ -170,17 +166,12 @@ public class PublicDataService {
                         .build(false)
         );
 
-        ResponseEntity<KmaMidLandFcstResponseDTO> response =
-                restTemplate.getForEntity(
-                        url,
-                        KmaMidLandFcstResponseDTO.class
-                );
+        KmaMidLandFcstResponseDTO response = restClient.get().uri(url).retrieve().body(KmaMidLandFcstResponseDTO.class);
 
-        return response.getBody()
-                .getResponse()
-                .getBody()
-                .getItems()
-                .getItem()
-                .get(0);
+        if (response == null) {
+            throw new IllegalStateException("기상청 중기육상예보 응답이 없습니다.");
+        }
+
+        return response.getResponse().getBody().getItems().getItem().get(0);
     }
 }

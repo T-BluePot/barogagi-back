@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class LocalWeatherService {
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("uuuuMMdd").withResolverStyle(ResolverStyle.STRICT);
+    private static final long MAX_SEARCH_DAYS = 10;
 
     public ApiResponse getShortWeather(String apiSecretKey, String areaCd, String sigunguCd, String startDate, String endDate) {
 
@@ -236,8 +238,16 @@ public class LocalWeatherService {
         }
 
         // 6. 시작일 ~ 종료일까지 날짜 생성
+        long days = ChronoUnit.DAYS.between(start, end);
+
+        if (days > MAX_SEARCH_DAYS) {
+            throw new LocalWeatherException(ErrorCode.DATE_RANGE_EXCEEDED);
+        }
+
         List<String> targetDates = new ArrayList<>();
+
         LocalDate currentDate = start;
+
         while (!currentDate.isAfter(end)) {
             targetDates.add(currentDate.format(DATE_FORMATTER));
             currentDate = currentDate.plusDays(1);
@@ -314,6 +324,10 @@ public class LocalWeatherService {
         }
 
         // 강수 없음
+        if(sky == null) {
+            return "UNKNOWN";
+        }
+
         return switch (sky) {
             case "1" -> "SUNNY";
             case "3" -> "PARTLY_CLOUDY";

@@ -164,8 +164,9 @@ public enum ErrorCode {
     NOT_FOUND_SHARE_SCHEDULE(HttpStatus.NOT_FOUND, "SS400", "해당 공유 정보가 만료되었거나 존재하지 않습니다.", false),
 
     NOT_CALL_WEATHER(HttpStatus.INTERNAL_SERVER_ERROR, "W401", "중기 예보 조회 실패", true),
-    FAIL_INVALID_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "LW401", "올바른 형식이 아닙니다.", false),
-    NOT_FOUND_WEATHER(HttpStatus.NOT_FOUND, "LW404", "날씨를 조회할 수 없습니다.", false);
+    FAIL_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "LW401", "올바른 형식이 아닙니다.", false),
+    NOT_FOUND_WEATHER(HttpStatus.NOT_FOUND, "LW404", "날씨를 조회할 수 없습니다.", false),
+    DATE_RANGE_EXCEEDED(HttpStatus.BAD_REQUEST, "LW402", "조회 기간이 초과되었습니다.", false);
 
     private final HttpStatus status;
     private final String code;

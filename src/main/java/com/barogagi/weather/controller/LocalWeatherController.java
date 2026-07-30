@@ -41,6 +41,7 @@ public class LocalWeatherController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW401", description = "올바른 형식이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C400", description = "지역 코드 정보를 찾을 수 없습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW404", description = "날씨를 조회할 수 없습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW402", description = "조회 기간이 초과되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW200", description = "날씨 조회 성공"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다.")
@@ -78,6 +79,7 @@ public class LocalWeatherController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW401", description = "올바른 형식이 아닙니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C400", description = "지역 코드 정보를 찾을 수 없습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW404", description = "날씨를 조회할 수 없습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW402", description = "조회 기간이 초과되었습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "LW200", description = "날씨 조회 성공"),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다.")

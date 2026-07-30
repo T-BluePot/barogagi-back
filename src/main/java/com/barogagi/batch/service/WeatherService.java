@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -65,23 +66,26 @@ public class WeatherService {
         // 7. 저장할 Entity를 메모리에 모음
         List<WeatherShortForecast> forecasts = new ArrayList<>(weatherGridDTOS.size() * 3);
         List<CompletableFuture<List<WeatherShortForecast>>> futures = new ArrayList<>(weatherGridDTOS.size());
+        AtomicBoolean hasError = new AtomicBoolean(false);
 
         // 8. 격자별 날씨 조회
         for (WeatherGridDTO weatherGridDTO : weatherGridDTOS) {CompletableFuture<List<WeatherShortForecast>> future = CompletableFuture.supplyAsync(
                     () -> createForecast(weatherGridDTO, baseDate, baseTime, targetFcstDates, targetFcstTime), weatherExecutor)
                             .exceptionally(ex -> {
-                        log.error("단기예보 조회 실패 nx={}, ny={}", weatherGridDTO.getNx(), weatherGridDTO.getNy(), ex);
-                        return Collections.emptyList();
-                    });
+                                hasError.set(true);
+                                log.error("단기예보 조회 실패 nx={}, ny={}", weatherGridDTO.getNx(), weatherGridDTO.getNy(), ex);
+                                return Collections.emptyList();
+                            });
             futures.add(future);
         }
 
         for (CompletableFuture<List<WeatherShortForecast>> future : futures) {
-            try {
-                forecasts.addAll(future.join());
-            } catch (Exception e) {
-                log.error("날씨 데이터 처리 실패", e);
-            }
+            forecasts.addAll(future.join());
+        }
+
+        if (hasError.get()) {
+            log.error("단기예보 배치 실패 - 기존 데이터를 유지합니다.");
+            return;
         }
 
         // 11. 마지막에 한 번에 저장
