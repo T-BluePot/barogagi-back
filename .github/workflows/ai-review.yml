@@ -1,0 +1,74 @@
+name: AI Code Review
+
+# PR 이 열리거나 커밋이 push 되면 AI 가 코드 리뷰를 남기고,
+# 리뷰 코멘트에 답글이 달리면 읽고 판단해 해결된 지적을 접는다.
+# 리뷰어 구현: https://github.com/Jung-eunwoo/ai-code-review
+
+# ⛔ pull_request_target 으로 바꾸지 마라.
+#    그 트리거는 베이스 저장소의 워크플로를 **시크릿과 쓰기 토큰이 주입된 채로** 실행한다
+#    (PR 브랜치 코드를 자동 실행하는 건 아니다 — 위험한 건 주입된 권한 쪽이다).
+#    여기서 PR head 를 체크아웃하거나 실행하기까지 하면 아무나 PR 하나로
+#    이 저장소의 시크릿을 가져갈 수 있다. 포크 리뷰를 포기하고 pull_request 를 쓴다.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  # 리뷰 코멘트에 답글이 달리면 읽고 대화한다
+  pull_request_review_comment:
+    types: [created]
+
+# 리뷰 코멘트를 남기려면 write 가 필요하다. 그 외는 최소로 둔다.
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  # ── PR 이 열리거나 커밋이 push 되면 리뷰한다 ──────────────────────────
+  review:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # 연달아 push 하면 이전 리뷰 작업을 취소한다 (중복 리뷰·무료 한도 낭비 방지)
+    concurrency:
+      group: ai-review-${{ github.event.number }}
+      cancel-in-progress: true
+    steps:
+      # ⚠️ 전체 커밋 SHA 로 고정한다. @main 이나 @v1 같은 이동 가능한 ref 를 쓰면
+      #    업스트림이 바뀌는 순간 검토되지 않은 코드가 이 저장소의 GEMINI_API_KEY 와
+      #    pull-requests: write 권한으로 실행된다.
+      #    올릴 때는 리뷰어 저장소의 diff 를 보고 SHA 를 손으로 바꾼다.
+      - uses: Jung-eunwoo/ai-code-review@8d521cc7e279a12e952da7f190cd3e14558fd6df # main 기준
+        with:
+          pr: ${{ github.event.number }}
+          # 더 정확한 판정이 필요하면 model: gemini-pro-latest
+        env:
+          # AI Studio 키 하나면 된다: https://aistudio.google.com/apikey
+          #   gh secret set GEMINI_API_KEY --repo T-BluePot/barogagi-back
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+
+  # ── 리뷰 코멘트에 답글이 달리면 읽고 판단한다 ────────────────────────
+  reply:
+    # ⚠️ 봇 코멘트를 여기서 걸러야 한다. 리뷰어가 남긴 답글도 이 이벤트를
+    #    다시 발생시키므로, 조건이 없으면 봇이 자기 답글에 무한히 답한다.
+    #    스크립트에도 본문 마커로 같은 검사가 있지만(이중 안전장치),
+    #    트리거에서 끊으면 러너가 아예 뜨지 않아 시간·한도를 안 쓴다.
+    if: >-
+      github.event_name == 'pull_request_review_comment' &&
+      github.event.comment.user.type != 'Bot' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # 같은 코멘트에 대한 중복 실행만 막는다. 다른 스레드의 대화는 동시에 진행돼야 한다
+    concurrency:
+      group: ai-reply-${{ github.event.comment.id }}
+      cancel-in-progress: false
+    steps:
+      - uses: Jung-eunwoo/ai-code-review@8d521cc7e279a12e952da7f190cd3e14558fd6df # main 기준
+        with:
+          pr: ${{ github.event.pull_request.number }}
+          reply-to: ${{ github.event.comment.id }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
