@@ -727,7 +727,12 @@ public class ScheduleCommandService {
                     .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
             // 4. Schedule 기본 정보 업데이트
-            schedule.updateBasicInfo(dto.getScheduleNm(), dto.getStartDate(), dto.getEndDate(), dto.getScheduleMemo());
+            schedule.updateBasicInfo(
+                    dto.getScheduleNm(),
+                    dto.getStartDate(),
+                    dto.getEndDate(),
+                    dto.getScheduleMemo() != null && dto.getScheduleMemo().isEmpty() ? null : dto.getScheduleMemo() // 빈 문자열은 null로 처리
+            );
 
             // 5. ScheduleTag 전체 삭제 후 재등록
             scheduleTagRepository.deleteBySchedule(schedule);

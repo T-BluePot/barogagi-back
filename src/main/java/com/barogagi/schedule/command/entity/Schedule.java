@@ -63,6 +63,6 @@ public class Schedule {
         this.scheduleNm = scheduleNm;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.scheduleMemo = scheduleMemo;
+        this.scheduleMemo = scheduleMemo != null ? scheduleMemo : this.scheduleMemo; // null일 경우 기존 값 유지
     }
 }
