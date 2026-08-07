@@ -148,13 +148,21 @@ public class ScheduleQueryService {
             logger.info("계획 조회 시작");
             List<PlanDetailVO> planDetailVOList = planQueryService.getPlanDetail(scheduleNum);
 
+            // USER_CUSTOM인 경우에도 planDescription이 있으면 포함
+            for (PlanDetailVO plan : planDetailVOList) {
+                if ("USER_CUSTOM".equals(plan.getPlanSource()) && plan.getPlanDescription() != null) {
+                    logger.info("USER_CUSTOM 플랜 포함: planDescription={}", plan.getPlanDescription());
+                }
+            }
+
             // 각 계획의 링크에서 OG 이미지 프록시 URL 세팅
             for (PlanDetailVO plan : planDetailVOList) {
                 if (plan.getPlanLink() != null && !plan.getPlanLink().isBlank()) {
                     try {
                         String imageUrl = extractOgImage(plan.getPlanLink());
                         if (imageUrl != null) {
-                            plan.setImageLink(imageUrl);                        }
+                            plan.setImageLink(imageUrl);
+                        }
                     } catch (Exception e) {
                         logger.warn("OG 이미지 추출 실패: {}", plan.getPlanLink());
                     }
@@ -170,6 +178,7 @@ public class ScheduleQueryService {
                     .startDate(scheduleDetailVO.getStartDate())
                     .endDate(scheduleDetailVO.getEndDate())
                     .radius(scheduleDetailVO.getRadius())
+                    .scheduleMemo(scheduleDetailVO.getScheduleMemo())
                     .planDetailVOList(planDetailVOList)
                     .build();
 

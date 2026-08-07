@@ -16,4 +16,5 @@ public class ScheduleDetailVO {
     public String endDate;         // 종료 날짜
     public int radius;             // 반경
     public String delYn;           // 삭제 여부
+    public String scheduleMemo;    // 일정 메모 추가
 }

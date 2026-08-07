@@ -47,6 +47,7 @@
                   , END_DATE AS endDate
                   , RADIUS AS radius
                   , DEL_YN AS delYn
+                  , SCHEDULE_MEMO AS scheduleMemo
             FROM 	SCHEDULE
             WHERE   SCHEDULE_NUM = #{scheduleNum}
             AND     MEMBERSHIP_NO = #{membershipNo};

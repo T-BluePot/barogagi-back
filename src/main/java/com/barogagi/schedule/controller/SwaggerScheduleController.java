@@ -123,6 +123,7 @@ public interface SwaggerScheduleController {
                                             "  \"scheduleNm\": \"종로 맛집 투어\",\n" +
                                             "  \"startDate\": \"2026-03-01\",\n" +
                                             "  \"endDate\": \"2026-03-01\",\n" +
+                                            "  \"scheduleMemo\": \"종로구에서 꼭 가보고 싶은 맛집들\",\n" +
                                             "  \"comment\": \"종로구 맛집 추천해주세요\",\n" +
                                             "  \"scheduleTagRegistReqDTOList\": [\n" +
                                             "    { \"tagNm\": \"활동적인\", \"tagNum\": 8 },\n" +
@@ -139,6 +140,8 @@ public interface SwaggerScheduleController {
                                             "    {\n" +
                                             "      \"startTime\": \"08:00\",\n" +
                                             "      \"endTime\": \"09:00\",\n" +
+                                            "      \"planDescription\": \"친구와의 약속 장소\",\n" +
+                                            "      \"planMemo\": \"친구와의 약속 메모\",\n" + // 추가된 필드
                                             "      \"itemNum\": 7,\n" +
                                             "      \"categoryNum\": 2,\n" +
                                             "      \"isUserAdded\": \"N\",\n" +
@@ -268,6 +271,7 @@ public interface SwaggerScheduleController {
                                                     "    \"scheduleNm\": \"서울 데이트 코스\",\n" +
                                                     "    \"startDate\": \"2025-07-01\",\n" +
                                                     "    \"endDate\": \"2025-07-01\",\n" +
+                                                    "    \"scheduleMemo\": \"서울에서의 데이트 일정 메모\",\n" +
                                                     "    \"scheduleTagRegistResDTOList\": [\n" +
                                                     "      { \"tagNm\": \"핫플\", \"tagNum\": 5 },\n" +
                                                     "      { \"tagNm\": \"활동적인\", \"tagNum\": 8 }\n" +
@@ -376,7 +380,7 @@ public interface SwaggerScheduleController {
                                                     "        \"planNm\": \"카카오프렌즈 코엑스점\",\n" +
                                                     "        \"planMemo\": \"카카오프렌즈 코엑스점 메모 테스트\",\n" +
                                                     "        \"planLink\": \"http://place.map.kakao.com/26338954\",\n" +
-                                                    "        \"planDescription\": null,\n" +
+                                                    "        \"planDescription\": \"사용자 일정 설명 저장 예시\",\n" +
                                                     "        \"planAddress\": \"서울 강남구 삼성동 159\",\n" +
                                                     "        \"regionNm\": \"강남구\",\n" +
                                                     "        \"regionNum\": 9,\n" +
