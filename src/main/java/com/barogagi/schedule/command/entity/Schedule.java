@@ -59,6 +59,12 @@ public class Schedule {
         this.delYn = "Y";
     }
 
+    public void updateBasicInfo(String scheduleNm, String startDate, String endDate) {
+        this.scheduleNm = scheduleNm;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
     public void updateBasicInfo(String scheduleNm, String startDate, String endDate, String scheduleMemo) {
         this.scheduleNm = scheduleNm;
         this.startDate = startDate;
