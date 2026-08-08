@@ -130,7 +130,6 @@ public class ScheduleCommandService {
 
 
     public ApiResponse createSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO, HttpServletRequest request) {
-
         try {
             // 1. API SECRET KEY 일치 여부 확인
             if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
@@ -151,6 +150,7 @@ public class ScheduleCommandService {
             String scheduleNm = scheduleRegistReqDTO.getScheduleNm();
             String startDate = scheduleRegistReqDTO.getStartDate();
             String endDate = scheduleRegistReqDTO.getEndDate();
+            String scheduleMemo = scheduleRegistReqDTO.getScheduleMemo();
 
             for (PlanRegistReqDTO plan : scheduleRegistReqDTO.getPlanRegistReqDTOList()) {
 
@@ -185,6 +185,7 @@ public class ScheduleCommandService {
                     .scheduleNm(scheduleNm)
                     .startDate(startDate)
                     .endDate(endDate)
+                    .scheduleMemo(scheduleMemo)
                     .planRegistResDTOList(planResList)
                     .scheduleTagRegistResDTOList(tagResList)
                     .build();
@@ -534,6 +535,7 @@ public class ScheduleCommandService {
                     .startTime(plan.getStartTime())
                     .endTime(plan.getEndTime())
                     .planNm(plan.getPlanNm())
+                    .planDescription(plan.getPlanDescription())
                     .planAddress(null)
                     .planLink(null)
                     .categoryNum(plan.getCategoryNum())
@@ -574,6 +576,7 @@ public class ScheduleCommandService {
                 .scheduleNm(scheduleRegistResDTO.getScheduleNm())
                 .startDate(scheduleRegistResDTO.getStartDate())
                 .endDate(scheduleRegistResDTO.getEndDate())
+                .scheduleMemo(scheduleRegistResDTO.getScheduleMemo())
                 .radius(radius)
                 .delYn("N")
                 .build();
@@ -702,7 +705,6 @@ public class ScheduleCommandService {
                 schedule.getScheduleNum(),
                 ErrorCode.SUCCESS_SCHEDULE_SAVE.getCode(),
                 ErrorCode.SUCCESS_SCHEDULE_SAVE.getMessage());
-
     }
 
     @Transactional
@@ -725,7 +727,12 @@ public class ScheduleCommandService {
                     .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
             // 4. Schedule 기본 정보 업데이트
-            schedule.updateBasicInfo(dto.getScheduleNm(), dto.getStartDate(), dto.getEndDate());
+            schedule.updateBasicInfo(
+                    dto.getScheduleNm(),
+                    dto.getStartDate(),
+                    dto.getEndDate(),
+                    dto.getScheduleMemo() != null && dto.getScheduleMemo().isEmpty() ? null : dto.getScheduleMemo() // 빈 문자열은 null로 처리
+            );
 
             // 5. ScheduleTag 전체 삭제 후 재등록
             scheduleTagRepository.deleteBySchedule(schedule);

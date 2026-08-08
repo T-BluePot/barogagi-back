@@ -7,11 +7,13 @@ import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
 
 @Getter
+@Setter
 @ToString
 @Schema(description = "일정 등록 요청 DTO")
 public class ScheduleRegistReqDTO {
@@ -19,6 +21,7 @@ public class ScheduleRegistReqDTO {
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
     private String comment;         // 추가 고려사항
+    private String scheduleMemo;    // 일정 메모
 
     // 일정 태그 목록 (스케쥴 태그)
     public List<TagRegistReqDTO> scheduleTagRegistReqDTOList;
