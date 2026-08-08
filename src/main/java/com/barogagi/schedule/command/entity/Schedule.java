@@ -52,13 +52,17 @@ public class Schedule {
     @Column(name = "DEL_YN", nullable = false, columnDefinition = "CHAR(1) DEFAULT 'N'")
     private String delYn;               // 삭제 여부(Y: 삭제, N: 미삭제)
 
+    @Column(name = "SCHEDULE_MEMO")
+    private String scheduleMemo;         // 일정 메모
+
     public void markDeleted() {
         this.delYn = "Y";
     }
 
-    public void updateBasicInfo(String scheduleNm, String startDate, String endDate) {
+    public void updateBasicInfo(String scheduleNm, String startDate, String endDate, String scheduleMemo) {
         this.scheduleNm = scheduleNm;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.scheduleMemo = scheduleMemo != null ? scheduleMemo : this.scheduleMemo; // null일 경우 기존 값 유지
     }
 }

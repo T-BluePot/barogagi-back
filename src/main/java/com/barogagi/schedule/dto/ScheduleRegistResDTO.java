@@ -22,6 +22,7 @@ public class ScheduleRegistResDTO {
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
     public String planMemo;         // 메모
+    private String scheduleMemo;    // 일정 메모
 
     // 일정 태그 목록 (스케쥴 태그)
     public List<TagRegistResDTO> scheduleTagRegistResDTOList;

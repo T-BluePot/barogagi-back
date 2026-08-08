@@ -16,6 +16,7 @@ public class ScheduleDetailResDTO {
     private String startDate;       // 시작 날짜
     private String endDate;         // 종료 날짜
     private int radius;             // 반경
+    private String scheduleMemo;    // 일정 메모 추가
 
     // 계획 리스트
     private List<PlanDetailVO> planDetailVOList;
