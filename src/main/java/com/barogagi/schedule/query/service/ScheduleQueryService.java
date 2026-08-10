@@ -255,7 +255,6 @@ public class ScheduleQueryService {
         String randomToken = "";
         ScheduleShare scheduleShareInfo = scheduleShareRepository.findByMembershipNoAndScheduleNum(membershipNo, scheduleNum);
         if(scheduleShareInfo != null) {
-            log.info("aaa");
             scheduleShareInfo.setCreatedAt(LocalDateTime.now());
             scheduleShareInfo.setExpireAt(LocalDateTime.now().plusDays(1));
             randomToken = scheduleShareInfo.getShareToken();
@@ -310,6 +309,7 @@ public class ScheduleQueryService {
     }
 
     public ApiResponse getShareScheduleDetail(String apiSecretKey, String shareToken) {
+
         // 1. API SECRET KEY 검증
         if (!validator.apiSecretKeyCheck(apiSecretKey)) {
             throw new ScheduleException(ErrorCode.NOT_EQUAL_API_SECRET_KEY);
