@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    // API_SECRET_KEY 일치 X
+    // API_SECRET_KEY
     NOT_EQUAL_API_SECRET_KEY(HttpStatus.UNAUTHORIZED, "A100", "잘못된 접근입니다.", true),
 
     // ACCESS TOKEN
@@ -41,19 +41,19 @@ public enum ErrorCode {
     AVAILABLE_USER_ID(HttpStatus.OK, "U200", "해당 아이디 사용이 가능합니다.", false),
     NOT_FOUND_USER_ID(HttpStatus.NOT_FOUND, "U400", "해당 아이디의 정보가 존재하지 않습니다.", false),
 
-    // tel
+    // Tel
     SUCCESS_DUPLICATE_PHONE_NUMBER(HttpStatus.OK, "T200", "중복된 계정이 존재하지 않습니다.", false),
 
     // SignUp
     INVALID_SIGN_UP(HttpStatus.BAD_REQUEST, "S102", "적합한 아이디, 비밀번호, 닉네임이 아닙니다.", false),
     SUCCESS_SIGN_UP(HttpStatus.CREATED, "S200", "회원가입에 성공하였습니다.", false),
     FAIL_SIGN_UP(HttpStatus.INTERNAL_SERVER_ERROR, "S300", "회원가입에 실패하였습니다.", true),
-    FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.INTERNAL_SERVER_ERROR, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
-    FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.INTERNAL_SERVER_ERROR, "S401", "올바른 생년월일 형식이 아닙니다.", false),
+    FAIL_DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "S400", "동일한 전화번호로 중복 회원가입이 불가능합니다.", false),
+    FAIL_INVALID_BIRTH_DATE_FORMAT(HttpStatus.BAD_REQUEST, "S401", "올바른 생년월일 형식이 아닙니다.", false),
     FAIL_OAUTH2_LOGIN(HttpStatus.INTERNAL_SERVER_ERROR, "S402", "소셜 로그인 실패하였습니다.", true),
     NO_SIGN_UP_DAYS(HttpStatus.BAD_REQUEST, "S403", "탈퇴 후 일정 기간 동안 재가입이 제한됩니다.", false),
 
-    // withdrawMember
+    // WithdrawMember
     SUCCESS_DELETE_ACCOUNT(HttpStatus.OK, "D200", "회원 탈퇴되었습니다.", false),
     FAIL_DELETE_ACCOUNT(HttpStatus.INTERNAL_SERVER_ERROR, "D300", "회원 탈퇴 실패하였습니다.", true),
     FAIL_FIND_WITHDRAW_CODE(HttpStatus.NOT_FOUND, "D401", "탈퇴 사유 조회 실패하였습니다.", false),
@@ -88,16 +88,16 @@ public enum ErrorCode {
     // Terms
     FOUND_TERMS(HttpStatus.OK, "T200", "약관 조회에 성공하였습니다.", false),
     NOT_FOUND_TERMS(HttpStatus.NOT_FOUND, "T102", "약관이 존재하지 않습니다.", false),
-    FAIL_INVALID_TERMS(HttpStatus.INTERNAL_SERVER_ERROR, "T401", "유효한 약관이 아닙니다.", false),
+    FAIL_INVALID_TERMS(HttpStatus.BAD_REQUEST, "T401", "유효한 약관이 아닙니다.", false),
     SUCCESS_INSERT_TERMS(HttpStatus.CREATED, "T200", "약관 저장에 성공하였습니다.", false),
     FAIL_INSERT_TERMS(HttpStatus.INTERNAL_SERVER_ERROR, "T300", "약관 저장에 실패하였습니다.", false),
-    FAIL_REQUIRED_TERMS_NOT_AGREED(HttpStatus.INTERNAL_SERVER_ERROR, "T400", "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다.", false),
+    FAIL_REQUIRED_TERMS_NOT_AGREED(HttpStatus.BAD_REQUEST, "T400", "필수 약관 항목에 동의해주셔야 서비스 이용이 가능합니다.", false),
 
     // MemberInfo
     FOUND_USER_INFO(HttpStatus.OK, "M200", "회원 정보 조회가 완료되었습니다.", false),
     FAIL_UPDATE_USER_INFO(HttpStatus.INTERNAL_SERVER_ERROR, "M404", "사용자 정보 수정 실패하였습니다.", false),
     SUCCESS_UPDATE_USER_INFO(HttpStatus.OK, "M200", "사용자 정보 수정 완료하였습니다.", false),
-    FAIL_INVALID_GENDER(HttpStatus.INTERNAL_SERVER_ERROR, "M401", "성별 데이터가 올바르지 않습니다.", false),
+    FAIL_INVALID_GENDER(HttpStatus.BAD_REQUEST, "M401", "성별 데이터가 올바르지 않습니다.", false),
 
     // MainPage
     NOT_FOUND_SCHEDULE(HttpStatus.NOT_FOUND, "M201", "일정이 존재하지 않습니다.", false),
@@ -113,7 +113,7 @@ public enum ErrorCode {
     ERROR_SEND_APPROVAL(HttpStatus.INTERNAL_SERVER_ERROR, "A102", "인증문자 발송 중 오류가 발생하였습니다.", true),
     SUCCESS_CHECK_APPROVAL(HttpStatus.OK, "A200", "인증이 완료되었습니다.", false),
     FAIL_CHECK_APPROVAL(HttpStatus.BAD_REQUEST, "A300", "인증에 실패하였습니다.", false),
-    NOT_ACCESS_SEND_APPROVAL(HttpStatus.BAD_REQUEST, "A104", "1분 후 다시 시도해주세요.", false),
+    NOT_ACCESS_SEND_APPROVAL(HttpStatus.TOO_MANY_REQUESTS, "A104", "1분 후 다시 시도해주세요.", false),
 
     // Schedule
     SUCCESS_SCHEDULE_CREATE(HttpStatus.CREATED, "S201", "일정 생성에 성공하였습니다.", false),
@@ -163,6 +163,7 @@ public enum ErrorCode {
     NOT_FOUND_HOT_PLACE(HttpStatus.NOT_FOUND, "P400", "해당 지역의 인기 장소가 존재하지 않습니다.", false),
     NOT_FOUND_SHARE_SCHEDULE(HttpStatus.NOT_FOUND, "SS400", "해당 공유 정보가 만료되었거나 존재하지 않습니다.", false),
 
+    // Weather
     NOT_CALL_WEATHER(HttpStatus.INTERNAL_SERVER_ERROR, "W401", "중기 예보 조회 실패", true),
     FAIL_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "LW401", "올바른 형식이 아닙니다.", false),
     NOT_FOUND_WEATHER(HttpStatus.NOT_FOUND, "LW404", "날씨를 조회할 수 없습니다.", false),
