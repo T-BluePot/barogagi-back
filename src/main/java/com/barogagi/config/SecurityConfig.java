@@ -105,7 +105,7 @@ public class SecurityConfig {
                     res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     res.setContentType("application/json;charset=UTF-8");
                     String json = String.format(
-                            "{\"resultCode\":\"%s\", \"message\":\"%s\"}",
+                            "{\"code\":\"%s\", \"message\":\"%s\"}",
                             resultCode, message
                     );
                     res.getWriter().write(json);
