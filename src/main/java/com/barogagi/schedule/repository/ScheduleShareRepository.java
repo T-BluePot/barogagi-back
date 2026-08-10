@@ -26,14 +26,5 @@ public interface ScheduleShareRepository extends JpaRepository<ScheduleShare, Lo
             AND :time BETWEEN s.createdAt AND s.expireAt
             """)
     ScheduleShare findByShareToken(@Param("shareToken") String shareToken,
-                                   @Param("time") LocalDateTime localDateTime);
-
-    @Query(value = """
-            SELECT s
-            FROM ScheduleShare s
-            WHERE s.membershipNo = :membershipNo
-            AND s.scheduleNum = :scheduleNum
-            """)
-    ScheduleShare findByMembershipNoAndScheduleNum(@Param("membershipNo") String membershipNo,
-                                   @Param("scheduleNum") int scheduleNum);
+                             @Param("time") LocalDateTime localDateTime);
 }

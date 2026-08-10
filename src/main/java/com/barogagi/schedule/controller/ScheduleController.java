@@ -8,8 +8,6 @@ import com.barogagi.schedule.query.service.ScheduleQueryService;
 import com.barogagi.util.InputValidate;
 import com.barogagi.util.MembershipUtil;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -147,9 +145,7 @@ public class ScheduleController implements SwaggerScheduleController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "SS400", description = "해당 공유 정보가 만료되었거나 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "M201", description = "일정이 존재하지 않습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S402", description = "이미 삭제된 일정입니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S202", description = "일정 조회에 성공하였습니다.",
-                            content = @Content(schema = @Schema(implementation = ScheduleDetailResDTO.class))),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "S202", description = "일정 조회에 성공하였습니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-500", description = "서버 오류가 발생했습니다.")
             })
     @GetMapping("/share/{shareToken}")
