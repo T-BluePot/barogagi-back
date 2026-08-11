@@ -223,13 +223,6 @@ public class AuthService {
                 refreshTokenRepository.saveAll(tokens);
             }
 
-            // fcm token 비활성화
-            List<PushToken> fcmTokens = pushTokenRepository.findAllByMembershipNoAndActiveYn(membershipNo, "Y");
-
-            for (PushToken token : fcmTokens) {
-                token.setActiveYn("N");
-            }
-
             return true;
 
         } catch (Exception e) {
