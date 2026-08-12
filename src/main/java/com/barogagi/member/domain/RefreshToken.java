@@ -36,9 +36,6 @@ public class RefreshToken {
     @Column(name = "TOKEN", length = 512, nullable = false, unique = true)
     private String token;
 
-    @Column(name = "STATUS", length = 20, nullable = false)
-    private String status; // VALID / REVOKED
-
     @Column(name = "EXPIRES_AT", nullable = false)
     private LocalDateTime expiresAt;
 

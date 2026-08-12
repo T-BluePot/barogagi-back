@@ -5,19 +5,26 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long>, JpaSpecificationExecutor<RefreshToken> {
 
-    Optional<RefreshToken> findByTokenAndStatus(String token, String status);
-
-    List<RefreshToken> findByMembershipNoAndDeviceIdAndStatus(
-            String membershipNo, String deviceId, String status
+    /**
+     * 특정 회원의 특정 기기에 저장된 Refresh Token 삭제
+     */
+    void deleteByMembershipNoAndDeviceId(
+            String membershipNo,
+            String deviceId
     );
 
-    List<RefreshToken> findByMembershipNoAndStatus(String membershipNo, RefreshToken.Status status);
+    /**
+     * Refresh Token 자체로 조회
+     */
+    Optional<RefreshToken> findByToken(String token);
 
+    /**
+     * 특정 회원의 모든 Refresh Token 삭제
+     */
     void deleteAllByMembershipNo(String membershipNo);
 }

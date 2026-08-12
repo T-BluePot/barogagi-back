@@ -8,20 +8,17 @@ import com.barogagi.member.login.exception.InvalidRefreshTokenException;
 import com.barogagi.member.login.exception.LoginException;
 import com.barogagi.member.repository.RefreshTokenRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
-import com.barogagi.member.service.RefreshTokenService;
-import com.barogagi.push.entity.PushToken;
-import com.barogagi.push.repository.PushTokenRepository;
 import com.barogagi.util.JwtUtil;
 import com.barogagi.util.exception.ErrorCode;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -29,10 +26,8 @@ import java.util.Map;
 @Transactional
 public class AuthService {
 
-    private final RefreshTokenService refreshTokenService;
     private final UserMembershipRepository userMembershipRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final PushTokenRepository pushTokenRepository;
     private final JwtUtil jwt;
 
     @Value("${jwt.access-exp-seconds}")
@@ -41,35 +36,46 @@ public class AuthService {
     private long refreshExp;
 
     public LoginResponse login(LoginRequest req) {
+
         UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(req.userId());
 
-        if(null == userMembershipInfo) {
+        if (userMembershipInfo == null) {
             throw new RuntimeException("USER_NOT_FOUND");
         }
 
-        String no = userMembershipInfo.getMembershipNo();
-        String access = jwt.generateAccessToken(no, userMembershipInfo.getUserId());
-        String refresh = jwt.generateRefreshToken(no, req.deviceId());
+        String membershipNo = userMembershipInfo.getMembershipNo();
+        String deviceId = req.deviceId();
+
+        // 같은 회원 + 같은 기기의 기존 Refresh Token 삭제
+        refreshTokenRepository.deleteByMembershipNoAndDeviceId(membershipNo, deviceId);
+        refreshTokenRepository.flush();
+
+        String access = jwt.generateAccessToken(membershipNo, userMembershipInfo.getUserId(), deviceId);
+
+        String refresh = jwt.generateRefreshToken(membershipNo, deviceId);
 
         RefreshToken rt = new RefreshToken();
-        rt.setMembershipNo(no);
-        rt.setDeviceId(req.deviceId());
+        rt.setMembershipNo(membershipNo);
+        rt.setDeviceId(deviceId);
         rt.setToken(refresh);
-        rt.setStatus("VALID");
         rt.setCreatedAt(LocalDateTime.now());
-        rt.setExpiresAt(LocalDateTime.now().plusSeconds(refreshExp));
+        rt.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
+
         refreshTokenRepository.save(rt);
 
         return new LoginResponse(
                 new TokenPair(
                         access,
-                        accessExp,
+                        jwt.getAccessExpSeconds(),
                         refresh,
-                        refreshExp,
+                        jwt.getRefreshExpSeconds(),
                         ErrorCode.SUCCESS_LOGIN.getCode(),
                         ErrorCode.SUCCESS_LOGIN.getMessage()
                 ),
-                no, userMembershipInfo.getUserId(), userMembershipInfo.getJoinType()
+                membershipNo,
+                userMembershipInfo.getUserId(),
+                userMembershipInfo.getJoinType(),
+                deviceId
         );
     }
 
@@ -77,127 +83,125 @@ public class AuthService {
     public LoginResponse loginAfterSignup(String userId, String deviceId) {
         UserMembershipInfo userMembershipInfo = userMembershipRepository.findByUserId(userId);
 
-        if(null == userMembershipInfo) {
+        if (userMembershipInfo == null) {
             throw new LoginException(ErrorCode.NOT_FOUND_USER_INFO);
         }
 
-        // 회원 탈퇴 신청했다가 다시 재로그인을 했을 경우
-        if(MembershipStatus.WITHDRAWAL_PENDING == userMembershipInfo.getStatus()) {
+        if (MembershipStatus.WITHDRAWAL_PENDING == userMembershipInfo.getStatus()) {
             userMembershipRepository.restoreWithdrawal(
-                    userMembershipInfo.getMembershipNo(),
-                    MembershipStatus.ACTIVE,
-                    MembershipStatus.WITHDRAWAL_PENDING
+                    userMembershipInfo.getMembershipNo(), MembershipStatus.ACTIVE, MembershipStatus.WITHDRAWAL_PENDING
             );
         }
 
         String membershipNo = userMembershipInfo.getMembershipNo();
 
-        refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
+        // 같은 회원 + 같은 기기의 기존 Refresh Token만 삭제
+        refreshTokenRepository.deleteByMembershipNoAndDeviceId(membershipNo, deviceId);
+        refreshTokenRepository.flush();
 
-        String access  = jwt.generateAccessToken(membershipNo, userMembershipInfo.getUserId());
-        String refresh = jwt.generateRefreshToken(membershipNo, deviceId != null ? deviceId : "web-oauth");
+        String access = jwt.generateAccessToken(membershipNo, userMembershipInfo.getUserId(), deviceId);
+        String refresh = jwt.generateRefreshToken(membershipNo, deviceId);
 
-        // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
-        List<RefreshToken> olds = refreshTokenRepository.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
-        for (RefreshToken o : olds) {
-            o.setStatus("REVOKED");
-        }
-        refreshTokenRepository.saveAll(olds);
-
-        // Refresh 저장(VALID)
         RefreshToken rt = new RefreshToken();
         rt.setMembershipNo(membershipNo);
-        rt.setDeviceId(deviceId != null ? deviceId : "web-oauth");
+        rt.setDeviceId(deviceId);
         rt.setToken(refresh);
-        rt.setStatus("VALID");
-        rt.setCreatedAt(java.time.LocalDateTime.now());
-        rt.setExpiresAt(java.time.LocalDateTime.now().plusSeconds(refreshExp));
+        rt.setCreatedAt(LocalDateTime.now());
+        rt.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
+
         refreshTokenRepository.save(rt);
 
         return new LoginResponse(
                 new TokenPair(
                         access,
-                        accessExp,
+                        jwt.getAccessExpSeconds(),
                         refresh,
-                        refreshExp,
+                        jwt.getRefreshExpSeconds(),
                         ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
                         ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
                 ),
-                membershipNo, userMembershipInfo.getUserId(), userMembershipInfo.getJoinType()
+                membershipNo,
+                userMembershipInfo.getUserId(),
+                userMembershipInfo.getJoinType(),
+                deviceId
         );
     }
 
     @Transactional
     public TokenPair rotate(String refreshToken) {
 
-        try {
-            if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
-                throw new BadCredentialsException("invalid_refresh_token");
-            }
-        } catch (JwtException | IllegalArgumentException e) {
-            throw new BadCredentialsException("invalid_refresh_token");
-        }
-
-        String newAccess = "";
-        String newRefresh = "";
-
-        String membershipNo = jwt.getMembershipNo(refreshToken);
-        String deviceId = jwt.getDeviceId(refreshToken);
-
-        if(deviceId.isEmpty()) {
-            deviceId = "web-oauth";
-        }
+        final Claims claims;
 
         try {
+            // JWT 검증
+            // - 서명
+            // - issuer
+            // - expiration
+            // - typ = REFRESH
+            claims = jwt.parseToken(refreshToken, "REFRESH");
 
-            // 현재 리프레시가 DB에 VALID로 존재하는지 확인
-            RefreshToken current = refreshTokenRepository.findByTokenAndStatus(refreshToken, "VALID")
-                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.REQUIRED_LOGIN));
+        } catch (ExpiredJwtException e) {
+            throw new InvalidRefreshTokenException(ErrorCode.REQUIRED_RE_LOGIN);
 
-            // 만료 체크
-            if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
-                current.setStatus("REVOKED");
-                refreshTokenRepository.save(current);
-                throw new InvalidRefreshTokenException(ErrorCode.REQUIRED_RE_LOGIN);
-            }
-
-            // 같은 멤버/디바이스의 기존 VALID 토큰들 모두 REVOKE (동시 세션 차단용)
-            List<RefreshToken> olds = refreshTokenRepository.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
-            for (RefreshToken o : olds) {
-                o.setStatus("REVOKED");
-            }
-            refreshTokenRepository.saveAll(olds);
-
-            // 새 토큰 발급
-            UserMembershipInfo user = userMembershipRepository.findById(membershipNo)
-                    .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_USER_INFO));
-
-            newAccess  = jwt.generateAccessToken(membershipNo, user.getUserId());
-            newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
-
-            RefreshToken next = new RefreshToken();
-            next.setMembershipNo(membershipNo);
-            next.setDeviceId(deviceId);
-            next.setToken(newRefresh);
-            next.setStatus("VALID");
-            next.setCreatedAt(LocalDateTime.now());
-            next.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
-            refreshTokenRepository.save(next);
-
-        } catch (InvalidRefreshTokenException ex) {
-            return new TokenPair(
-                    "",
-                    0,
-                    "",
-                    0,
-                    ex.getCode(),
-                    ex.getMessage()
-                    );
+        } catch (JwtException | IllegalArgumentException | SecurityException e) {
+            throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
         }
+
+        String membershipNo = jwt.getMembershipNo(claims);
+        String deviceId = jwt.getDeviceId(claims);
+
+        // deviceId가 없는 비정상 토큰 방어
+        if (membershipNo == null || membershipNo.isBlank() || deviceId == null || deviceId.isBlank()) {
+            throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
+        }
+
+        // DB에 현재 Refresh Token이 존재하는지 확인
+        RefreshToken current = refreshTokenRepository.findByToken(refreshToken)
+                        .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.REQUIRED_LOGIN));
+
+        // JWT와 DB의 회원번호 / deviceId 일치 여부 확인
+        if (!membershipNo.equals(current.getMembershipNo()) || !deviceId.equals(current.getDeviceId())) {
+            throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
+        }
+
+        // DB 만료 여부 확인
+        if (current.getExpiresAt().isBefore(LocalDateTime.now())) {
+            refreshTokenRepository.delete(current);
+            throw new InvalidRefreshTokenException(ErrorCode.REQUIRED_RE_LOGIN);
+        }
+
+        // 회원 조회
+        UserMembershipInfo user = userMembershipRepository.findById(membershipNo)
+                        .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_USER_INFO));
+
+        // 기존 Refresh Token 삭제
+        refreshTokenRepository.delete(current);
+
+        // DB에 즉시 반영
+        refreshTokenRepository.flush();
+
+        // 새로운 Access Token
+        String newAccess = jwt.generateAccessToken(membershipNo, user.getUserId(), deviceId);
+
+        // 새로운 Refresh Token
+        String newRefresh = jwt.generateRefreshToken(membershipNo, deviceId);
+
+        // 새로운 Refresh Token 저장
+        RefreshToken next = new RefreshToken();
+
+        next.setMembershipNo(membershipNo);
+        next.setDeviceId(deviceId);
+        next.setToken(newRefresh);
+        next.setCreatedAt(LocalDateTime.now());
+        next.setExpiresAt(LocalDateTime.now().plusSeconds(jwt.getRefreshExpSeconds()));
+
+        refreshTokenRepository.save(next);
 
         return new TokenPair(
-                newAccess, jwt.getAccessExpSeconds(),
-                newRefresh, jwt.getRefreshExpSeconds(),
+                newAccess,
+                jwt.getAccessExpSeconds(),
+                newRefresh,
+                jwt.getRefreshExpSeconds(),
                 ErrorCode.SUCCESS_REFRESH_TOKEN.getCode(),
                 ErrorCode.SUCCESS_REFRESH_TOKEN.getMessage()
         );
@@ -208,70 +212,79 @@ public class AuthService {
     public boolean logout(String refreshToken) {
 
         try {
-            if (!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+
+            Claims claims = jwt.parseToken(refreshToken, "REFRESH");
+
+            String membershipNo = jwt.getMembershipNo(claims);
+            String deviceId = jwt.getDeviceId(claims);
+
+            if (membershipNo == null || membershipNo.isBlank() || deviceId == null || deviceId.isBlank()) {
                 return false;
             }
 
-            String membershipNo = jwt.getMembershipNo(refreshToken);
-            String deviceId = jwt.getDeviceId(refreshToken);
+            RefreshToken current = refreshTokenRepository.findByToken(refreshToken).orElse(null);
 
-            List<RefreshToken> tokens = refreshTokenRepository.findByMembershipNoAndDeviceIdAndStatus(membershipNo, deviceId, "VALID");
-
-            for (RefreshToken t : tokens) t.setStatus("REVOKED");
-
-            if (!tokens.isEmpty()) {
-                refreshTokenRepository.saveAll(tokens);
+            if (current == null) {
+                return false;
             }
+
+            if (!membershipNo.equals(current.getMembershipNo()) || !deviceId.equals(current.getDeviceId())) {
+                return false;
+            }
+            refreshTokenRepository.delete(current);
 
             return true;
 
+        } catch (ExpiredJwtException e) {
+            return false;
+        } catch (JwtException | IllegalArgumentException | SecurityException e) {
+            return false;
         } catch (Exception e) {
             return false;
         }
     }
 
-    /** 모든 기기 로그아웃: 회원의 모든 VALID 리프레시 REVOKE */
+    /** 현재 기기 로그아웃: 해당 회원 + 해당 기기의 Refresh Token 삭제 */
     @Transactional
     public void logoutAll(String membershipNo) {
-        List<RefreshToken> tokens = refreshTokenRepository.findByMembershipNoAndStatus(membershipNo, RefreshToken.Status.VALID);
-
-        for (var t : tokens) t.setStatus("REVOKED");
-        if (!tokens.isEmpty()) refreshTokenRepository.saveAll(tokens);
+        refreshTokenRepository.deleteAllByMembershipNo(membershipNo);
     }
 
     public Map<String, String> selectUserInfoByToken(String refreshToken) {
-
         Map<String, String> returnMap = new HashMap<>();
-
-        String resultCode = "";
-        String message = "";
-        String membershipNo = "";
-
         try {
-            // 1. JWT 토큰 유효성 검증
-            if(!jwt.isTokenValid(refreshToken) || !jwt.isRefreshToken(refreshToken)) {
+            Claims claims = jwt.parseToken(refreshToken, "REFRESH");
+            String membershipNo = jwt.getMembershipNo(claims);
+            String deviceId = jwt.getDeviceId(claims);
+
+            if (membershipNo == null || membershipNo.isBlank() || deviceId == null || deviceId.isBlank()) {
                 throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
             }
 
-            // 2. membershipNo 구하기
-            membershipNo = refreshTokenService.selectUserInfoByToken(refreshToken);
+            RefreshToken current = refreshTokenRepository.findByToken(refreshToken)
+                            .orElseThrow(() -> new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_AVAILABLE_REFRESH_TOKEN));
 
-            // 3. membershipNo 조회가 되지 않을 경우
-            if(membershipNo == null || membershipNo.isBlank()) {
-                throw new InvalidRefreshTokenException(ErrorCode.NOT_FOUND_AVAILABLE_REFRESH_TOKEN);
+            if (!membershipNo.equals(current.getMembershipNo()) || !deviceId.equals(current.getDeviceId())) {
+                throw new InvalidRefreshTokenException(ErrorCode.UNAVAILABLE_REFRESH_TOKEN);
             }
 
-            resultCode = "200";
-            message = "성공";
             returnMap.put("membershipNo", membershipNo);
+            returnMap.put("resultCode", "200");
+            returnMap.put("message", "성공");
+
+        } catch (ExpiredJwtException e) {
+            returnMap.put("resultCode", ErrorCode.REQUIRED_RE_LOGIN.getCode());
+            returnMap.put("message", ErrorCode.REQUIRED_RE_LOGIN.getMessage());
 
         } catch (InvalidRefreshTokenException e) {
-            resultCode = e.getCode();
-            message = e.getMessage();
-        } finally {
-            returnMap.put("resultCode", resultCode);
-            returnMap.put("message", message);
+            returnMap.put("resultCode", e.getCode());
+            returnMap.put("message", e.getMessage());
+
+        } catch (JwtException | IllegalArgumentException | SecurityException e) {
+            returnMap.put("resultCode", ErrorCode.UNAVAILABLE_REFRESH_TOKEN.getCode());
+            returnMap.put("message", ErrorCode.UNAVAILABLE_REFRESH_TOKEN.getMessage());
         }
+
         return returnMap;
     }
 }
