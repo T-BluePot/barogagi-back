@@ -230,7 +230,8 @@ public class ScheduleCommandService {
         List<RegionRegistReqDTO> resolvedRegions = resolveRegions(plan, scheduleRegistReqDTO);
 
         int limitPlace = calLimitPlace(resolvedRegions.size());
-        int candidateLimit = Math.max(limitPlace * 3, 10);
+        int searchLimit = Math.min(limitPlace * 2, 10);    // Tavily 검색 건수
+        int extractLimit = Math.max(limitPlace * 2, 6);    // AI 장소명 추출 개수
 
         // ---------- 1) 카테고리 결정 ----------
         if ("Y".equals(plan.getIsRandomCategory())) {
@@ -285,7 +286,7 @@ public class ScheduleCommandService {
             // Step 1: Tavily 웹 검색 (태그도 검색어에 포함)
             String tagKeyword = tagNames.isEmpty() ? "" : " " + tagNames.get(0);
             String tavilyQuery = categoryNm + tagKeyword + " " + regionName + " 추천 장소";
-            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, candidateLimit);
+            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, searchLimit);
 
             logger.info("tavily search: query={}, resultSize={}", tavilyQuery, tavilyResults.size());
 
@@ -301,7 +302,7 @@ public class ScheduleCommandService {
                     .collect(Collectors.joining("\n"));
 
             List<String> extractedPlaceNames = aiClient.extractPlaceNames(
-                    combinedContent, categoryNm, regionName, tagNames, candidateLimit);
+                    combinedContent, categoryNm, regionName, tagNames, extractLimit);
 
             logger.info("AI 장소명 추출: category={}, region={}, extracted={}",
                     categoryNm, regionName, extractedPlaceNames);
@@ -352,9 +353,7 @@ public class ScheduleCommandService {
                 .build();
 
         AIResDTO aiRes = aiClient.recommandPlace(aiReqWrapper);
-        if (aiRes == null || aiRes.getRecommandPlaceIndex() == -1) {
-            throw new ScheduleException(ErrorCode.AI_RECOMMENDATION_FAILED);
-        }
+
 
         // ---------- 4) AI가 고른 index → place 선택 ----------
         int chosenIdx = (aiRes == null) ? -1 : aiRes.getRecommandPlaceIndex();
