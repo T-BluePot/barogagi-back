@@ -130,7 +130,6 @@ public class ScheduleCommandService {
 
 
     public ApiResponse createSchedule(ScheduleRegistReqDTO scheduleRegistReqDTO, HttpServletRequest request) {
-
         try {
             // 1. API SECRET KEY 일치 여부 확인
             if (!validator.apiSecretKeyCheck(request.getHeader("API-KEY"))) {
@@ -151,6 +150,7 @@ public class ScheduleCommandService {
             String scheduleNm = scheduleRegistReqDTO.getScheduleNm();
             String startDate = scheduleRegistReqDTO.getStartDate();
             String endDate = scheduleRegistReqDTO.getEndDate();
+            String scheduleMemo = scheduleRegistReqDTO.getScheduleMemo();
 
             for (PlanRegistReqDTO plan : scheduleRegistReqDTO.getPlanRegistReqDTOList()) {
 
@@ -185,6 +185,7 @@ public class ScheduleCommandService {
                     .scheduleNm(scheduleNm)
                     .startDate(startDate)
                     .endDate(endDate)
+                    .scheduleMemo(scheduleMemo)
                     .planRegistResDTOList(planResList)
                     .scheduleTagRegistResDTOList(tagResList)
                     .build();
@@ -229,6 +230,7 @@ public class ScheduleCommandService {
         List<RegionRegistReqDTO> resolvedRegions = resolveRegions(plan, scheduleRegistReqDTO);
 
         int limitPlace = calLimitPlace(resolvedRegions.size());
+        int candidateLimit = Math.max(limitPlace * 3, 10);
 
         // ---------- 1) 카테고리 결정 ----------
         if ("Y".equals(plan.getIsRandomCategory())) {
@@ -283,7 +285,7 @@ public class ScheduleCommandService {
             // Step 1: Tavily 웹 검색 (태그도 검색어에 포함)
             String tagKeyword = tagNames.isEmpty() ? "" : " " + tagNames.get(0);
             String tavilyQuery = categoryNm + tagKeyword + " " + regionName + " 추천 장소";
-            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, limitPlace);
+            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, candidateLimit);
 
             logger.info("tavily search: query={}, resultSize={}", tavilyQuery, tavilyResults.size());
 
@@ -299,7 +301,7 @@ public class ScheduleCommandService {
                     .collect(Collectors.joining("\n"));
 
             List<String> extractedPlaceNames = aiClient.extractPlaceNames(
-                    combinedContent, categoryNm, regionName, tagNames, limitPlace);
+                    combinedContent, categoryNm, regionName, tagNames, candidateLimit);
 
             logger.info("AI 장소명 추출: category={}, region={}, extracted={}",
                     categoryNm, regionName, extractedPlaceNames);
@@ -355,9 +357,10 @@ public class ScheduleCommandService {
         }
 
         // ---------- 4) AI가 고른 index → place 선택 ----------
-        int chosenIdx = aiRes.getRecommandPlaceIndex();
+        int chosenIdx = (aiRes == null) ? -1 : aiRes.getRecommandPlaceIndex();
         if (chosenIdx < 0 || chosenIdx >= flatKakao.size()) {
-            logger.warn("AI 추천 인덱스 유효하지 않음(idx={}), fallback=0", chosenIdx);
+            logger.warn("AI 추천 사용 불가(aiRes={}, idx={}, candidates={}), fallback=0",
+                    aiRes != null, chosenIdx, flatKakao.size());
             chosenIdx = 0;
         }
         KakaoPlaceResDTO aiChosen = flatKakao.get(chosenIdx);
@@ -382,7 +385,7 @@ public class ScheduleCommandService {
                 .planNm(aiChosen.getPlaceName())
                 .planLink(aiChosen.getPlaceUrl())
                 .imageUrl(imageUrl)
-                .planDescription(aiRes.getAiDescription())
+                .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
                 .planAddress(Optional.ofNullable(aiChosen.getRoadAddressName()).orElse(aiChosen.getAddressName()))
                 .regionNm(regionNm)
                 .regionNum(aiChosen.getRegionNum())
@@ -534,6 +537,7 @@ public class ScheduleCommandService {
                     .startTime(plan.getStartTime())
                     .endTime(plan.getEndTime())
                     .planNm(plan.getPlanNm())
+                    .planDescription(plan.getPlanDescription())
                     .planAddress(null)
                     .planLink(null)
                     .categoryNum(plan.getCategoryNum())
@@ -574,6 +578,7 @@ public class ScheduleCommandService {
                 .scheduleNm(scheduleRegistResDTO.getScheduleNm())
                 .startDate(scheduleRegistResDTO.getStartDate())
                 .endDate(scheduleRegistResDTO.getEndDate())
+                .scheduleMemo(scheduleRegistResDTO.getScheduleMemo())
                 .radius(radius)
                 .delYn("N")
                 .build();
@@ -702,7 +707,6 @@ public class ScheduleCommandService {
                 schedule.getScheduleNum(),
                 ErrorCode.SUCCESS_SCHEDULE_SAVE.getCode(),
                 ErrorCode.SUCCESS_SCHEDULE_SAVE.getMessage());
-
     }
 
     @Transactional
@@ -725,7 +729,12 @@ public class ScheduleCommandService {
                     .orElseThrow(() -> new BasicException(ErrorCode.NOT_FOUND_INFO_SCHEDULE));
 
             // 4. Schedule 기본 정보 업데이트
-            schedule.updateBasicInfo(dto.getScheduleNm(), dto.getStartDate(), dto.getEndDate());
+            schedule.updateBasicInfo(
+                    dto.getScheduleNm(),
+                    dto.getStartDate(),
+                    dto.getEndDate(),
+                    dto.getScheduleMemo() != null && dto.getScheduleMemo().isEmpty() ? null : dto.getScheduleMemo() // 빈 문자열은 null로 처리
+            );
 
             // 5. ScheduleTag 전체 삭제 후 재등록
             scheduleTagRepository.deleteBySchedule(schedule);
