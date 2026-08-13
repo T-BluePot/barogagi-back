@@ -230,6 +230,7 @@ public class ScheduleCommandService {
         List<RegionRegistReqDTO> resolvedRegions = resolveRegions(plan, scheduleRegistReqDTO);
 
         int limitPlace = calLimitPlace(resolvedRegions.size());
+        int candidateLimit = Math.max(limitPlace * 3, 10);
 
         // ---------- 1) 카테고리 결정 ----------
         if ("Y".equals(plan.getIsRandomCategory())) {
@@ -284,7 +285,7 @@ public class ScheduleCommandService {
             // Step 1: Tavily 웹 검색 (태그도 검색어에 포함)
             String tagKeyword = tagNames.isEmpty() ? "" : " " + tagNames.get(0);
             String tavilyQuery = categoryNm + tagKeyword + " " + regionName + " 추천 장소";
-            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, limitPlace);
+            List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, candidateLimit);
 
             logger.info("tavily search: query={}, resultSize={}", tavilyQuery, tavilyResults.size());
 
@@ -300,7 +301,7 @@ public class ScheduleCommandService {
                     .collect(Collectors.joining("\n"));
 
             List<String> extractedPlaceNames = aiClient.extractPlaceNames(
-                    combinedContent, categoryNm, regionName, tagNames, limitPlace);
+                    combinedContent, categoryNm, regionName, tagNames, candidateLimit);
 
             logger.info("AI 장소명 추출: category={}, region={}, extracted={}",
                     categoryNm, regionName, extractedPlaceNames);
@@ -356,9 +357,10 @@ public class ScheduleCommandService {
         }
 
         // ---------- 4) AI가 고른 index → place 선택 ----------
-        int chosenIdx = aiRes.getRecommandPlaceIndex();
+        int chosenIdx = (aiRes == null) ? -1 : aiRes.getRecommandPlaceIndex();
         if (chosenIdx < 0 || chosenIdx >= flatKakao.size()) {
-            logger.warn("AI 추천 인덱스 유효하지 않음(idx={}), fallback=0", chosenIdx);
+            logger.warn("AI 추천 사용 불가(aiRes={}, idx={}, candidates={}), fallback=0",
+                    aiRes != null, chosenIdx, flatKakao.size());
             chosenIdx = 0;
         }
         KakaoPlaceResDTO aiChosen = flatKakao.get(chosenIdx);
@@ -383,7 +385,7 @@ public class ScheduleCommandService {
                 .planNm(aiChosen.getPlaceName())
                 .planLink(aiChosen.getPlaceUrl())
                 .imageUrl(imageUrl)
-                .planDescription(aiRes.getAiDescription())
+                .planDescription(aiRes != null ? aiRes.getAiDescription() : null)
                 .planAddress(Optional.ofNullable(aiChosen.getRoadAddressName()).orElse(aiChosen.getAddressName()))
                 .regionNm(regionNm)
                 .regionNum(aiChosen.getRegionNum())
