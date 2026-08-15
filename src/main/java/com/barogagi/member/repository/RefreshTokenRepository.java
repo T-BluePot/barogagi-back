@@ -27,4 +27,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
      * 특정 회원의 모든 Refresh Token 삭제
      */
     void deleteAllByMembershipNo(String membershipNo);
+
+    Optional<RefreshToken> findByMembershipNoAndDeviceId(String membershipNo, String deviceId);
 }

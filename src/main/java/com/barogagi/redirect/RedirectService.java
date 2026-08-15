@@ -50,6 +50,7 @@ public class RedirectService {
         String membershipNo = String.valueOf(paramMap.get("membershipNo") == null ? "" : paramMap.get("membershipNo"));
         String refreshToken = String.valueOf(paramMap.get("refreshToken") == null ? "" : paramMap.get("refreshToken"));
         String refreshTokenExpiresIn = String.valueOf(paramMap.get("refreshTokenExpiresIn") == null ? "" : paramMap.get("refreshTokenExpiresIn"));
+        String deviceId = String.valueOf(paramMap.get("deviceId") == null ? "" : paramMap.get("deviceId"));
 
         String nickname = String.valueOf(paramMap.get("nickname"));
         String nicknameYn = nickname.isEmpty() ? "N" : "Y";
@@ -63,7 +64,8 @@ public class RedirectService {
                 "&refreshToken=" + refreshToken +
                 "&refreshTokenExpiresIn=" + refreshTokenExpiresIn +
                 "&nicknameYn=" + nicknameYn +
-                "&nickname=" + URLEncoder.encode(nickname, StandardCharsets.UTF_8);
+                "&nickname=" + URLEncoder.encode(nickname, StandardCharsets.UTF_8) +
+                "&deviceId=" + deviceId;
     }
 
     // OAuth 후 실패 시 프론트로 redirect

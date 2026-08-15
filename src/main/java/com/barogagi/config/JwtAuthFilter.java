@@ -1,8 +1,10 @@
 package com.barogagi.config;
 
 import com.barogagi.member.domain.MembershipStatus;
+import com.barogagi.member.domain.RefreshToken;
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.exception.InvalidRefreshTokenException;
+import com.barogagi.member.repository.RefreshTokenRepository;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.util.JwtUtil;
 import com.barogagi.util.exception.ErrorCode;
@@ -10,9 +12,9 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,15 +22,12 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwt;
     private final UserMembershipRepository userMembershipRepository;
-
-    public JwtAuthFilter(JwtUtil jwt, UserMembershipRepository userMembershipRepository) {
-        this.jwt = jwt;
-        this.userMembershipRepository = userMembershipRepository;
-    }
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException {
@@ -70,11 +69,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                // 5. SecurityContext에 인증 정보 저장
+                // 5. refresh token 검증
+                String deviceId = jwt.getDeviceId(claims);
+                Optional<RefreshToken> refreshToken = refreshTokenRepository.findByMembershipNoAndDeviceId(membershipNo, deviceId);
+
+                if(refreshToken.isEmpty()) {
+                    writeErrorResponse(ErrorCode.NOT_EXIST_ACCESS_AUTH);
+                    return;
+                }
+
+                // 6. SecurityContext에 인증 정보 저장
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(member.get(), null, null);
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-                // 6. 요청 속성 저장
+                // 7. 요청 속성 저장
                 req.setAttribute("membershipNo", membershipNo);
                 req.setAttribute("member", member.get());
                 req.setAttribute("deviceId", jwt.getDeviceId(claims));
