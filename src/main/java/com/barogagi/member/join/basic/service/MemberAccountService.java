@@ -49,14 +49,7 @@ public class MemberAccountService {
             );
         }
 
-        // 3. fcm token 비활성화
-        List<PushToken> fcmTokens = pushTokenRepository.findAllByMembershipNoAndActiveYn(resultMap.get("membershipNo"), "Y");
-
-        for (PushToken token : fcmTokens) {
-            token.setActiveYn("N");
-        }
-
-        // 4. 탈퇴 코드 조회
+        // 3. 탈퇴 코드 조회
         WithdrawReasonCode findWithdrawReasonCode = withdrawReasonCodeRepository.findWithdrawReasonCodeInfo(withdrawRequestDTO.getReasonNo());
 
         if(null == findWithdrawReasonCode) {

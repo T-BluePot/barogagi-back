@@ -12,6 +12,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -32,13 +36,18 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
     private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler) {
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+            OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+            AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository
+    ) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
         this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.authorizationRequestRepository = authorizationRequestRepository;
         log.info("@@ jwtAuthFilter={}", jwtAuthFilter);
     }
 
@@ -70,16 +79,16 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(
             HttpSecurity http,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper,
             CustomOidcUserService customOidcUserService,    // 구글용 (OIDC)
-            DelegatingOAuth2UserService delegatingOAuth2UserService   // 네이버, 카카오용 (OAuth2)
+            DelegatingOAuth2UserService delegatingOAuth2UserService,   // 네이버, 카카오용 (OAuth2)
+            OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver
     ) throws Exception {
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 // API 서버 권장: 무상태
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         // CORS preflight 허용
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -88,6 +97,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(endpoint -> endpoint
+                                .authorizationRequestResolver(oauth2AuthorizationRequestResolver)
+                                .authorizationRequestRepository(authorizationRequestRepository)
+                        )
                         .userInfoEndpoint(u -> u
                                 .oidcUserService(customOidcUserService)   // Google
                                 .userService(delegatingOAuth2UserService) // Naver, Kakao
@@ -128,5 +141,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver oauth2AuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
+        return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository);
     }
 }

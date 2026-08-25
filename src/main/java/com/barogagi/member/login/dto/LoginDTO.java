@@ -20,4 +20,7 @@ public class LoginDTO {
             message = "비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password = "";
+
+    @NotBlank(message = "기기 아이디는 필수 입력값입니다.")
+    private String deviceId;
 }
