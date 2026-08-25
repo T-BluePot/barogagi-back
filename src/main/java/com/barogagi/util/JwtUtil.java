@@ -47,7 +47,7 @@ public class JwtUtil {
                 .build();
     }
 
-    public String generateAccessToken(String membershipNo, String userId) {
+    public String generateAccessToken(String membershipNo, String userId, String deviceId) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .setIssuer(issuer)
@@ -55,6 +55,7 @@ public class JwtUtil {
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusSeconds(accessExpSeconds)))
                 .claim("uid", userId)
+                .claim("did", deviceId)
                 .claim("typ", "ACCESS")
                 .setId(UUID.randomUUID().toString())
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -80,13 +81,7 @@ public class JwtUtil {
         토큰이 유효한지 체크
      */
     public Claims parseAndValidate(String jwt) {
-        return Jwts.parserBuilder()  // 파서 준비
-                .requireIssuer(issuer)  // 우리가 발행한 토큰이 맞는지 검증
-                .setSigningKey(key)  // 서명검증에 쓸 키 지정
-                .setAllowedClockSkewSeconds(clockSkewSeconds)  // 서명 위조 여부 확인, 만료되었는지 확인
-                .build()
-                .parseClaimsJws(jwt)
-                .getBody();
+        return parser.parseClaimsJws(jwt).getBody();
     }
 
     /*
@@ -103,56 +98,18 @@ public class JwtUtil {
         return claims;
     }
 
-    public Claims parseClaims(String token) {
-        return parser.parseClaimsJws(token).getBody();
-    }
-
-    public boolean isTokenValid(String token) {
-        try { parseClaims(token); return true; }
-        catch (JwtException | IllegalArgumentException e) { return false; }
-    }
-
-    public boolean isAccessToken(String token) {
-        try { return "ACCESS".equalsIgnoreCase(parseClaims(token).get("typ", String.class)); }
-        catch (Exception e) { return false; }
-    }
-
-    public boolean isRefreshToken(String token) {
-        try { return "REFRESH".equalsIgnoreCase(parseClaims(token).get("typ", String.class)); }
-        catch (Exception e) { return false; }
-    }
-
-    public String getUserId(String accessToken) {
-        return parseClaims(accessToken).get("uid", String.class);
-    }
-
-    public String getDeviceId(String refreshToken) {
-        return parseClaims(refreshToken).get("did", String.class);
-    }
-
-    public long getAccessExpSeconds() { return accessExpSeconds; }
-    public long getRefreshExpSeconds() { return refreshExpSeconds; }
-
-    public boolean isExpired(String token) {
-        try { return parseClaims(token).getExpiration().before(new Date()); }
-        catch (Exception e) { return true; }
-    }
-
-    public String getMembershipNo(String token) {
-        return String.valueOf(parseClaims(token).getSubject());
-    }
-
     public String getMembershipNo(Claims claims) {
         return claims.getSubject();
     }
 
-    public boolean isAccessTokenValid(String token) {
-        try {
-            Claims claims = parseClaims(token);
-            String typ = claims.get("typ", String.class);
-            return "ACCESS".equals(typ);
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
+    public String getUserId(Claims claims) {
+        return claims.get("uid", String.class);
     }
+
+    public String getDeviceId(Claims claims) {
+        return claims.get("did", String.class);
+    }
+
+    public long getAccessExpSeconds() { return accessExpSeconds; }
+    public long getRefreshExpSeconds() { return refreshExpSeconds; }
 }

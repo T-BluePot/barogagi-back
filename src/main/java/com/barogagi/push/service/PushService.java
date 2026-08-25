@@ -16,11 +16,7 @@ public class PushService {
     private final PushTokenRepository pushTokenRepository;
     private final FcmService fcmService;
 
-    public void sendToUser(
-            String membershipNo,
-            String title,
-            String body
-    ) {
+    public void sendToUser(String membershipNo, String title, String body) {
 
         List<PushToken> tokens = pushTokenRepository.findByMembershipNoAndActiveYn(membershipNo, "Y");
 
@@ -35,7 +31,6 @@ public class PushService {
 
             } catch (Exception e) {
                 log.error("푸시 발송 실패 token={}", pushToken.getFcmToken());
-                pushToken.deactivate();
             }
         }
     }

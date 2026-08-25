@@ -2,14 +2,15 @@ package com.barogagi.config;
 
 import com.barogagi.member.domain.UserMembershipInfo;
 import com.barogagi.member.login.dto.LoginResponse;
+import com.barogagi.member.login.exception.LoginException;
 import com.barogagi.member.login.service.AuthService;
 import com.barogagi.member.repository.UserMembershipRepository;
 import com.barogagi.redirect.RedirectService;
 import com.barogagi.setting.service.SettingService;
+import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -18,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Map;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -38,7 +38,14 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String userId = extractUserId(attrs);
 
-        LoginResponse login = authService.loginAfterSignup(userId, "web-oauth");
+        // OAuth 인증 요청에 저장해 둔 deviceId 가져오기
+        String deviceId = (String) req.getAttribute("oauth2.deviceId");
+
+        if (deviceId == null || deviceId.isBlank()) {
+            throw new LoginException(ErrorCode.FAIL_REFRESH_TOKEN);
+        }
+
+        LoginResponse login = authService.loginAfterSignup(userId, deviceId);
 
         String nickname = "";
         if("R200".equals(login.tokens().resultCode())) {
@@ -55,7 +62,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 "membershipNo", login.membershipNo(),
                 "refreshToken", login.tokens().refreshToken(),
                 "refreshTokenExpiresIn", login.tokens().refreshTokenExpiresIn(),
-                "nickname", nickname
+                "nickname", nickname,
+                "deviceId", login.deviceId()
         );
 
         // 설정 값 기본 세팅
