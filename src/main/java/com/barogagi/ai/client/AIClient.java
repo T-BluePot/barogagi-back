@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -55,23 +56,43 @@ public class AIClient {
         ChatRequest chatRequest = buildChatRequest(aiReqWrapper);
         HttpEntity<ChatRequest> entity = new HttpEntity<>(chatRequest, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                url, HttpMethod.POST, entity, String.class);
+        // [변경] 429/500/타임아웃이 컨트롤러까지 전파되지 않도록 흡수
+        String body;
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, HttpMethod.POST, entity, String.class);
+            body = response.getBody();
+        } catch (RestClientException e) {
+            logger.error("AI 추천 호출 실패: type={}, msg={}",
+                    e.getClass().getSimpleName(), e.getMessage());
+            return null;
+        }
 
-        String body = response.getBody();
+        if (body == null || body.isBlank()) {
+            logger.error("AI 추천 응답 바디 없음");
+            return null;
+        }
 
         try {
             JsonNode root = OM.readTree(body);
-            String content = root.path("choices").get(0).path("message").path("content").asText();
+
+            // [변경] choices가 비어있으면 .get(0)이 null을 반환해 NPE가 남 (catch를 통과함)
+            JsonNode choices = root.path("choices");
+            if (!choices.isArray() || choices.isEmpty()) {
+                logger.error("AI 추천 응답에 choices 없음: body={}", body);
+                return null;
+            }
+
+            String content = choices.get(0).path("message").path("content").asText();
             content = stripCodeFence(content);
             return OM.readValue(content, AIResDTO.class);
 
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            logger.error("AI 추천 응답 파싱 실패: error={}", e.getMessage());
+            // [변경] 원문 바디를 같이 남겨야 어떤 응답에서 깨졌는지 추적 가능
+            logger.error("AI 추천 응답 파싱 실패: error={}, body={}", e.getMessage(), body);
             return null;
         }
     }
-
     private ChatRequest buildChatRequest(AIReqWrapper wrapper) {
         ChatMessage systemMsg = ChatMessage.builder()
                 .role("system")
