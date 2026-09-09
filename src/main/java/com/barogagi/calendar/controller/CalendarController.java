@@ -22,7 +22,8 @@ public class CalendarController {
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "COMMON-400", description = "잘못된 요청입니다."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C101", description = "정보를 입력해주세요."),
                     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "H201", description = "공휴일 정보가 존재하지 않습니다."),
-                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "H200", description = "공휴일 정보 조회 성공하였습니다.")
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "H200", description = "공휴일 정보 조회 성공하였습니다."),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "C401", description = "데이터 형식이 올바르지 않습니다.")
             })
     @GetMapping("/holidays")
     public ApiResponse getHolidays(@RequestHeader("API-KEY") String apiSecretKey, @RequestParam("year") String year, @RequestParam("month") String month) {
