@@ -73,7 +73,8 @@ public class SecurityConfig {
             "/oauth/callback",  // oauth 로그인 성공 시 redirect
             "/images/**",  // 이미지
             "/api/v1/schedule/share/**",  // 일정 공유 화면
-            "/api/v1/weather/**"
+            "/api/v1/weather/**",
+            "/api/v1/calendar/holidays"  // 공휴일 정보 조회 기능
     };
 
     @Bean
