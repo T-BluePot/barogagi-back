@@ -115,7 +115,11 @@ public class PublicDataService {
                             String regionName = korTourOrgLocalCode.getAreaNm() + " " + korTourOrgLocalCode.getSigunguNm();
 
                             KakaoPlaceResDTO matched = searchKakaoWithRetry(item.getHubTatsNm(), regionName, item.getMapX(), item.getMapY());
-                            item.setImageUrl(Objects.requireNonNull(matched).getPlaceUrl());
+                            if (matched != null && matched.getPlaceUrl() != null && !matched.getPlaceUrl().isEmpty()) {
+                                item.setImageUrl(Objects.requireNonNull(matched).getPlaceUrl());
+                            } else {
+                                item.setImageUrl("");
+                            }
                         })
                         .map(LocalPopularReplace::new)
                         .toList();
@@ -216,33 +220,6 @@ public class PublicDataService {
         log.info("kakao 3차(좌표 없음): query={}, resultSize={}", query1, fallback != null ? fallback.size() : "null");
         if (fallback != null && !fallback.isEmpty()) return fallback.get(0);
 
-        return null;
-    }
-
-    private String fetchOgImage(String url) {
-        try {
-            log.info("OG 이미지 파싱 시작 - url: {}", url);  // 여기 로그 찍히는지 확인
-
-            Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-                    .header("Referer", "https://place.map.kakao.com/")
-                    .timeout(5000)
-                    .get();
-
-            Element ogImage = doc.selectFirst("meta[property=og:image]");
-            log.info("OG 이미지 파싱 결과 - imageUrl: {}", ogImage);  // 결과 확인
-
-            if (ogImage != null) {
-                String imageUrl = ogImage.attr("content");
-                // 프로토콜 상대 URL 처리
-                if (imageUrl.startsWith("//")) {
-                    imageUrl = "https:" + imageUrl;
-                }
-                return imageUrl;
-            }
-        } catch (IOException e) {
-            log.warn("OG 이미지 파싱 실패 - url: {}, message: {}", url, e.getMessage());
-        }
         return null;
     }
 }
