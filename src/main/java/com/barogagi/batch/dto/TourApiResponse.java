@@ -51,6 +51,7 @@ public class TourApiResponse {
         private String baseYm;
         private String mapX;
         private String mapY;
+        private String imageUrl = "";
         private String areaCd;
         private String areaNm;
         private String signguCd;

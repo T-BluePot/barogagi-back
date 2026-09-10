@@ -6,32 +6,42 @@ import com.barogagi.batch.entity.LocalPopularReplace;
 import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
 import com.barogagi.batch.repository.LocalPopularReplaceRepository;
 import com.barogagi.config.ApiClient;
+import com.barogagi.kakaoplace.client.KakaoPlaceClient;
+import com.barogagi.kakaoplace.dto.KakaoPlaceResDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class PublicDataService {
 
     private final ApiClient apiClient;
+    private final RestClient restClient;
+    private final KakaoPlaceClient kakaoPlaceClient;
+
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final LocalPopularReplaceRepository localPopularReplaceRepository;
 
-    private final RestClient restClient;
-
     @Value("${apihub.kma.api-key}")
     private String kmaApiKey;
+
+    @Value("${kakao.radius}")
+    private int radius;
 
     @Transactional
     public void insertLocalPopularArea() {
@@ -100,6 +110,13 @@ public class PublicDataService {
                         .getItems()
                         .getItem()
                         .stream()
+                        .peek(item -> {
+                            KorTourOrgLocalCode korTourOrgLocalCode = korTourOrgLocalCodeRepository.findLocalCodeInfo(item.getAreaCd(), item.getSignguCd());
+                            String regionName = korTourOrgLocalCode.getAreaNm() + " " + korTourOrgLocalCode.getSigunguNm();
+
+                            KakaoPlaceResDTO matched = searchKakaoWithRetry(item.getHubTatsNm(), regionName, item.getMapX(), item.getMapY());
+                            item.setImageUrl(Objects.requireNonNull(matched).getPlaceUrl());
+                        })
                         .map(LocalPopularReplace::new)
                         .toList();
 
@@ -173,5 +190,59 @@ public class PublicDataService {
         }
 
         return response.getResponse().getBody().getItems().getItem().get(0);
+    }
+
+    /**
+     * 카카오 장소 검색 (재시도 포함)
+     * 1차: "장소명 + 지역명" 으로 검색
+     * 2차: "장소명"만으로 재검색
+     * 3차: "장소명 + 지역명"으로 검색하되 좌표/반경 없이 (즉, 전국 검색)
+     * 둘 다 실패 시 null 반환
+     */
+    private KakaoPlaceResDTO searchKakaoWithRetry(String placeName, String regionName, String x, String y) {
+        // 1차: 장소명 + 지역명 (좌표 기반)
+        String query1 = placeName + " " + regionName;
+        List<KakaoPlaceResDTO> results = kakaoPlaceClient.searchKakaoPlace(query1, x, y, radius, 1);
+        log.info("kakao 1차: query={}, resultSize={}", query1, results != null ? results.size() : "null");
+        if (results != null && !results.isEmpty()) return results.get(0);
+
+        // 2차: 장소명만 (좌표 기반)
+        List<KakaoPlaceResDTO> retry = kakaoPlaceClient.searchKakaoPlace(placeName, x, y, radius, 1);
+        log.info("kakao 2차: query={}, resultSize={}", placeName, retry != null ? retry.size() : "null");
+        if (retry != null && !retry.isEmpty()) return retry.get(0);
+
+        // 3차: 장소명 + 지역명 (좌표/반경 없이)
+        List<KakaoPlaceResDTO> fallback = kakaoPlaceClient.searchKakaoPlace(query1, null, null, 0, 1);
+        log.info("kakao 3차(좌표 없음): query={}, resultSize={}", query1, fallback != null ? fallback.size() : "null");
+        if (fallback != null && !fallback.isEmpty()) return fallback.get(0);
+
+        return null;
+    }
+
+    private String fetchOgImage(String url) {
+        try {
+            log.info("OG 이미지 파싱 시작 - url: {}", url);  // 여기 로그 찍히는지 확인
+
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .header("Referer", "https://place.map.kakao.com/")
+                    .timeout(5000)
+                    .get();
+
+            Element ogImage = doc.selectFirst("meta[property=og:image]");
+            log.info("OG 이미지 파싱 결과 - imageUrl: {}", ogImage);  // 결과 확인
+
+            if (ogImage != null) {
+                String imageUrl = ogImage.attr("content");
+                // 프로토콜 상대 URL 처리
+                if (imageUrl.startsWith("//")) {
+                    imageUrl = "https:" + imageUrl;
+                }
+                return imageUrl;
+            }
+        } catch (IOException e) {
+            log.warn("OG 이미지 파싱 실패 - url: {}, message: {}", url, e.getMessage());
+        }
+        return null;
     }
 }
