@@ -1,6 +1,7 @@
 package com.barogagi.schedule.controller;
 
 import com.barogagi.response.ApiResponse;
+import com.barogagi.schedule.dto.MagicScheduleReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -410,6 +411,92 @@ public interface SwaggerScheduleController {
                     )
             )
             ScheduleRegistResDTO scheduleRegistResDTO
+    );
+
+    @Operation(
+            summary = "마법봉 일정 생성 기능",
+            description = "선택사항을 자동으로 설정해 AI 일정을 생성하는 기능입니다.<br>" +
+                    "- 마법봉 퀵버튼을 눌렀을 때 호출되는 API입니다.<br>" +
+                    "- 날짜(startDate, endDate)와 지역(scheduleRegionRegistReqDTOList)은 필수입니다.<br>" +
+                    "- 시간(startTime, endTime)은 선택이며, 보내지 않으면 11:00~19:00으로 자동 설정됩니다.<br>" +
+                    "- 전달받은 시간 범위를 2시간 단위로 나눠 플랜을 구성하며, 카테고리는 서버에서 랜덤으로 선정합니다.<br>" +
+                    "- 지역은 요청한 지역 목록 중 플랜별로 랜덤 선택됩니다.<br>" +
+                    "- 응답 DTO는 '일정 생성' API와 동일하므로, 저장 시 '일정 저장' API에 그대로 보내주세요.",
+            responses = {
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "S201",
+                            description = "일정 생성에 성공하였습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A100",
+                            description = "잘못된 접근입니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "A401",
+                            description = "접근 권한이 존재하지 않습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "C101",
+                            description = "정보를 입력해주세요. (날짜 또는 지역 누락)"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "COMMON-400",
+                            description = "잘못된 요청입니다. (시간 형식 오류 또는 시작시간이 종료시간보다 늦음)"
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "R101",
+                            description = "지역 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "T201",
+                            description = "카테고리 정보를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "P101",
+                            description = "지역 검색 결과를 찾을 수 없습니다."
+                    ),
+                    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                            responseCode = "COMMON-500",
+                            description = "서버 오류가 발생했습니다."
+                    )
+            }
+    )
+    ApiResponse createMagicSchedule(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "마법봉 일정 생성 요청",
+                    required = true,
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "시간 직접 선택",
+                                            value = "{\n" +
+                                                    "  \"scheduleNm\": \"마법봉 일정\",\n" +
+                                                    "  \"startDate\": \"2026-03-01\",\n" +
+                                                    "  \"endDate\": \"2026-03-01\",\n" +
+                                                    "  \"startTime\": \"13:00\",\n" +
+                                                    "  \"endTime\": \"21:00\",\n" +
+                                                    "  \"scheduleRegionRegistReqDTOList\": [\n" +
+                                                    "    { \"regionNum\": 9510 },\n" +
+                                                    "    { \"regionNum\": 9511 }\n" +
+                                                    "  ]\n" +
+                                                    "}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "시간 미선택 (11:00~19:00 자동 적용)",
+                                            value = "{\n" +
+                                                    "  \"startDate\": \"2026-03-01\",\n" +
+                                                    "  \"endDate\": \"2026-03-01\",\n" +
+                                                    "  \"scheduleRegionRegistReqDTOList\": [\n" +
+                                                    "    { \"regionNum\": 9763 }\n" +
+                                                    "  ]\n" +
+                                                    "}"
+                                    )
+                            }
+                    )
+            )
+            MagicScheduleReqDTO magicScheduleReqDTO,
+            HttpServletRequest request
     );
 
     @Operation(

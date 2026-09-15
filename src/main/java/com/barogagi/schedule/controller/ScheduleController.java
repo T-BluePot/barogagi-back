@@ -74,6 +74,12 @@ public class ScheduleController implements SwaggerScheduleController {
         return scheduleCommandService.createSchedule(scheduleRegistReqDTO, request);
     }
 
+    @PostMapping("/magic-create")
+    public ApiResponse createMagicSchedule(@RequestBody MagicScheduleReqDTO magicScheduleReqDTO,
+                                           HttpServletRequest request) {
+        return scheduleCommandService.createMagicSchedule(magicScheduleReqDTO, request);
+    }
+
     @PostMapping("/save")
     public ApiResponse saveSchedule(HttpServletRequest request,
                                     @RequestBody ScheduleRegistResDTO scheduleRegistResDTO) {
