@@ -118,7 +118,7 @@ public class LoginService {
         }
 
         // 5. ACCESS, REFRESH TOKEN 생성 & REFRESH TOKEN 저장
-        LoginResponse loginResponse = authService.loginAfterSignup(userInfo.getUserId(), "web-basic");
+        LoginResponse loginResponse = authService.loginAfterSignup(userInfo.getUserId(), loginDTO.getDeviceId());
 
         // 토큰 발급 성공
         if(loginResponse.tokens().resultCode().equals("R200")) {
@@ -137,7 +137,8 @@ public class LoginService {
                     "userId", userInfo.getUserId(),
                     "membershipNo", loginResponse.membershipNo(),
                     "refreshToken", loginResponse.tokens().refreshToken(),
-                    "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn()
+                    "refreshTokenExpiresIn", loginResponse.tokens().refreshTokenExpiresIn(),
+                    "deviceId", loginResponse.deviceId()
             );
 
             return ApiResponse.resultData(dataMap, ErrorCode.SUCCESS_LOGIN.getCode(), ErrorCode.SUCCESS_LOGIN.getMessage());

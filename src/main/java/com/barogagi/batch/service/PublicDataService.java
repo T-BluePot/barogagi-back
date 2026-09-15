@@ -5,7 +5,7 @@ import com.barogagi.batch.entity.KorTourOrgLocalCode;
 import com.barogagi.batch.entity.LocalPopularReplace;
 import com.barogagi.batch.repository.KorTourOrgLocalCodeRepository;
 import com.barogagi.batch.repository.LocalPopularReplaceRepository;
-import com.barogagi.config.TourApiClient;
+import com.barogagi.config.ApiClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +24,7 @@ import java.util.Objects;
 @Slf4j
 public class PublicDataService {
 
-    private final TourApiClient tourApiClient;
+    private final ApiClient apiClient;
     private final KorTourOrgLocalCodeRepository korTourOrgLocalCodeRepository;
     private final LocalPopularReplaceRepository localPopularReplaceRepository;
 
@@ -83,7 +83,7 @@ public class PublicDataService {
         YearMonth yearMonth = YearMonth.now().minusMonths(1);
         for (int i = 0; i < 3; i++) {
             String baseYm = yearMonth.format(DateTimeFormatter.ofPattern("yyyyMM"));
-            TourApiResponse response = tourApiClient.getCenterPlaces(baseYm, areaCd, sigunguCd);
+            TourApiResponse response = apiClient.getCenterPlaces(baseYm, areaCd, sigunguCd);
             if (response != null && response.getResponse().getBody().getTotalCount() > 0) {
                 return response;
             }

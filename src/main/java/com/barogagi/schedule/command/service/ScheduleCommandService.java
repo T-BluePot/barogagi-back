@@ -34,6 +34,7 @@ import com.barogagi.region.query.vo.RegionDetailVO;
 import com.barogagi.response.ApiResponse;
 import com.barogagi.schedule.command.entity.Schedule;
 import com.barogagi.schedule.command.repository.ScheduleRepository;
+import com.barogagi.schedule.dto.MagicScheduleReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistReqDTO;
 import com.barogagi.schedule.dto.ScheduleRegistResDTO;
 import com.barogagi.schedule.exception.ScheduleException;
@@ -60,13 +61,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.stream.Stream;
 
 @Service
 public class ScheduleCommandService {
     private static final Logger logger = LoggerFactory.getLogger(ScheduleCommandService.class);
+
+    // 카테고리명(DB) → 실제 웹 검색에 쓰는 키워드
+    private static final Map<String, String> SEARCH_KEYWORD = Map.of(
+            "식사",  "맛집",
+            "카페",  "카페",
+            "체험",  "원데이클래스 공방",
+            "놀거리", "놀거리",
+            "탐방",  "가볼만한곳",
+            "레저",  "레저 액티비티",
+            "술집",  "술집"
+    );
 
     private final CategoryMapper categoryMapper;
     private final ItemMapper itemMapper;
@@ -94,6 +110,9 @@ public class ScheduleCommandService {
 
     @Value("${kakao.radius}")
     private int radius;
+
+    @Value("${category.food-num}")
+    private int foodCategoryNum;
 
     @Autowired
     public ScheduleCommandService(CategoryMapper categoryMapper, ItemMapper itemMapper,
@@ -145,6 +164,7 @@ public class ScheduleCommandService {
             // 입력값 검증
             // 날짜 형식 검증
             List<PlanRegistResDTO> planResList = new ArrayList<>();
+            Set<String> usedPlaceUrls = new HashSet<>(); // 중복 장소 제외 위한 Set
 
             // 스케줄 공통 정보
             String scheduleNm = scheduleRegistReqDTO.getScheduleNm();
@@ -161,11 +181,21 @@ public class ScheduleCommandService {
                     planResList.add(planRes);
 
                 } else {
-                    // ➜ B. AI가 추천해줘야 하는 플랜
                     logger.info("B. AI가 추천해줘야 하는 플랜 plan={}", plan);
-                    PlanRegistResDTO planRes = handleAIPlan(scheduleRegistReqDTO, plan);
-                    planResList.add(planRes);
+                    try {
+                        PlanRegistResDTO planRes = handleAIPlan(scheduleRegistReqDTO, plan, usedPlaceUrls);
+                        planResList.add(planRes);
+                        if (planRes.getPlanLink() != null) {
+                            usedPlaceUrls.add(planRes.getPlanLink());
+                        }
+                    } catch (ScheduleException e) {
+                        logger.warn("AI 플랜 생성 실패, skip. startTime={}, categoryNum={}, code={}",
+                                plan.getStartTime(), plan.getCategoryNum(), e.getCode());
+                    }
                 }
+            }
+            if (planResList.isEmpty()) {
+                throw new ScheduleException(ErrorCode.PLACE_SEARCH_EMPTY);
             }
 
             // ---------- 6) ScheduleRegistResDTO 묶어서 리턴 ----------
@@ -224,8 +254,9 @@ public class ScheduleCommandService {
      * @throws ScheduleException ErrorCode.PLACE_SEARCH_EMPTY         – 장소 검색 결과가 없을 때
      * @throws ScheduleException ErrorCode.AI_RECOMMENDATION_FAILED   – AI 추천 응답이 null일 때
      */
-    private PlanRegistResDTO handleAIPlan(ScheduleRegistReqDTO scheduleRegistReqDTO, PlanRegistReqDTO plan) {
-
+    private PlanRegistResDTO handleAIPlan(ScheduleRegistReqDTO scheduleRegistReqDTO,
+                                          PlanRegistReqDTO plan,
+                                          Set<String> usedPlaceUrls) {
         // ---------- 0) 지역 결정: plan 지역 우선, 없으면 schedule 지역에서 랜덤 ----------
         List<RegionRegistReqDTO> resolvedRegions = resolveRegions(plan, scheduleRegistReqDTO);
 
@@ -284,14 +315,22 @@ public class ScheduleCommandService {
             String regionName = pickRegionName(updatedRegion);
 
             // Step 1: Tavily 웹 검색 (태그도 검색어에 포함)
+            String fullRegionName = Stream.of(
+                            updatedRegion.getRegionLevel1(),
+                            updatedRegion.getRegionLevel2(),
+                            updatedRegion.getRegionLevel3())
+                    .filter(s -> s != null && !s.isBlank())
+                    .collect(Collectors.joining(" "));
+
+            String searchKeyword = SEARCH_KEYWORD.getOrDefault(categoryNm, categoryNm);
             String tagKeyword = tagNames.isEmpty() ? "" : " " + tagNames.get(0);
-            String tavilyQuery = categoryNm + tagKeyword + " " + regionName + " 추천 장소";
+            String tavilyQuery = fullRegionName + " " + searchKeyword + tagKeyword + " 추천";
             List<TavilyResultDTO> tavilyResults = tavilyClient.search(tavilyQuery, searchLimit);
 
             logger.info("tavily search: query={}, resultSize={}", tavilyQuery, tavilyResults.size());
 
-            if (tavilyResults.isEmpty()) {
-                logger.warn("Tavily 검색 결과 없음. query={}", tavilyQuery);
+            if (tavilyResults.size() < 3) {
+                logger.warn("Tavily 결과 빈약, skip. query={}, size={}", tavilyQuery, tavilyResults.size());
                 continue;
             }
 
@@ -301,8 +340,9 @@ public class ScheduleCommandService {
                     .filter(c -> c != null && !c.isBlank())
                     .collect(Collectors.joining("\n"));
 
+            int adaptiveLimit = Math.min(extractLimit, tavilyResults.size() * 2);
             List<String> extractedPlaceNames = aiClient.extractPlaceNames(
-                    combinedContent, categoryNm, regionName, tagNames, extractLimit);
+                    combinedContent, categoryNm, regionName, tagNames, adaptiveLimit);
 
             logger.info("AI 장소명 추출: category={}, region={}, extracted={}",
                     categoryNm, regionName, extractedPlaceNames);
@@ -318,7 +358,15 @@ public class ScheduleCommandService {
                         placeName, regionName, geo.getX(), geo.getY());
 
                 if (matched != null) {
+                    if (usedPlaceUrls.contains(matched.getPlaceUrl())) {
+                        logger.info("이미 사용된 장소, skip. placeName={}", matched.getPlaceName());
+                        continue;
+                    }
                     matched.setRegionNum(region.getRegionNum());
+
+                    if (flatKakao.stream().anyMatch(k -> matched.getPlaceUrl().equals(k.getPlaceUrl()))) {
+                        continue;
+                    }
                     flatKakao.add(matched);
                     logger.info("카카오 매칭 성공: placeName={}, placeUrl={}",
                             matched.getPlaceName(), matched.getPlaceUrl());
@@ -551,6 +599,112 @@ public class ScheduleCommandService {
         }
 
     }
+
+
+    public ApiResponse createMagicSchedule(MagicScheduleReqDTO magicReq, HttpServletRequest request) {
+        if (magicReq.getStartDate() == null || magicReq.getStartDate().isBlank()
+                || magicReq.getEndDate() == null || magicReq.getEndDate().isBlank()
+                || magicReq.getScheduleRegionRegistReqDTOList() == null
+                || magicReq.getScheduleRegionRegistReqDTOList().isEmpty()) {
+            return ApiResponse.error(ErrorCode.EMPTY_DATA.getCode(), ErrorCode.EMPTY_DATA.getMessage());
+        }
+
+        // 시간 미선택 시 기본 11~19시
+        String startTime = (magicReq.getStartTime() == null || magicReq.getStartTime().isBlank())
+                ? "11:00" : magicReq.getStartTime();
+        String endTime = (magicReq.getEndTime() == null || magicReq.getEndTime().isBlank())
+                ? "19:00" : magicReq.getEndTime();
+
+        List<PlanRegistReqDTO> magicPlans;
+        try {
+            magicPlans = buildMagicPlans(startTime, endTime);
+        } catch (DateTimeParseException e) {
+            return ApiResponse.error(ErrorCode.INVALID_REQUEST.getCode(), ErrorCode.INVALID_REQUEST.getMessage());
+        } catch (BusinessException e) {
+            return ApiResponse.error(e.getCode(), e.getMessage());
+        }
+
+        ScheduleRegistReqDTO built = ScheduleRegistReqDTO.builder()
+                .scheduleNm(magicReq.getScheduleNm() != null && !magicReq.getScheduleNm().isBlank()
+                        ? magicReq.getScheduleNm() : "마법봉 일정")
+                .startDate(magicReq.getStartDate())
+                .endDate(magicReq.getEndDate())
+                .comment("")
+                .scheduleRegionRegistReqDTOList(magicReq.getScheduleRegionRegistReqDTOList())
+                .scheduleTagRegistReqDTOList(List.of())
+                .planRegistReqDTOList(magicPlans)
+                .build();
+
+        return createSchedule(built, request);
+    }
+
+    /**
+     * 날짜 범위 × 시간 범위를 2시간 단위 슬롯으로 잘라 AI 플랜 목록 생성.
+     * 지역은 plan에 지정하지 않아 resolveRegions()가 schedule 지역 중 랜덤 선택한다.
+     * 11-13, 17-19(18-19) 등 식사 시간대는 foodCategoryNum으로 고정.
+     */
+    private List<PlanRegistReqDTO> buildMagicPlans(String startTime, String endTime) {
+        LocalTime slotStart = LocalTime.parse(startTime);
+        LocalTime slotEnd = LocalTime.parse(endTime);
+
+        if (!slotStart.isBefore(slotEnd)) {
+            throw new ScheduleException(ErrorCode.INVALID_REQUEST);
+        }
+
+        // 1) 2시간 단위 슬롯 생성
+        List<LocalTime[]> slots = new ArrayList<>();
+        LocalTime cursor = slotStart;
+        while (cursor.isBefore(slotEnd)) {
+            LocalTime next = cursor.plusHours(2);
+            if (!next.isAfter(cursor) || next.isAfter(slotEnd)) {   // 자정 넘김 또는 종료시간 초과
+                next = slotEnd;
+            }
+            slots.add(new LocalTime[]{cursor, next});
+            cursor = next;
+        }
+
+        // 2) 점심 12:30 / 저녁 18:30을 포함하는 슬롯을 식사 슬롯으로 지정
+        Set<Integer> mealSlots = new HashSet<>();
+        for (LocalTime mealTime : List.of(LocalTime.of(12, 30), LocalTime.of(18, 30))) {
+            for (int i = 0; i < slots.size(); i++) {
+                if (!mealTime.isBefore(slots.get(i)[0]) && mealTime.isBefore(slots.get(i)[1])) {
+                    mealSlots.add(i);
+                    break;
+                }
+            }
+        }
+
+        // 3) 플랜 생성
+        List<PlanRegistReqDTO> plans = new ArrayList<>();
+        Set<Integer> usedCategory = new HashSet<>();
+        usedCategory.add(foodCategoryNum);   // 식사 외 슬롯에서 식당이 또 뽑히지 않도록
+
+        for (int i = 0; i < slots.size(); i++) {
+            plans.add(PlanRegistReqDTO.builder()
+                    .isUserAdded("N")
+                    .isRandomCategory("N")
+                    .categoryNum(mealSlots.contains(i) ? foodCategoryNum : pickCategoryNum(usedCategory))
+                    .startTime(slots.get(i)[0].toString())
+                    .endTime(slots.get(i)[1].toString())
+                    .planTagRegistReqDTOList(List.of())
+                    .build());
+        }
+        return plans;
+    }
+
+    private Integer pickCategoryNum(Set<Integer> used) {
+        for (int i = 0; i < 5; i++) {
+            Integer categoryNum = categoryMapper.selectRandomCategoryNum();
+            if (categoryNum == null) {
+                throw new ScheduleException(ErrorCode.NOT_FOUND_CATEGORY);
+            }
+            if (used.add(categoryNum)) {
+                return categoryNum;
+            }
+        }
+        return used.iterator().next();   // 카테고리가 적으면 중복 허용
+    }
+
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public ApiResponse saveSchedule(ScheduleRegistResDTO scheduleRegistResDTO, HttpServletRequest request) {

@@ -20,6 +20,7 @@ public enum ErrorCode {
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON-500", "서버 오류가 발생했습니다.", true),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다.", true),
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요.", false),
+    INVALID_DATA(HttpStatus.BAD_REQUEST, "C401", "데이터 형식이 올바르지 않습니다.", false),
 
     // Schedule
     SCHEDULE_SAVE_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "S001", "일정 저장에 실패했습니다.", true),
@@ -167,7 +168,10 @@ public enum ErrorCode {
     NOT_CALL_WEATHER(HttpStatus.INTERNAL_SERVER_ERROR, "W401", "중기 예보 조회 실패", true),
     FAIL_INVALID_FORMAT(HttpStatus.BAD_REQUEST, "LW401", "올바른 형식이 아닙니다.", false),
     NOT_FOUND_WEATHER(HttpStatus.NOT_FOUND, "LW404", "날씨를 조회할 수 없습니다.", false),
-    DATE_RANGE_EXCEEDED(HttpStatus.BAD_REQUEST, "LW402", "조회 기간이 초과되었습니다.", false);
+    DATE_RANGE_EXCEEDED(HttpStatus.BAD_REQUEST, "LW402", "조회 기간이 초과되었습니다.", false),
+
+    // Calendar
+    NOT_FOUND_HOLIDAYS(HttpStatus.NOT_FOUND, "CH400", "공휴일 정보 조회 실패하였습니다.", true);
 
     private final HttpStatus status;
     private final String code;

@@ -61,28 +61,4 @@ public class PushToken {
     @CreationTimestamp
     @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
-
-    /**
-     * 수정 시간
-     */
-    @UpdateTimestamp
-    @Column(name = "UPDATED_AT")
-    private LocalDateTime updatedAt;
-
-    public void updateFcmToken(String fcmToken) {
-        this.fcmToken = fcmToken;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void deactivate() {
-        this.activeYn = "N";
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-        this.activeYn = "Y";
-    }
 }

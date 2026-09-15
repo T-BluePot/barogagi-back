@@ -1,4 +1,4 @@
-package com.barogagi.push.entity;
+package com.barogagi.push.dto;
 
 import lombok.Getter;
 import lombok.Setter;
