@@ -12,5 +12,6 @@ import java.util.List;
 public class ChatRequest {
     private String model;
     private List<ChatMessage> messages;
-    private int max_tokens;
+    private int max_completion_tokens;
+    private String reasoning_effort;
 }

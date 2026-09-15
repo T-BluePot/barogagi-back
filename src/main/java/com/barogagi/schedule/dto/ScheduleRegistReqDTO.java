@@ -6,6 +6,7 @@ import com.barogagi.region.dto.RegionRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistReqDTO;
 import com.barogagi.tag.dto.TagRegistResDTO;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,6 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@Builder
 @Schema(description = "일정 등록 요청 DTO")
 public class ScheduleRegistReqDTO {
     private String scheduleNm;      // 일정명
