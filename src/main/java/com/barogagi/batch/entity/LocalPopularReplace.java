@@ -29,6 +29,7 @@ public class LocalPopularReplace {
         this.hubCtgryLclsNm = item.getHubCtgryLclsNm();
         this.hubCtgryMclsNm = item.getHubCtgryMclsNm();
         this.hubRank = item.getHubRank();
+        this.imageUrl = item.getImageUrl();
     }
 
     @Schema(description = "번호")
@@ -84,4 +85,8 @@ public class LocalPopularReplace {
     @Schema(description = "중심지 순위")
     @Column(name = "HUB_RANK")
     private String hubRank;
+
+    @Schema(description = "이미지 링크")
+    @Column(name = "IMAGE_URL")
+    private String imageUrl;
 }

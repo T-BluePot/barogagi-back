@@ -15,8 +15,12 @@ import com.barogagi.util.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -155,6 +159,13 @@ public class MainPageService {
         // 2. 지역별 인기 장소 조회
         List<LocalPopularReplace> findLocalPopularReplace = localPopularReplaceRepository.findLocalPopularReplace(areaCd, sigunguCd);
 
+        for(LocalPopularReplace replace : findLocalPopularReplace) {
+            if (replace != null && replace.getImageUrl() != null && !replace.getImageUrl().isEmpty()) {
+                String imageUrl = fetchOgImage(replace.getImageUrl());
+                replace.setImageUrl(imageUrl);
+            }
+        }
+
         if(findLocalPopularReplace.isEmpty()) {
             throw new MainPageException(ErrorCode.NOT_FOUND_HOT_PLACE);
         }
@@ -185,5 +196,32 @@ public class MainPageService {
     // 인기 태그 조회
     public List<TagRankInfoDTO> selectTagRankList() {
         return mainPageMapper.selectTagRankList();
+    }
+
+    private String fetchOgImage(String url) {
+        try {
+            log.info("OG 이미지 파싱 시작 - url: {}", url);  // 여기 로그 찍히는지 확인
+
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+                    .header("Referer", "https://place.map.kakao.com/")
+                    .timeout(5000)
+                    .get();
+
+            Element ogImage = doc.selectFirst("meta[property=og:image]");
+            log.info("OG 이미지 파싱 결과 - imageUrl: {}", ogImage);  // 결과 확인
+
+            if (ogImage != null) {
+                String imageUrl = ogImage.attr("content");
+                // 프로토콜 상대 URL 처리
+                if (imageUrl.startsWith("//")) {
+                    imageUrl = "https:" + imageUrl;
+                }
+                return imageUrl;
+            }
+        } catch (IOException e) {
+            log.warn("OG 이미지 파싱 실패 - url: {}, message: {}", url, e.getMessage());
+        }
+        return null;
     }
 }
