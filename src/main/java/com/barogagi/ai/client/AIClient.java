@@ -120,7 +120,8 @@ public class AIClient {
         return ChatRequest.builder()
                 .model(aiModel)
                 .messages(List.of(systemMsg, userMsg))
-                .max_tokens(500)
+                .max_completion_tokens(1500)
+                .reasoning_effort("none")
                 .build();
     }
 
@@ -136,10 +137,10 @@ public class AIClient {
                 : categoryNm;
 
         String prompt = String.format(AiPrompt.EXTRACT_PLACE_NAMES_USER,
-                regionName, categoryNm, categoryNm, tagStr, maxCount, webContent);
+                regionName, categoryNm, categoryNm, tagStr, maxCount, maxCount, webContent);
 
         try {
-            String aiResponse = callAIForText(AiPrompt.EXTRACT_PLACE_NAMES_SYSTEM, prompt, 300);
+            String aiResponse = callAIForText(AiPrompt.EXTRACT_PLACE_NAMES_SYSTEM, prompt, 1500);
 
             if (aiResponse == null || aiResponse.isBlank()) {
                 logger.warn("AI 장소명 추출 응답이 비어있습니다.");
@@ -162,7 +163,7 @@ public class AIClient {
     /**
      * AI에 프롬프트를 보내고 content 텍스트를 그대로 반환
      */
-    private String callAIForText(String systemPrompt, String userPrompt, int maxTokens) {
+    private String callAIForText(String systemPrompt, String userPrompt, int maxCompletionTokens) {
         String url = aiBaseUrl + aiPath;
 
         HttpHeaders headers = new HttpHeaders();
@@ -176,7 +177,8 @@ public class AIClient {
                         ChatMessage.builder().role("system").content(systemPrompt).build(),
                         ChatMessage.builder().role("user").content(userPrompt).build()
                 ))
-                .max_tokens(maxTokens)
+                .max_completion_tokens(maxCompletionTokens)
+                .reasoning_effort("none")
                 .build();
 
         try {
@@ -185,10 +187,11 @@ public class AIClient {
                     url, HttpMethod.POST, entity, String.class);
 
             JsonNode root = OM.readTree(response.getBody());
+            logger.info("AI 응답 원문: {}", response.getBody());
             return root.path("choices").get(0).path("message").path("content").asText();
 
         } catch (Exception e) {
-            logger.error("callAIForText 실패: error={}", e.getMessage());
+            logger.error("callAIForText 실패: model={}, error={}", aiModel, e.getMessage(), e);
             return null;
         }
     }
