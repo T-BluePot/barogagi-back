@@ -3,10 +3,13 @@ package com.barogagi.batch.scheduler;
 import com.barogagi.batch.service.PublicDataService;
 import com.barogagi.sendMessage.service.CommonService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AreaSchedular {
@@ -16,6 +19,8 @@ public class AreaSchedular {
 
     private final CommonService commonService;
 
+    private final Environment environment;
+
     /*
     티맵 모빌리티(주)의 내비게이션 데이터를 기반으로 산출된 지역별 중심 관광지 정보입니다.
     해당 지역의 관광지 중 타 관광지와 연계 방문하는 빈도가 높은 관광지가 중심 관광지가 됩니다.
@@ -24,13 +29,15 @@ public class AreaSchedular {
     지자체별 타 관광지와 가장 많이 연결되는 중심 관광지 100위 정보를 제공합니다.
      */
     // 전국·지역별 추천, 인기 지역
-    @Scheduled(cron = "0 40 23 * * *")
+    @Scheduled(cron = "0 0 0 * * *")
     @SchedulerLock(
             name = "localPopularAreaBatch",
             lockAtMostFor = "30m",
             lockAtLeastFor = "5m"
     )
     public void localPopularAreaBatch() {
+        log.info("dev={}", commonService.isDev());
+        log.info("dev value={}", (Object) environment.getActiveProfiles());
         if(commonService.isDev()) {
             publicDataService.insertLocalPopularArea();
         }
