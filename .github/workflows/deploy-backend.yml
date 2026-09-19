@@ -78,7 +78,7 @@ jobs:
               --name barogagi-backend-test \
               --restart unless-stopped \
               -e TZ=Asia/Seoul \
-              -e SPRING_PROFILES_ACTIVE=prod \
+              -e SPRING_PROFILES_ACTIVE=dev \
               -e SERVER_PORT=8080 \
               -p 127.0.0.1:8083:8080 \
               -v /srv/barogagi-test/backend/logs:/app/logs \
