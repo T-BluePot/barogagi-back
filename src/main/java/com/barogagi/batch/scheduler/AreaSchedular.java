@@ -38,7 +38,7 @@ public class AreaSchedular {
     public void localPopularAreaBatch() {
         log.info("flag={}", commonService.isProd());
         log.info("serverType={}", (Object) environment.getActiveProfiles());
-        if(commonService.isProd()) {
+        if(commonService.isDev()) {
             publicDataService.insertLocalPopularArea();
         }
     }
