@@ -29,7 +29,7 @@ public class AreaSchedular {
     지자체별 타 관광지와 가장 많이 연결되는 중심 관광지 100위 정보를 제공합니다.
      */
     // 전국·지역별 추천, 인기 지역
-    @Scheduled(cron = "0 30 3 1 * *")
+    @Scheduled(cron = "0 5 21 1 * *")
     @SchedulerLock(
             name = "localPopularAreaBatch",
             lockAtMostFor = "30m",
@@ -38,7 +38,7 @@ public class AreaSchedular {
     public void localPopularAreaBatch() {
         log.info("flag={}", commonService.isProd());
         log.info("serverType={}", (Object) environment.getActiveProfiles());
-        if(commonService.isProd()) {
+        if(commonService.isDev()) {
             publicDataService.insertLocalPopularArea();
         }
     }
