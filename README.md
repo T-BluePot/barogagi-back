@@ -266,12 +266,12 @@ main              # 프로덕션 배포
 
 **T-BluePot** - 열정 넘치는 개발자들의 모임
 
-| 역할 | 담당자 | GitHub |
-|------|--------|--------|
-| 프론트엔드 | 은우 | [@jeong-eun-woo](https://github.com/jeong-eun-woo) |
-| 프론트엔드 | 서림 | |
-| 백엔드 | 효경 | [@dksgyrud1349](https://github.com/dksgyrud1349) |
-| 백엔드 | 다민 | |
+| 역할       | 담당자 | GitHub                                             |
+| ---------- | ------ | -------------------------------------------------- |
+| 프론트엔드 | 은우   | [@jeong-eun-woo](https://github.com/jeong-eun-woo) |
+| 프론트엔드 | 서림   | [@Leeseoleem](https://github.com/Leeseoleem)       |
+| 백엔드     | 효경   | [@dksgyrud1349](https://github.com/dksgyrud1349)   |
+| 백엔드     | 다민   | [@RohDamin](https://github.com/RohDamin)           |
 
 ---
 
