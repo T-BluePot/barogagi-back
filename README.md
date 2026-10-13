@@ -1,5 +1,6 @@
 <div align="center">
   <h1>🗺️ 바로가기 (Barogagi)</h1>
+  <img width="120" alt="fitpl logo" src="https://github.com/user-attachments/assets/e1da60ce-aa41-4537-be86-26798defa578" />
   
   **AI 기반 스마트 일정 추천 플래너**
   
@@ -268,9 +269,9 @@ main              # 프로덕션 배포
 | 역할 | 담당자 | GitHub |
 |------|--------|--------|
 | 프론트엔드 | 은우 | [@jeong-eun-woo](https://github.com/jeong-eun-woo) |
-| 프론트엔드 | 서림 | [@서림](https://github.com/서림) |
+| 프론트엔드 | 서림 | |
 | 백엔드 | 효경 | [@dksgyrud1349](https://github.com/dksgyrud1349) |
-| 백엔드 | 다민 | [@효경](https://github.com/다민) |
+| 백엔드 | 다민 | |
 
 ---
 
