@@ -148,26 +148,41 @@ barogagi-back/
 │   └── main/
 │       ├── java/com/
 │       │   └── barogagi
-│       │       ├── config/         # ai 관련 코드
-│       │       ├── approval/       # 인증 관련 코드
+│       │       ├── ai/             # ai 관련 코드
+│       │       ├── approval/       # 인증 API 관련 코드
+│       │       ├── batch/          # 배치 관련 코드
+│       │       ├── board/          # 게시판 API 관련 코드
+│       │       ├── calendar/       # 달력 API 관련 코드
+│       │       ├── category/       # 카테고리 API 관련 코드
 │       │       ├── config/         # 설정 클래스
+│       │       ├── discord/        # 오류 알림 디스코드 관련 코드
+│       │       ├── item/           # 아이템 API 관련 코드  
 │       │       ├── kakaoplace/     # 카카오 장소 검색 API 관련 코드
 │       │       ├── logging/        # 로그 관련 코드
 │       │       ├── mainPage/       # 메인페이지 API 관련 코드
 │       │       ├── member/         # 회원 API 관련 코드
 │       │       ├── naverblog/      # 네이버 블로그 API 관련 코드
 │       │       ├── plan/           # 계획 API 관련 코드
+│       │       ├── properties/     # 설정 관련 코드
+│       │       ├── push/           # 앱 푸시 관련 코드
+│       │       ├── redirect/       # 프론트엔드 리다이렉트 관련 코드   
 │       │       ├── region/         # 장소 API 관련 코드
 │       │       ├── response/       # API 응답 객체
 │       │       ├── schedule/       # 일정 API 관련 코드
-│       │       ├── sendSms/        # 메시지 발송
+│       │       ├── sendMessage/    # 메시지(알림톡, 문자, 메일) 발송 관련 코드
+│       │       ├── setting/        # 앱 설정 API 관련 코드 
 │       │       ├── tag/            # 태그 API 관련 코드
+│       │       ├── tavily/         # Tavily 검색 API 호출 관련 코드 
 │       │       ├── terms/          # 약관 API 관련 코드
 │       │       ├── util/           # 유틸 API 관련 코드
+│       │       ├── weather/        # 날씨 API 관련 코드 
 │       │   ├── Application.java    # 메인 실행 클래스
 │       │   ├── SwaggerConfig       # Swagger 관련 코드
 │       └── resources/
+│           ├── firebase                   # 앱 푸시 관련 파일
 │           ├── mapper                     # 쿼리
+│           ├── static.images              # 이미지
+│           ├── templates.mail             # 이메일 템플릿
 │           └── application.properties/    # 환경설정 (DB, OAuth, JWT 등)
 ├── .gitignore                   # Git 무시 파일 목록
 ├── Dockerfile                   # Docker 이미지 빌드 설정
