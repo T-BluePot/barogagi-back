@@ -19,6 +19,11 @@ public enum ErrorCode {
     // Common
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON-500", "서버 오류가 발생했습니다.", true),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "COMMON-400", "잘못된 요청입니다.", true),
+    METHOD_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "COMMON-405", "지원하지 않는 요청 방식입니다.", false),
+    INVALID_REQUEST_BODY(HttpStatus.BAD_REQUEST, "COMMON-400-1", "요청 본문 형식이 올바르지 않습니다.", false),
+    MISSING_REQUEST_HEADER(HttpStatus.BAD_REQUEST, "COMMON-400-2", "필수 요청 헤더가 누락되었습니다.", false),
+    UNSUPPORTED_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "COMMON-415", "지원하지 않는 미디어 타입입니다.", false),
+    RESOURCE_NOT_FOUND(HttpStatus.BAD_REQUEST, "COMMON-404", "요청한 리소스를 찾을 수 없습니다.", false),
     EMPTY_DATA(HttpStatus.BAD_REQUEST, "C101", "정보를 입력해주세요.", false),
     INVALID_DATA(HttpStatus.BAD_REQUEST, "C401", "데이터 형식이 올바르지 않습니다.", false),
 
